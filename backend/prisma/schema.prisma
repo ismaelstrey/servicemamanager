@@ -1,0 +1,205 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  providers Provider[]
+  providerUsers ProviderUser[]
+  sentInvites ProviderInvite[] @relation("InvitedBy")
+}
+
+model Provider {
+  id        Int      @id @default(autoincrement())
+  name      String
+  cnpj      String   @unique
+  workspace String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId Int
+
+  equipments    Equipment[]
+  tickets       Ticket[]
+  passwords     PasswordVault[]
+  zabbixServers ZabbixServer[]
+  providerUsers ProviderUser[]
+  invites       ProviderInvite[]
+}
+
+model ProviderUser {
+  id          Int      @id @default(autoincrement())
+  role        String   // admin, manager, technician, support, viewer
+  permissions String[] // Array de permissões específicas
+  isActive    Boolean  @default(true)
+  joinedAt    DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  provider    Provider @relation(fields: [providerId], references: [id])
+  providerId  Int
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([userId, providerId])
+  @@map("provider_users")
+}
+
+model ProviderInvite {
+  id          Int      @id @default(autoincrement())
+  email       String
+  role        String   // admin, manager, technician, support, viewer
+  permissions String[] // Array de permissões específicas
+  token       String   @unique
+  message     String?  // Mensagem personalizada do convite
+  status      String   @default("pending") // pending, accepted, expired, cancelled
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  
+  provider    Provider @relation(fields: [providerId], references: [id])
+  providerId  Int
+  invitedBy   User     @relation("InvitedBy", fields: [invitedById], references: [id])
+  invitedById Int
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("provider_invites")
+}
+
+model Equipment {
+  id          Int      @id @default(autoincrement())
+  type        String
+  label       String
+  serial      String   @unique
+  provider    Provider @relation(fields: [providerId], references: [id])
+  providerId  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Ticket {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  status      String   @default("open")
+  priority    String   @default("medium")
+  source      String   @default("manual") // manual, zabbix, api
+  provider    Provider @relation(fields: [providerId], references: [id])
+  providerId  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  zabbixEvents ZabbixEvent[]
+}
+
+model PasswordVault {
+  id          Int      @id @default(autoincrement())
+  label       String
+  username    String
+  password    String
+  provider    Provider @relation(fields: [providerId], references: [id])
+  providerId  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ===== INTEGRAÇÃO ZABBIX =====
+
+model ZabbixServer {
+  id          Int      @id @default(autoincrement())
+  name        String   // Nome identificador do servidor
+  url         String   // URL da API Zabbix (ex: https://zabbix.exemplo.com)
+  version     String?  // Versão do Zabbix
+  apiToken    String?  // Token de API (se disponível)
+  username    String?  // Usuário para autenticação
+  password    String?  // Senha criptografada
+  webhookToken String  @unique // Token único para webhook
+  isActive    Boolean  @default(true)
+  lastSync    DateTime? // Última sincronização
+  
+  provider    Provider @relation(fields: [providerId], references: [id])
+  providerId  Int
+  
+  config      ZabbixConfig?
+  events      ZabbixEvent[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([providerId, name])
+  @@map("zabbix_servers")
+}
+
+model ZabbixConfig {
+  id                    Int      @id @default(autoincrement())
+  enabledTriggers       Boolean  @default(true)
+  enabledHosts          Boolean  @default(true)
+  enabledItems          Boolean  @default(false)
+  severityMapping       Json     // Mapeamento de severidade Zabbix -> Sistema
+  minSeverity          Int      @default(2) // Mínimo: Warning
+  allowedHostGroups    String[] // Grupos de hosts permitidos
+  blockedHostGroups    String[] // Grupos de hosts bloqueados
+  allowedTriggerTags   String[] // Tags de trigger permitidas
+  blockedTriggerTags   String[] // Tags de trigger bloqueadas
+  autoCreateTickets    Boolean  @default(true)
+  defaultPriority      String   @default("medium") // low, medium, high, critical
+  ticketPrefix         String   @default("[ZABBIX]")
+  ticketTemplate       String?  // Template personalizado para título/descrição
+  
+  zabbixServer         ZabbixServer @relation(fields: [zabbixServerId], references: [id], onDelete: Cascade)
+  zabbixServerId       Int          @unique
+  
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  
+  @@map("zabbix_configs")
+}
+
+model ZabbixEvent {
+  id              Int      @id @default(autoincrement())
+  eventId         String   // ID único do evento no Zabbix
+  eventType       String   // trigger, host, item, service
+  severity        Int      // Severidade Zabbix (0-5)
+  status          String   // OK, PROBLEM, UNKNOWN
+  triggerName     String?  // Nome do trigger
+  triggerTags     String[] // Tags do trigger
+  hostName        String?  // Nome do host
+  hostGroups      String[] // Grupos do host
+  itemName        String?  // Nome do item (se aplicável)
+  eventValue      String?  // Valor do evento
+  eventTime       DateTime // Timestamp do evento no Zabbix
+  acknowledgeStatus String @default("unacknowledged") // unacknowledged, acknowledged
+  webhookPayload  Json     // Payload completo recebido
+  processed       Boolean  @default(false)
+  ticketCreated   Boolean  @default(false)
+  errorMessage    String?  // Mensagem de erro se processamento falhou
+  retryCount      Int      @default(0)
+  
+  zabbixServer    ZabbixServer @relation(fields: [zabbixServerId], references: [id])
+  zabbixServerId  Int
+  ticket          Ticket?  @relation(fields: [ticketId], references: [id])
+  ticketId        Int?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([zabbixServerId, eventId])
+  @@index([zabbixServerId, processed])
+  @@index([zabbixServerId, eventTime])
+  @@map("zabbix_events")
+}
