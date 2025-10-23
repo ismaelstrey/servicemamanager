@@ -141,6 +141,16 @@ export class PasswordVaultRepository {
     }
   }
 
+  async getStatsByProvider(providerId: number): Promise<{ total: number }> {
+    try {
+      const total = await this.prisma.passwordVault.count({ where: { providerId } });
+      return { total };
+    } catch (error) {
+      console.error('Erro no PasswordVaultRepository.getStatsByProvider:', error);
+      throw new Error(`Erro ao obter estatísticas: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
+  }
+
   private mapFromPrisma(p: any): PasswordVaultRecord {
     return {
       id: p.id,

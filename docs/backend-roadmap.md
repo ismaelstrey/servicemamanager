@@ -169,25 +169,32 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 
 ---
 
-## 🚧 **FASE 6: DASHBOARD E RELATÓRIOS** (PENDENTE)
+## 🟢 **FASE 6: DASHBOARD E RELATÓRIOS** (CONCLUÍDA - núcleo)
 
-### 🔴 Controllers de Dashboard
-- [ ] DashboardController
-  - [ ] GET /providers/:providerId/dashboard (dados completos)
-  - [ ] GET /providers/:providerId/stats/equipments (estatísticas de equipamentos)
-  - [ ] GET /providers/:providerId/stats/tickets (estatísticas de tickets)
-  - [ ] GET /providers/:providerId/stats/passwords (estatísticas do cofre)
+### 🟢 Controllers de Dashboard
+- [x] DashboardController
+  - [x] GET /api/dashboard/:providerId (dados completos)
+  - [x] GET /api/dashboard/:providerId/equipment-stats (estatísticas de equipamentos)
+  - [x] GET /api/dashboard/:providerId/ticket-stats (estatísticas de tickets)
+  - [x] GET /api/dashboard/:providerId/password-stats (estatísticas do cofre)
 
-### 🔴 Métricas Implementadas
-- [ ] Quantidade total de equipamentos por tipo
-- [ ] Tickets abertos vs resolvidos
-- [ ] Tempo médio de resolução
-- [ ] Equipamentos por status
-- [ ] Senhas por categoria
+### 🟢 Métricas Implementadas
+- [x] Quantidade total de equipamentos por tipo
+- [x] Tickets por status e prioridade
+- [x] Estatísticas do cofre de senhas
+- [x] Atividades recentes
+- [x] Visão geral do provedor
 
-### 🔴 Services
-- [ ] DashboardService
-- [ ] ReportsService
+### 🟢 Services e Repositories
+- [x] DashboardService (integração com todos os repositórios)
+- [x] Métodos de estatísticas em EquipmentRepository
+- [x] Métodos de estatísticas em TicketRepository
+- [x] Métodos de estatísticas em PasswordVaultRepository
+
+### 🟢 Rotas e Middlewares
+- [x] dashboardRoutes.ts (rotas protegidas por autenticação)
+- [x] Integração no server.ts
+- [x] Validação de parâmetros e controle de acesso
 
 ---
 
@@ -258,7 +265,7 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 
 ## 📊 **RESUMO DO PROGRESSO**
 
-### ✅ Concluído (45%)
+### ✅ Concluído (55%)
 - Estrutura base do projeto
 - Sistema de autenticação completo
 - Configuração do banco de dados
@@ -267,6 +274,7 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 - Gestão de equipamentos: endpoints de criar/listar e rotas protegidas
 - Sistema de tickets: Controller, Service, Repository, Validators, Rotas
 - Cofre de senhas: endpoints CRUD, Service, Repository, Validators, Rotas, criptografia AES-256-GCM
+- Dashboard e relatórios: Controller, Service, Repository, Rotas (núcleo implementado)
 
 ### 🚧 Em Desenvolvimento (Gestão de Equipamentos e Provedores)
 - Equipamentos: refinamentos, filtros e documentação
@@ -275,8 +283,10 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 - Estatísticas e métricas adicionais (Provedores)
 - RBAC refinado do cofre e auditoria de acessos
 
-### 🔴 Pendente (55%)
-- Dashboard e relatórios
+### 🟡 Em Desenvolvimento (10%)
+- Dashboard e relatórios (CONCLUÍDO - núcleo implementado)
+
+### 🔴 Pendente (45%)
 - Ordens de serviço
 - Melhorias e otimizações
 - Funcionalidades com IA
@@ -310,8 +320,8 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 
 ---
 
-*Roadmap atualizado em: Outubro 2025*
-*Status: 45% concluído - Autenticação finalizada; núcleo de Provedores concluído; Equipamentos iniciado; Tickets concluídos (núcleo); Cofre de Senhas concluído (núcleo)*
+*Roadmap atualizado em: Janeiro 2025*
+*Status: 55% concluído - Autenticação finalizada; núcleo de Provedores concluído; Equipamentos iniciado; Tickets concluídos (núcleo); Cofre de Senhas concluído (núcleo); Dashboard e Relatórios concluído (núcleo)*
 ### 🟢 Tipos de Equipamentos
 - [x] Enum canônico `EquipmentType` no Prisma
 - Valores: `switch`, `olt`, `router`, `server`, `virtualizer`, `other`
@@ -502,12 +512,25 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 
 ## 🎯 **PRÓXIMOS PASSOS RECOMENDADOS**
 
-1. Validar e documentar endpoints de Equipments (CRUD + stats)
-2. Melhorar paginação e filtros (status, type, search)
-3. Configurar `ENCRYPTION_KEY` seguro em produção
-4. Implementar auditoria de acessos do cofre
-5. Definir RBAC refinado para leitura descriptografada
-6. Documentar APIs no Swagger
+1. **Implementar Sistema de Ordens de Serviço (Fase 7)**
+   - Criar model ServiceOrder no Prisma
+   - Implementar Controller, Service e Repository
+   - Definir workflow de status das ordens
+   
+2. **Melhorar Dashboard (opcional)**
+   - Adicionar gráficos e visualizações
+   - Implementar filtros por período
+   - Adicionar métricas de performance
+   
+3. **Validar e documentar endpoints existentes**
+   - Documentar APIs no Swagger
+   - Melhorar paginação e filtros
+   - Configurar `ENCRYPTION_KEY` seguro em produção
+   
+4. **Implementar melhorias de segurança**
+   - Auditoria de acessos do cofre
+   - RBAC refinado para leitura descriptografada
+   - Rate limiting nos endpoints
 
 ---
 

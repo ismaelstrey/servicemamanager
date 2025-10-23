@@ -6,6 +6,7 @@ import providerRoutes from './routes/providerRoutes';
 import equipmentRoutes from './routes/equipmentRoutes';
 import ticketRoutes from './routes/ticketRoutes';
 import passwordVaultRoutes from './routes/passwordVaultRoutes';
+import dashboardRoutes from './routes/dashboardRoutes';
 import swaggerUi from 'swagger-ui-express';
 import openapiSpec from './docs/openapi';
 
@@ -23,6 +24,7 @@ app.use('/api/providers', providerRoutes);
 app.use('/api/providers', equipmentRoutes);
 app.use('/api/providers', ticketRoutes);
 app.use('/api/providers', passwordVaultRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Documentação Swagger
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiSpec));

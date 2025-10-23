@@ -106,6 +106,16 @@ class PasswordVaultRepository {
             throw new Error(`Erro ao remover senha: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
         }
     }
+    async getStatsByProvider(providerId) {
+        try {
+            const total = await this.prisma.passwordVault.count({ where: { providerId } });
+            return { total };
+        }
+        catch (error) {
+            console.error('Erro no PasswordVaultRepository.getStatsByProvider:', error);
+            throw new Error(`Erro ao obter estatísticas: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        }
+    }
     mapFromPrisma(p) {
         return {
             id: p.id,
