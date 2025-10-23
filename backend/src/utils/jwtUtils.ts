@@ -1,4 +1,4 @@
-import jwt, { SignOptions, Secret, JwtPayload } from 'jsonwebtoken';
+import { sign, verify, SignOptions, Secret, JwtPayload } from 'jsonwebtoken';
 
 // Geração e verificação de tokens JWT
 const jwtSecret: Secret = process.env.JWT_SECRET || 'dev-secret';
@@ -9,10 +9,10 @@ export function signToken(
 ): string {
   // Assina token com expiração em segundos
   const options: SignOptions = { expiresIn: expiresInSeconds };
-  return jwt.sign(payload, jwtSecret, options);
+  return sign(payload, jwtSecret, options);
 }
 
 export function verifyToken<T extends JwtPayload>(token: string): T {
   // Verifica token e retorna payload tipado
-  return jwt.verify(token, jwtSecret) as T;
+  return verify(token, jwtSecret) as T;
 }

@@ -8,6 +8,7 @@ import ticketRoutes from './routes/ticketRoutes';
 import passwordVaultRoutes from './routes/passwordVaultRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import serviceOrderRoutes from './routes/serviceOrderRoutes';
+import aiRoutes from './routes/aiRoutes';
 import swaggerUi from 'swagger-ui-express';
 import openapiSpec from './docs/openapi';
 import { generalRateLimit } from './middlewares/rateLimitMiddleware';
@@ -32,6 +33,7 @@ app.use('/api/providers', ticketRoutes);
 app.use('/api/providers', passwordVaultRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/service-orders', serviceOrderRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Documentação Swagger
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiSpec));

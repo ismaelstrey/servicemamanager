@@ -404,7 +404,654 @@ const openapiSpec = {
         responses: { '204': { description: 'Removido' } }
       }
     },
-    
+
+    // AI routes
+    '/api/ai/analyze-ticket': {
+      post: {
+        summary: 'Analisa um ticket e sugere prioridade usando IA',
+        tags: ['AI'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['title', 'description', 'category', 'providerId'],
+                properties: {
+                  title: { type: 'string', description: 'Título do ticket' },
+                  description: { type: 'string', description: 'Descrição detalhada do problema' },
+                  category: { 
+                    type: 'string', 
+                    enum: ['technical', 'incident', 'maintenance', 'installation', 'billing', 'commercial', 'complaint', 'request', 'change', 'other'],
+                    description: 'Categoria do ticket'
+                  },
+                  providerId: { type: 'integer', description: 'ID do provedor' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { 
+            description: 'Análise concluída com sucesso',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/TicketAnalysisResponse' }
+              }
+            }
+          },
+          '400': { description: 'Dados inválidos' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+    '/api/ai/predict-failures/{providerId}': {
+      get: {
+        summary: 'Prevê falhas em equipamentos usando IA',
+        tags: ['AI'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'providerId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID do provedor' }
+        ],
+        responses: {
+          '200': { 
+            description: 'Previsão concluída com sucesso',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/FailurePredictionResponse' }
+              }
+            }
+          },
+          '400': { description: 'ID do provedor inválido' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+    '/api/ai/insights/{providerId}': {
+      get: {
+        summary: 'Obtém insights de IA para dashboard',
+        tags: ['AI'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'providerId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID do provedor' }
+        ],
+        responses: {
+          '200': { 
+            description: 'Insights obtidos com sucesso',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AIInsightsResponse' }
+              }
+            }
+          },
+          '400': { description: 'ID do provedor inválido' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+
+    // ML routes
+    '/api/ai/ml/train/{providerId}': {
+      post: {
+        summary: 'Treina o modelo de ML com dados históricos',
+        tags: ['AI - Machine Learning'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'providerId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID do provedor' }
+        ],
+        responses: {
+          '200': { 
+            description: 'Treinamento concluído com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        modelId: { type: 'string' },
+                        accuracy: { type: 'number' },
+                        trainingTime: { type: 'number' },
+                        samplesProcessed: { type: 'integer' }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          '400': { description: 'ID do provedor inválido' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+    '/api/ai/ml/classify-ticket': {
+      post: {
+        summary: 'Classifica um ticket usando ML',
+        tags: ['AI - Machine Learning'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['title', 'description', 'providerId'],
+                properties: {
+                  title: { type: 'string', description: 'Título do ticket' },
+                  description: { type: 'string', description: 'Descrição do ticket' },
+                  providerId: { type: 'integer', description: 'ID do provedor' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { 
+            description: 'Classificação concluída com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        category: { type: 'string' },
+                        priority: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+                        confidence: { type: 'number', minimum: 0, maximum: 1 },
+                        estimatedResolutionTime: { type: 'number' }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          '400': { description: 'Dados inválidos' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+    '/api/ai/ml/historical-patterns/{providerId}': {
+      get: {
+        summary: 'Analisa padrões históricos usando ML',
+        tags: ['AI - Machine Learning'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'providerId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID do provedor' },
+          { name: 'days', in: 'query', schema: { type: 'integer', default: 30 }, description: 'Número de dias para análise' }
+        ],
+        responses: {
+          '200': { 
+            description: 'Análise concluída com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        patterns: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              category: { type: 'string' },
+                              frequency: { type: 'number' },
+                              avgResolutionTime: { type: 'number' },
+                              trend: { type: 'string', enum: ['increasing', 'decreasing', 'stable'] }
+                            }
+                          }
+                        },
+                        predictions: {
+                          type: 'object',
+                          properties: {
+                            nextWeekVolume: { type: 'integer' },
+                            peakHours: { type: 'array', items: { type: 'integer' } },
+                            riskFactors: { type: 'array', items: { type: 'string' } }
+                          }
+                        }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          '400': { description: 'ID do provedor inválido' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+
+    // Equipment Health routes
+    '/api/ai/equipment/health/{providerId}': {
+      get: {
+        summary: 'Analisa saúde dos equipamentos',
+        tags: ['AI - Equipment Health'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'providerId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID do provedor' }
+        ],
+        responses: {
+          '200': { 
+            description: 'Análise concluída com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          equipmentId: { type: 'integer' },
+                          healthScore: { type: 'number', minimum: 0, maximum: 100 },
+                          status: { type: 'string', enum: ['healthy', 'warning', 'critical'] },
+                          lastCheck: { type: 'string', format: 'date-time' },
+                          issues: { type: 'array', items: { type: 'string' } },
+                          recommendations: { type: 'array', items: { type: 'string' } }
+                        }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          '400': { description: 'ID do provedor inválido' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+    '/api/ai/equipment/predict-failure/{equipmentId}': {
+      get: {
+        summary: 'Prevê falha específica de equipamento',
+        tags: ['AI - Equipment Health'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'equipmentId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID do equipamento' }
+        ],
+        responses: {
+          '200': { 
+            description: 'Previsão concluída com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        equipmentId: { type: 'integer' },
+                        failureProbability: { type: 'number', minimum: 0, maximum: 1 },
+                        estimatedFailureDate: { type: 'string', format: 'date-time', nullable: true },
+                        riskLevel: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+                        contributingFactors: { type: 'array', items: { type: 'string' } },
+                        preventiveMeasures: { type: 'array', items: { type: 'string' } }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          '404': { description: 'Equipamento não encontrado' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+    '/api/ai/equipment/maintenance-schedule/{providerId}': {
+      get: {
+        summary: 'Gera cronograma de manutenção preditiva',
+        tags: ['AI - Equipment Health'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'providerId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID do provedor' },
+          { name: 'days', in: 'query', schema: { type: 'integer', default: 30 }, description: 'Período em dias' }
+        ],
+        responses: {
+          '200': { 
+            description: 'Cronograma gerado com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          equipmentId: { type: 'integer' },
+                          scheduledDate: { type: 'string', format: 'date-time' },
+                          maintenanceType: { type: 'string', enum: ['preventive', 'corrective', 'emergency'] },
+                          priority: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+                          estimatedDuration: { type: 'number' },
+                          description: { type: 'string' },
+                          requiredParts: { type: 'array', items: { type: 'string' } }
+                        }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          '400': { description: 'ID do provedor inválido' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+    '/api/ai/equipment/anomalies/{providerId}': {
+      get: {
+        summary: 'Detecta anomalias em equipamentos',
+        tags: ['AI - Equipment Health'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'providerId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID do provedor' }
+        ],
+        responses: {
+          '200': { 
+            description: 'Detecção concluída com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          equipmentId: { type: 'integer' },
+                          anomalyType: { type: 'string' },
+                          severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+                          detectedAt: { type: 'string', format: 'date-time' },
+                          description: { type: 'string' },
+                          possibleCauses: { type: 'array', items: { type: 'string' } },
+                          recommendedActions: { type: 'array', items: { type: 'string' } }
+                        }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          '400': { description: 'ID do provedor inválido' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+
+    // Intelligent Chat routes
+    '/api/ai/chat/start': {
+      post: {
+        summary: 'Inicia uma sessão de chat inteligente',
+        tags: ['AI - Intelligent Chat'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['providerId', 'userId'],
+                properties: {
+                  providerId: { type: 'integer', description: 'ID do provedor' },
+                  userId: { type: 'integer', description: 'ID do usuário' },
+                  context: { type: 'string', description: 'Contexto inicial da conversa' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { 
+            description: 'Sessão iniciada com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        sessionId: { type: 'string' },
+                        startedAt: { type: 'string', format: 'date-time' },
+                        welcomeMessage: { type: 'string' }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          '400': { description: 'Dados inválidos' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+    '/api/ai/chat/message': {
+      post: {
+        summary: 'Processa uma mensagem no chat inteligente',
+        tags: ['AI - Intelligent Chat'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['sessionId', 'message'],
+                properties: {
+                  sessionId: { type: 'string', description: 'ID da sessão' },
+                  message: { type: 'string', description: 'Mensagem do usuário' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { 
+            description: 'Mensagem processada com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        response: { type: 'string' },
+                        intent: { type: 'string' },
+                        confidence: { type: 'number', minimum: 0, maximum: 1 },
+                        suggestedActions: { type: 'array', items: { type: 'string' } },
+                        relatedTickets: { type: 'array', items: { type: 'integer' } }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          '400': { description: 'Dados inválidos' },
+          '404': { description: 'Sessão não encontrada' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+    '/api/ai/chat/solution': {
+      post: {
+        summary: 'Busca solução automática para problema',
+        tags: ['AI - Intelligent Chat'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['problem', 'providerId'],
+                properties: {
+                  problem: { type: 'string', description: 'Descrição do problema' },
+                  providerId: { type: 'integer', description: 'ID do provedor' },
+                  category: { type: 'string', description: 'Categoria do problema' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { 
+            description: 'Solução encontrada com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        solution: { type: 'string' },
+                        steps: { type: 'array', items: { type: 'string' } },
+                        confidence: { type: 'number', minimum: 0, maximum: 1 },
+                        estimatedTime: { type: 'number' },
+                        relatedKnowledge: { type: 'array', items: { type: 'string' } }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          '400': { description: 'Dados inválidos' },
+          '401': { description: 'Não autorizado' },
+          '404': { description: 'Solução não encontrada' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+    '/api/ai/chat/suggestions/{providerId}': {
+      get: {
+        summary: 'Gera sugestões proativas',
+        tags: ['AI - Intelligent Chat'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'providerId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID do provedor' }
+        ],
+        responses: {
+          '200': { 
+            description: 'Sugestões geradas com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          type: { type: 'string', enum: ['maintenance', 'optimization', 'alert', 'recommendation'] },
+                          title: { type: 'string' },
+                          description: { type: 'string' },
+                          priority: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+                          action: { type: 'string' },
+                          estimatedImpact: { type: 'string' }
+                        }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          '400': { description: 'ID do provedor inválido' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+    '/api/ai/chat/end/{sessionId}': {
+      post: {
+        summary: 'Encerra uma sessão de chat',
+        tags: ['AI - Intelligent Chat'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'sessionId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID da sessão' }
+        ],
+        responses: {
+          '200': { 
+            description: 'Sessão encerrada com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        sessionId: { type: 'string' },
+                        duration: { type: 'number' },
+                        messageCount: { type: 'integer' },
+                        summary: { type: 'string' }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          '404': { description: 'Sessão não encontrada' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+
     // Dashboard routes
     '/api/dashboard/{providerId}': {
       get: {
@@ -923,6 +1570,163 @@ const openapiSpec = {
         properties: {
           success: { type: 'boolean' },
           data: { $ref: '#/components/schemas/DashboardData' },
+          message: { type: 'string' }
+        }
+      },
+
+      // AI Schemas
+      TicketAnalysisResult: {
+        type: 'object',
+        properties: {
+          suggestedPriority: { 
+            type: 'string', 
+            enum: ['low', 'medium', 'high', 'critical'],
+            description: 'Prioridade sugerida pela IA'
+          },
+          confidence: { 
+            type: 'number', 
+            minimum: 0, 
+            maximum: 1,
+            description: 'Nível de confiança da análise (0-1)'
+          },
+          reasoning: { 
+            type: 'array', 
+            items: { type: 'string' },
+            description: 'Razões que levaram à sugestão de prioridade'
+          },
+          historicalPatterns: {
+            type: 'object',
+            properties: {
+              similarTickets: { type: 'integer', description: 'Número de tickets similares encontrados' },
+              averageResolutionTime: { type: 'number', description: 'Tempo médio de resolução em horas' },
+              commonResolution: { type: 'string', nullable: true, description: 'Resolução mais comum' }
+            }
+          }
+        }
+      },
+      TicketAnalysisResponse: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean' },
+          data: { $ref: '#/components/schemas/TicketAnalysisResult' },
+          message: { type: 'string' }
+        }
+      },
+      EquipmentFailurePrediction: {
+        type: 'object',
+        properties: {
+          equipmentId: { type: 'integer' },
+          riskLevel: { 
+            type: 'string', 
+            enum: ['low', 'medium', 'high', 'critical'],
+            description: 'Nível de risco de falha'
+          },
+          probability: { 
+            type: 'number', 
+            minimum: 0, 
+            maximum: 1,
+            description: 'Probabilidade de falha (0-1)'
+          },
+          predictedFailureDate: { 
+            type: 'string', 
+            format: 'date-time', 
+            nullable: true,
+            description: 'Data prevista para falha'
+          },
+          recommendedActions: { 
+            type: 'array', 
+            items: { type: 'string' },
+            description: 'Ações recomendadas'
+          },
+          factors: {
+            type: 'object',
+            properties: {
+              age: { type: 'number', description: 'Idade do equipamento em anos' },
+              ticketFrequency: { type: 'number', description: 'Frequência de tickets nos últimos 90 dias' },
+              lastMaintenanceDate: { type: 'string', format: 'date-time', nullable: true },
+              criticalIssues: { type: 'number', description: 'Número de problemas críticos recentes' }
+            }
+          }
+        }
+      },
+      FailurePredictionResponse: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean' },
+          data: {
+            type: 'object',
+            properties: {
+              predictions: { 
+                type: 'array', 
+                items: { $ref: '#/components/schemas/EquipmentFailurePrediction' }
+              },
+              summary: {
+                type: 'object',
+                properties: {
+                  totalEquipments: { type: 'integer' },
+                  criticalRisk: { type: 'integer' },
+                  highRisk: { type: 'integer' },
+                  mediumRisk: { type: 'integer' }
+                }
+              }
+            }
+          },
+          message: { type: 'string' }
+        }
+      },
+      AIInsights: {
+        type: 'object',
+        properties: {
+          equipmentHealth: {
+            type: 'object',
+            properties: {
+              totalAnalyzed: { type: 'integer' },
+              riskDistribution: {
+                type: 'object',
+                properties: {
+                  critical: { type: 'integer' },
+                  high: { type: 'integer' },
+                  medium: { type: 'integer' },
+                  low: { type: 'integer' }
+                }
+              },
+              upcomingFailures: { type: 'integer' }
+            }
+          },
+          recommendations: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                type: { type: 'string' },
+                title: { type: 'string' },
+                description: { type: 'string' },
+                action: { type: 'string' },
+                priority: { type: 'string' }
+              }
+            }
+          },
+          alerts: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                type: { type: 'string' },
+                severity: { type: 'string' },
+                title: { type: 'string' },
+                message: { type: 'string' },
+                equipments: { type: 'array', items: { type: 'integer' } },
+                timestamp: { type: 'string', format: 'date-time' }
+              }
+            }
+          }
+        }
+      },
+      AIInsightsResponse: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean' },
+          data: { $ref: '#/components/schemas/AIInsights' },
           message: { type: 'string' }
         }
       }
