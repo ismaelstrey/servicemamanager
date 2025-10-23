@@ -19,6 +19,7 @@ model User {
   providers Provider[]
   providerUsers ProviderUser[]
   sentInvites ProviderInvite[] @relation("InvitedBy")
+  comments Comment[]
 }
 
 model Provider {
@@ -39,6 +40,7 @@ model Provider {
   providerUsers ProviderUser[]
   invites       ProviderInvite[]
   serviceOrders ServiceOrder[]
+  comments      Comment[]
 }
 
 model ProviderUser {
@@ -123,6 +125,7 @@ model Ticket {
 
   zabbixEvents ZabbixEvent[]
   serviceOrders ServiceOrder[]
+  comments    Comment[]
 }
 
 enum ServiceOrderStatus {
@@ -139,6 +142,32 @@ enum ServiceOrderPriority {
   medium
   high
   urgent
+}
+
+model Comment {
+  id           Int      @id @default(autoincrement())
+  content      String
+  resourceType String   // 'ticket' or 'service_order'
+  resourceId   Int
+  isInternal   Boolean  @default(false) // internal comments vs client-visible
+  isEdited     Boolean  @default(false)
+  editedAt     DateTime?
+  
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
+  provider     Provider @relation(fields: [providerId], references: [id])
+  providerId   Int
+  
+  // Polymorphic relations
+  ticket       Ticket?     @relation(fields: [ticketId], references: [id])
+  ticketId     Int?
+  serviceOrder ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
+  serviceOrderId Int?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@map("comments")
 }
 
 model ServiceOrder {
@@ -159,6 +188,7 @@ model ServiceOrder {
   providerId      Int
   ticket          Ticket?  @relation(fields: [ticketId], references: [id])
   ticketId        Int?
+  comments        Comment[]
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

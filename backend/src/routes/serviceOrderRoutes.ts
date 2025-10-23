@@ -12,18 +12,19 @@ import {
   validateParams,
   validateQuery
 } from '../validators/serviceOrderValidator';
+import { listCacheMiddleware, serviceOrderCacheMiddleware, statsCacheMiddleware } from '../middleware/cacheMiddleware';
 
 const router = Router();
 const controller = new ServiceOrderController();
 
-// Service order statistics
-router.get('/stats', authMiddleware, validateQuery(serviceOrderStatsSchema), (req, res) => controller.getStats(req as any, res));
+// Service order statistics with cache
+router.get('/stats', authMiddleware, validateQuery(serviceOrderStatsSchema), statsCacheMiddleware(), (req, res) => controller.getStats(req as any, res));
 
-// List service orders
-router.get('/', authMiddleware, validateQuery(listServiceOrdersSchema), (req, res) => controller.getAll(req as any, res));
+// List service orders with cache
+router.get('/', authMiddleware, validateQuery(listServiceOrdersSchema), listCacheMiddleware(), (req, res) => controller.getAll(req as any, res));
 
-// Get service order by ID
-router.get('/:id', authMiddleware, validateParams(serviceOrderIdParamSchema), (req, res) => controller.getById(req as any, res));
+// Get service order by ID with cache
+router.get('/:id', authMiddleware, validateParams(serviceOrderIdParamSchema), serviceOrderCacheMiddleware(), (req, res) => controller.getById(req as any, res));
 
 // Create service order
 router.post('/', authMiddleware, validateSchema(createServiceOrderSchema), (req, res) => controller.create(req as any, res));

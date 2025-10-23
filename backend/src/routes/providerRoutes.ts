@@ -14,6 +14,7 @@ import {
   validateParams,
   validateQuery
 } from '../validators/providerValidator';
+import { listCacheMiddleware, cacheMiddleware } from '../middleware/cacheMiddleware';
 
 // Rotas de provedores
 const router = Router();
@@ -24,9 +25,9 @@ router.get('/check-workspace/:workspace', validateParams(workspaceParamSchema), 
 
 // Protegidas: todas abaixo exigem autenticação
 router.post('/', authMiddleware, validateSchema(createProviderSchema), (req, res) => controller.create(req as any, res));
-router.get('/', authMiddleware, validateQuery(listProvidersSchema), (req, res) => controller.list(req as any, res));
-router.get('/:id', authMiddleware, validateParams(providerIdSchema), (req, res) => controller.getById(req as any, res));
-router.get('/workspace/:workspace', authMiddleware, validateParams(workspaceParamSchema), (req, res) => controller.getByWorkspace(req as any, res));
+router.get('/', authMiddleware, validateQuery(listProvidersSchema), listCacheMiddleware(), (req, res) => controller.list(req as any, res));
+router.get('/:id', authMiddleware, validateParams(providerIdSchema), cacheMiddleware({ ttl: 1800, keyPrefix: 'provider:detail', varyBy: ['id'] }), (req, res) => controller.getById(req as any, res));
+router.get('/workspace/:workspace', authMiddleware, validateParams(workspaceParamSchema), cacheMiddleware({ ttl: 1800, keyPrefix: 'provider:workspace', varyBy: ['workspace'] }), (req, res) => controller.getByWorkspace(req as any, res));
 router.put('/:id', authMiddleware, validateParams(providerIdSchema), validateSchema(updateProviderSchema), (req, res) => controller.update(req as any, res));
 router.delete('/:id', authMiddleware, validateParams(providerIdSchema), (req, res) => controller.delete(req as any, res));
 router.patch('/:id/status', authMiddleware, validateParams(providerIdSchema), validateSchema(updateStatusSchema), (req, res) => controller.toggleStatus(req as any, res));
