@@ -2,22 +2,19 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authMiddleware = authMiddleware;
 const jwtUtils_1 = require("../utils/jwtUtils");
-// Middleware para proteger rotas com JWT
 function authMiddleware(req, res, next) {
-    // Lê cabeçalho Authorization
     const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        res.status(401).json({ message: 'Token não fornecido' });
-        return;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'Token de autenticação não fornecido' });
     }
-    const token = authHeader.replace('Bearer ', '');
+    const token = authHeader.split(' ')[1];
     try {
         const payload = (0, jwtUtils_1.verifyToken)(token);
-        // @ts-expect-error anexar usuário ao request
-        req.user = payload;
+        // Anexa usuário autenticado com id, role e providerId para controle de acesso
+        req.user = { id: payload.userId, role: payload.role, providerId: payload.providerId };
         next();
     }
-    catch (err) {
-        res.status(401).json({ message: 'Token inválido' });
+    catch (error) {
+        return res.status(401).json({ message: 'Token inválido ou expirado' });
     }
 }

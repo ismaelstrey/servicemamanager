@@ -12,29 +12,36 @@ export class AuthController {
 
   // POST /auth/register
   async register(req: Request, res: Response): Promise<void> {
-    const parse = registerSchema.safeParse(req.body);
-    if (!parse.success) {
-      res.status(400).json({ errors: parse.error.flatten() });
-      return;
+    try {
+      const parse = registerSchema.safeParse(req.body);
+      if (!parse.success) {
+        res.status(400).json({ errors: parse.error.flatten() });
+        return;
+      }
+      const { name, email, password } = parse.data;
+      const result = await this.authService.register(name, email, password);
+      res.status(201).json(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao registrar usuário';
+      const isUniqueEmail = message.includes('Unique constraint') || message.includes('já existe');
+      res.status(isUniqueEmail ? 409 : 500).json({ success: false, message });
     }
-    const { name, email, password } = parse.data;
-    const result = await this.authService.register(name, email, password);
-    res.status(201).json(result);
   }
 
   // POST /auth/login
   async login(req: Request, res: Response): Promise<void> {
-    const parse = loginSchema.safeParse(req.body);
-    if (!parse.success) {
-      res.status(400).json({ errors: parse.error.flatten() });
-      return;
+    try {
+      const parse = loginSchema.safeParse(req.body);
+      if (!parse.success) {
+        res.status(400).json({ errors: parse.error.flatten() });
+        return;
+      }
+      const { email, password } = parse.data;
+      const result = await this.authService.login(email, password);
+      res.json(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao efetuar login';
+      res.status(401).json({ success: false, message });
     }
-    const { email, password } = parse.data;
-    const result = await this.authService.login(email, password);
-    if (!result) {
-      res.status(401).json({ message: 'Credenciais inválidas' });
-      return;
-    }
-    res.json(result);
   }
 }

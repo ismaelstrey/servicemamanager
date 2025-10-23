@@ -1,22 +1,22 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwtUtils';
+import { AuthenticatedRequest } from '../types/api.types';
 
-// Middleware para proteger rotas com JWT
-export function authMiddleware(req: Request, res: Response, next: NextFunction): void {
-  // Lê cabeçalho Authorization
-  const authHeader: string | undefined = req.headers.authorization;
-  if (!authHeader) {
-    res.status(401).json({ message: 'Token não fornecido' });
-    return;
+export function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Token de autenticação não fornecido' });
   }
 
-  const token: string = authHeader.replace('Bearer ', '');
+  const token = authHeader.split(' ')[1];
   try {
-    const payload = verifyToken<{ userId: number }>(token);
-    // @ts-expect-error anexar usuário ao request
-    req.user = payload;
+    const payload = verifyToken<{ userId: number; email?: string; role?: string; providerId?: number }>(token);
+
+    // Anexa usuário autenticado com id, role e providerId para controle de acesso
+    req.user = { id: payload.userId, role: payload.role, providerId: payload.providerId } as any;
+
     next();
-  } catch (err) {
-    res.status(401).json({ message: 'Token inválido' });
+  } catch (error) {
+    return res.status(401).json({ message: 'Token inválido ou expirado' });
   }
 }

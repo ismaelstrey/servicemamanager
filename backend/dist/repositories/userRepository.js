@@ -8,12 +8,12 @@ class UserRepository {
     // Cria usuário
     async create(name, email, passwordHash) {
         const user = await prisma.user.create({ data: { name, email, password: passwordHash } });
-        return { id: user.id, name: user.name, email: user.email };
+        return { id: user.id, name: user.name, email: user.email, role: user.role };
     }
     // Busca por email
     async findByEmail(email) {
         const user = await prisma.user.findUnique({ where: { email } });
-        return user ? { id: user.id, name: user.name, email: user.email, password: user.password } : null;
+        return user ? { id: user.id, name: user.name, email: user.email, password: user.password, role: user.role } : null;
     }
 }
 exports.UserRepository = UserRepository;

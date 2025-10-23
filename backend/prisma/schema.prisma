@@ -81,11 +81,27 @@ model ProviderInvite {
   @@map("provider_invites")
 }
 
+enum EquipmentStatus {
+  active
+  inactive
+  maintenance
+}
+
+enum EquipmentType {
+  switch
+  olt
+  router
+  server
+  virtualizer
+  other
+}
+
 model Equipment {
   id          Int      @id @default(autoincrement())
-  type        String
+  type        EquipmentType
   label       String
   serial      String   @unique
+  status      EquipmentStatus @default(active)
   provider    Provider @relation(fields: [providerId], references: [id])
   providerId  Int
   createdAt   DateTime @default(now())

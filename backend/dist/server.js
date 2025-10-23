@@ -7,6 +7,10 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
+const providerRoutes_1 = __importDefault(require("./routes/providerRoutes"));
+const equipmentRoutes_1 = __importDefault(require("./routes/equipmentRoutes"));
+const ticketRoutes_1 = __importDefault(require("./routes/ticketRoutes"));
+const passwordVaultRoutes_1 = __importDefault(require("./routes/passwordVaultRoutes"));
 // Configura variáveis de ambiente
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -15,6 +19,10 @@ const port = Number(process.env.PORT) || 4000;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.use('/auth', authRoutes_1.default);
+app.use('/api/providers', providerRoutes_1.default);
+app.use('/api/providers', equipmentRoutes_1.default);
+app.use('/api/providers', ticketRoutes_1.default);
+app.use('/api/providers', passwordVaultRoutes_1.default);
 // Rota de saúde
 app.get('/health', (_req, res) => {
     // Retorna status do servidor

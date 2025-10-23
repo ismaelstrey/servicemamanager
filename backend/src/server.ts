@@ -2,6 +2,10 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes';
+import providerRoutes from './routes/providerRoutes';
+import equipmentRoutes from './routes/equipmentRoutes';
+import ticketRoutes from './routes/ticketRoutes';
+import passwordVaultRoutes from './routes/passwordVaultRoutes';
 
 // Configura variáveis de ambiente
 dotenv.config();
@@ -13,6 +17,10 @@ const port: number = Number(process.env.PORT) || 4000;
 app.use(cors());
 app.use(express.json());
 app.use('/auth', authRoutes);
+app.use('/api/providers', providerRoutes);
+app.use('/api/providers', equipmentRoutes);
+app.use('/api/providers', ticketRoutes);
+app.use('/api/providers', passwordVaultRoutes);
 
 // Rota de saúde
 app.get('/health', (_req: Request, res: Response) => {

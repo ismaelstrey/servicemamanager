@@ -599,6 +599,31 @@ logger.error('Falha ao criar usuário', {
 
 ---
 
-*Instruções Completas de Desenvolvimento - Sistema de Gerenciamento de Provedores*  
-*Versão: 1.0 | Atualizado: Janeiro 2025*  
-*Status: Fundação completa (15%) - Pronto para desenvolvimento das próximas fases*
+## 🧪 Seed de Dados (Prisma)
+
+- Pré-requisitos: banco rodando e `.env` com `DATABASE_URL` válido.
+- Comando para executar: `npm run prisma:seed`.
+- Resultado esperado: logs de criação/atualização e mensagem `✅ Seed concluído com sucesso.`
+
+### O que é criado
+- Usuário admin: `seed@demo.local` (senha `seedpass`, apenas dev) e `role: admin`.
+- Provider: `Seed Provider` com `workspace: seed-provider` vinculado ao usuário acima.
+- Equipamentos (um por tipo, com `EquipmentType`):
+  - `Core Switch` — tipo `switch`, serial `SW-001`, status `active`.
+  - `OLT Central` — tipo `olt`, serial `OLT-001`, status `maintenance`.
+  - `Router Edge` — tipo `router`, serial `RT-001`, status `inactive`.
+  - `App Server` — tipo `server`, serial `SV-001`, status `active`.
+  - `VM Host` — tipo `virtualizer`, serial `VH-001`, status `active`.
+  - `Firewall` — tipo `other`, serial `FW-001`, status `active`.
+
+### Idempotência
+- O seed usa `upsert` para evitar duplicações por `email` (usuário), `workspace` (provider) e `serial` (equipamento).
+
+### Como verificar
+- Visual: `npx prisma studio` para inspecionar tabelas (`User`, `Provider`, `Equipment`).
+- API (se disponível):
+  - `GET /providers/:providerId/equipments?type=switch` para filtrar por tipo.
+  - `GET /providers/:providerId/equipments/stats` para ver `byType`.
+
+### Observação de configuração
+- A configuração `package.json#prisma` está deprecada e será removida no Prisma 7. Planeje migrar para `prisma.config.ts` quando atualizarmos a versão.
