@@ -10,6 +10,414 @@ const openapiSpec = {
     { url: 'http://localhost:4002', description: 'Local (porta 4002)' },
     { url: 'http://localhost:4001', description: 'Local (porta 4001)' }
   ],
+  paths: {
+    // Auth routes
+    '/auth/register': {
+      post: {
+        summary: 'Registrar novo usuário',
+        tags: ['Auth'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  email: { type: 'string', format: 'email' },
+                  password: { type: 'string', minLength: 6 }
+                },
+                required: ['name', 'email', 'password']
+              }
+            }
+          }
+        },
+        responses: {
+          '201': { description: 'Usuário registrado com sucesso' },
+          '400': { description: 'Dados inválidos' },
+          '409': { description: 'Email já existe' }
+        }
+      }
+    },
+    '/auth/login': {
+      post: {
+        summary: 'Login do usuário',
+        tags: ['Auth'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  email: { type: 'string', format: 'email' },
+                  password: { type: 'string' }
+                },
+                required: ['email', 'password']
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { description: 'Login realizado com sucesso' },
+          '401': { description: 'Credenciais inválidas' }
+        }
+      }
+    },
+    
+    // Provider routes
+    '/api/providers': {
+      get: {
+        summary: 'Listar provedores',
+        tags: ['Providers'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'page', in: 'query', schema: { type: 'integer' } },
+          { name: 'limit', in: 'query', schema: { type: 'integer' } },
+          { name: 'search', in: 'query', schema: { type: 'string' } },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['active', 'inactive'] } },
+          { name: 'plan', in: 'query', schema: { type: 'string', enum: ['basic', 'professional', 'enterprise'] } }
+        ],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ProviderListResponse' } } } }
+        }
+      },
+      post: {
+        summary: 'Criar novo provedor',
+        tags: ['Providers'],
+        security: [{ bearerAuth: [] }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/ProviderCreate' } } } },
+        responses: {
+          '201': { description: 'Criado', content: { 'application/json': { schema: { $ref: '#/components/schemas/ProviderOneResponse' } } } }
+        }
+      }
+    },
+    '/api/providers/{id}': {
+      get: {
+        summary: 'Obter provedor por ID',
+        tags: ['Providers'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ProviderOneResponse' } } } },
+          '404': { description: 'Não encontrado' }
+        }
+      },
+      put: {
+        summary: 'Atualizar provedor',
+        tags: ['Providers'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/ProviderUpdate' } } } },
+        responses: {
+          '200': { description: 'Atualizado', content: { 'application/json': { schema: { $ref: '#/components/schemas/ProviderOneResponse' } } } }
+        }
+      },
+      delete: {
+        summary: 'Remover provedor',
+        tags: ['Providers'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '204': { description: 'Removido' } }
+      }
+    },
+    '/api/providers/{id}/stats': {
+      get: {
+        summary: 'Obter estatísticas do provedor',
+        tags: ['Providers'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ProviderStatsResponse' } } } }
+        }
+      }
+    },
+    '/api/providers/{id}/users': {
+      get: {
+        summary: 'Listar usuários do provedor',
+        tags: ['Providers'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'OK' }
+        }
+      }
+    },
+    '/api/providers/check-workspace/{workspace}': {
+      get: {
+        summary: 'Verificar disponibilidade do workspace',
+        tags: ['Providers'],
+        parameters: [{ name: 'workspace', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/WorkspaceAvailabilityResponse' } } } }
+        }
+      }
+    },
+    
+    // Password Vault routes
+    '/api/providers/{providerId}/passwords': {
+      get: {
+        summary: 'Listar senhas do provedor',
+        tags: ['Password Vault'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'providerId', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'page', in: 'query', schema: { type: 'integer' } },
+          { name: 'limit', in: 'query', schema: { type: 'integer' } },
+          { name: 'search', in: 'query', schema: { type: 'string' } }
+        ],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/PasswordVaultListResponse' } } } }
+        }
+      },
+      post: {
+        summary: 'Criar nova senha',
+        tags: ['Password Vault'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'providerId', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/PasswordVaultCreate' } } } },
+        responses: {
+          '201': { description: 'Criado', content: { 'application/json': { schema: { $ref: '#/components/schemas/PasswordVaultOneResponse' } } } }
+        }
+      }
+    },
+    '/api/providers/passwords/{id}': {
+      get: {
+        summary: 'Obter senha por ID',
+        parameters: [ { name: 'id', in: 'path', required: true, schema: { type: 'integer' } } ],
+        responses: { '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/PasswordVaultOneResponse' } } } }, '404': { description: 'Não encontrado' } }
+      },
+      put: {
+        summary: 'Atualizar senha por ID',
+        parameters: [ { name: 'id', in: 'path', required: true, schema: { type: 'integer' } } ],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/PasswordVaultUpdate' } } } },
+        responses: { '200': { description: 'Atualizado', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { $ref: '#/components/schemas/PasswordVaultRecord' }, message: { type: 'string' } } } } } } }
+      },
+      delete: {
+        summary: 'Remover senha por ID',
+        parameters: [ { name: 'id', in: 'path', required: true, schema: { type: 'integer' } } ],
+        responses: { '200': { description: 'Removido' } }
+      }
+    },
+    
+    '/api/providers/{providerId}/equipments': {
+      get: {
+        summary: 'Listar equipamentos do provedor',
+        tags: ['Equipments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'providerId', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'page', in: 'query', schema: { type: 'integer' } },
+          { name: 'limit', in: 'query', schema: { type: 'integer' } },
+          { name: 'search', in: 'query', schema: { type: 'string' } },
+          { name: 'type', in: 'query', schema: { type: 'string', enum: ['switch','olt','router','server','virtualizer','other'] } },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['active','inactive','maintenance'] } }
+        ],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/EquipmentListResponse' } } } }
+        }
+      },
+      post: {
+        summary: 'Criar novo equipamento',
+        tags: ['Equipments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'providerId', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/EquipmentCreate' } } } },
+        responses: {
+          '201': { description: 'Criado', content: { 'application/json': { schema: { $ref: '#/components/schemas/EquipmentOneResponse' } } } }
+        }
+      }
+    },
+    '/api/providers/{providerId}/equipments/stats': {
+      get: {
+        summary: 'Obter estatísticas de equipamentos',
+        tags: ['Equipments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'providerId', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/EquipmentStatsResponse' } } } }
+        }
+      }
+    },
+    '/api/providers/equipments/{id}': {
+      get: {
+        summary: 'Obter equipamento por ID',
+        tags: ['Equipments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/EquipmentOneResponse' } } } },
+          '404': { description: 'Não encontrado' }
+        }
+      },
+      put: {
+        summary: 'Atualizar equipamento',
+        tags: ['Equipments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/EquipmentUpdate' } } } },
+        responses: {
+          '200': { description: 'Atualizado', content: { 'application/json': { schema: { $ref: '#/components/schemas/EquipmentOneResponse' } } } }
+        }
+      },
+      delete: {
+        summary: 'Remover equipamento',
+        tags: ['Equipments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '204': { description: 'Removido' } }
+      }
+    },
+    
+    // Ticket routes
+    '/api/providers/{providerId}/tickets': {
+      get: {
+        summary: 'Listar tickets do provedor',
+        tags: ['Tickets'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'providerId', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'page', in: 'query', schema: { type: 'integer' } },
+          { name: 'limit', in: 'query', schema: { type: 'integer' } },
+          { name: 'search', in: 'query', schema: { type: 'string' } },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['open','assigned','in_progress','pending','resolved','closed','cancelled'] } },
+          { name: 'priority', in: 'query', schema: { type: 'string', enum: ['low','medium','high','critical'] } }
+        ],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketListResponse' } } } }
+        }
+      },
+      post: {
+        summary: 'Criar novo ticket',
+        tags: ['Tickets'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'providerId', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketCreate' } } } },
+        responses: {
+          '201': { description: 'Criado', content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketOneResponse' } } } }
+        }
+      }
+    },
+    '/api/providers/{providerId}/tickets/stats': {
+      get: {
+        summary: 'Obter estatísticas de tickets',
+        tags: ['Tickets'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'providerId', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketStatsResponse' } } } }
+        }
+      }
+    },
+    '/api/providers/tickets/{id}': {
+      get: {
+        summary: 'Obter ticket por ID',
+        tags: ['Tickets'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketOneResponse' } } } },
+          '404': { description: 'Não encontrado' }
+        }
+      },
+      put: {
+        summary: 'Atualizar ticket',
+        tags: ['Tickets'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketUpdate' } } } },
+        responses: {
+          '200': { description: 'Atualizado', content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketOneResponse' } } } }
+        }
+      },
+      delete: {
+        summary: 'Remover ticket',
+        tags: ['Tickets'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '204': { description: 'Removido' } }
+      }
+    },
+    
+    // Service Order routes
+    '/api/service-orders': {
+      get: {
+        summary: 'Listar ordens de serviço',
+        tags: ['Service Orders'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'page', in: 'query', schema: { type: 'integer' } },
+          { name: 'limit', in: 'query', schema: { type: 'integer' } },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['pending','in_progress','waiting_parts','waiting_client','completed','cancelled'] } },
+          { name: 'priority', in: 'query', schema: { type: 'string', enum: ['low','medium','high','urgent'] } }
+        ],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ServiceOrderListResponse' } } } }
+        }
+      },
+      post: {
+        summary: 'Criar nova ordem de serviço',
+        tags: ['Service Orders'],
+        security: [{ bearerAuth: [] }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/ServiceOrderCreate' } } } },
+        responses: {
+          '201': { description: 'Criado', content: { 'application/json': { schema: { $ref: '#/components/schemas/ServiceOrderOneResponse' } } } }
+        }
+      }
+    },
+    '/api/service-orders/stats': {
+      get: {
+        summary: 'Obter estatísticas de ordens de serviço',
+        tags: ['Service Orders'],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ServiceOrderStatsResponse' } } } }
+        }
+      }
+    },
+    '/api/service-orders/{id}': {
+      get: {
+        summary: 'Obter ordem de serviço por ID',
+        tags: ['Service Orders'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ServiceOrderOneResponse' } } } },
+          '404': { description: 'Não encontrado' }
+        }
+      },
+      put: {
+        summary: 'Atualizar ordem de serviço',
+        tags: ['Service Orders'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/ServiceOrderUpdate' } } } },
+        responses: {
+          '200': { description: 'Atualizado', content: { 'application/json': { schema: { $ref: '#/components/schemas/ServiceOrderOneResponse' } } } }
+        }
+      },
+      delete: {
+        summary: 'Remover ordem de serviço',
+        tags: ['Service Orders'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '204': { description: 'Removido' } }
+      }
+    },
+    
+    // Dashboard routes
+    '/api/dashboard/{providerId}': {
+      get: {
+        summary: 'Obter dados do dashboard',
+        tags: ['Dashboard'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'providerId', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/DashboardResponse' } } } }
+        }
+      }
+    }
+  },
   components: {
     securitySchemes: {
       bearerAuth: {
@@ -517,24 +925,6 @@ const openapiSpec = {
           data: { $ref: '#/components/schemas/DashboardData' },
           message: { type: 'string' }
         }
-      }
-    },
-    '/api/providers/passwords/{id}': {
-      get: {
-        summary: 'Obter senha por ID',
-        parameters: [ { name: 'id', in: 'path', required: true, schema: { type: 'integer' } } ],
-        responses: { '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/PasswordVaultOneResponse' } } } }, '404': { description: 'Não encontrado' } }
-      },
-      put: {
-        summary: 'Atualizar senha por ID',
-        parameters: [ { name: 'id', in: 'path', required: true, schema: { type: 'integer' } } ],
-        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/PasswordVaultUpdate' } } } },
-        responses: { '200': { description: 'Atualizado', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { $ref: '#/components/schemas/PasswordVaultRecord' }, message: { type: 'string' } } } } } } }
-      },
-      delete: {
-        summary: 'Remover senha por ID',
-        parameters: [ { name: 'id', in: 'path', required: true, schema: { type: 'integer' } } ],
-        responses: { '200': { description: 'Removido' } }
       }
     }
   }
