@@ -140,31 +140,32 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 
 ---
 
-## 🚧 **FASE 5: COFRE DE SENHAS** (PRÓXIMA ETAPA - planejamento)
+## 🚧 **FASE 5: COFRE DE SENHAS** (CONCLUÍDA - núcleo)
 
-### 🟡 Controllers e Endpoints
-- [ ] PasswordVaultController
-  - [ ] POST /api/providers/:providerId/passwords (adicionar senha)
-  - [ ] GET /api/providers/:providerId/passwords (listar senhas)
-  - [ ] GET /api/passwords/:id (detalhes da senha)
-  - [ ] PUT /api/passwords/:id (atualizar senha)
-  - [ ] DELETE /api/passwords/:id (remover senha)
+### 🟢 Controllers e Endpoints
+- [x] PasswordVaultController
+  - [x] POST /api/providers/:providerId/passwords (adicionar senha)
+  - [x] GET /api/providers/:providerId/passwords (listar senhas)
+  - [x] GET /api/passwords/:id (detalhes da senha)
+  - [x] PUT /api/passwords/:id (atualizar senha)
+  - [x] DELETE /api/passwords/:id (remover senha)
 
-### 🟡 Segurança
-- [ ] Criptografia de senhas com AES-256 (armazenamento seguro)
-- [ ] Controle de acesso por usuário e por provedor (RBAC básico)
+### 🟢 Segurança
+- [x] Criptografia AES-256-GCM para armazenamento seguro
+- [x] Descriptografia condicionada por papel (admin/manager/super_admin)
 - [ ] Log de acessos às senhas (auditoria)
 - [ ] Expiração e rotação de senhas
+- [ ] RBAC refinado por provedor (regras finas)
 
-### 🟡 Services e Repositories
-- [ ] PasswordVaultService
-- [ ] PasswordVaultRepository
-- [ ] passwordVaultValidators
-- [ ] encryptionUtils (helpers de criptografia)
+### 🟢 Services e Repositories
+- [x] PasswordVaultService
+- [x] PasswordVaultRepository
+- [x] passwordVaultValidators
+- [x] encryptionUtils (helpers de criptografia)
 
-### 🟡 Rotas e Validação
-- [ ] passwordVaultRoutes registradas em `/api/providers`
-- [ ] Protegidas por `authMiddleware` e validadas com Zod (`providerId`, `id`, corpo com campos criptografados)
+### 🟢 Rotas e Validação
+- [x] passwordVaultRoutes registradas em `/api/providers`
+- [x] Protegidas por `authMiddleware` e validadas com Zod (`providerId`, `id`)
 
 ---
 
@@ -257,7 +258,7 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 
 ## 📊 **RESUMO DO PROGRESSO**
 
-### ✅ Concluído (40%)
+### ✅ Concluído (45%)
 - Estrutura base do projeto
 - Sistema de autenticação completo
 - Configuração do banco de dados
@@ -265,15 +266,16 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 - Gestão de provedores: Controller, Service, Repository, Validators, Rotas
 - Gestão de equipamentos: endpoints de criar/listar e rotas protegidas
 - Sistema de tickets: Controller, Service, Repository, Validators, Rotas
+- Cofre de senhas: endpoints CRUD, Service, Repository, Validators, Rotas, criptografia AES-256-GCM
 
 ### 🚧 Em Desenvolvimento (Gestão de Equipamentos e Provedores)
-- Equipamentos: detalhes, atualização, remoção e estatísticas
+- Equipamentos: refinamentos, filtros e documentação
 - Ajustes de permissões por papel (regras finas por provedor)
 - Geração automática de workspace (Provedores)
 - Estatísticas e métricas adicionais (Provedores)
+- RBAC refinado do cofre e auditoria de acessos
 
-### 🔴 Pendente (60%)
-- Cofre de senhas
+### 🔴 Pendente (55%)
 - Dashboard e relatórios
 - Ordens de serviço
 - Melhorias e otimizações
@@ -283,14 +285,13 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 
 ## 🎯 **PRÓXIMOS PASSOS RECOMENDADOS**
 
-1. Finalizar endpoints de Equipment: GET/PUT/DELETE e stats
-2. Implementar Cofre de Senhas: Repository, Service, Controller, Validators, Rotas
-3. Adicionar `encryptionUtils` com AES-256-GCM e configurar `ENCRYPTION_KEY`
-4. Definir RBAC para leitura descriptografada e auditoria de acessos
-5. Migrar `PasswordVault` para armazenar `iv` e `authTag` (ou formato seguro combinado)
-6. Melhorar paginação e filtros (search, type)
-7. Preparar migrações e seed (se necessário)
-8. Documentar endpoints no Swagger
+1. Validar e documentar endpoints de Equipments (CRUD + stats)
+2. Melhorar paginação e filtros (status, type, search)
+3. Configurar `ENCRYPTION_KEY` seguro em produção
+4. Implementar auditoria de acessos do cofre
+5. Definir RBAC refinado para leitura descriptografada
+6. Preparar migrações e seeds (se necessário)
+7. Documentar APIs no Swagger
 
 ---
 
@@ -310,7 +311,7 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 ---
 
 *Roadmap atualizado em: Outubro 2025*
-*Status: 40% concluído - Autenticação finalizada; núcleo de Provedores concluído; Equipamentos iniciado; Tickets concluídos (núcleo)*
+*Status: 45% concluído - Autenticação finalizada; núcleo de Provedores concluído; Equipamentos iniciado; Tickets concluídos (núcleo); Cofre de Senhas concluído (núcleo)*
 ### 🟢 Tipos de Equipamentos
 - [x] Enum canônico `EquipmentType` no Prisma
 - Valores: `switch`, `olt`, `router`, `server`, `virtualizer`, `other`
@@ -359,27 +360,32 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 
 ---
 
-## 🚧 **FASE 5: COFRE DE SENHAS** (PENDENTE)
+## 🚧 **FASE 5: COFRE DE SENHAS** (CONCLUÍDA - núcleo)
 
-### 🔴 Controllers e Endpoints
-- [ ] PasswordVaultController
-  - [ ] POST /providers/:providerId/passwords (adicionar senha)
-  - [ ] GET /providers/:providerId/passwords (listar senhas)
-  - [ ] GET /passwords/:id (detalhes da senha)
-  - [ ] PUT /passwords/:id (atualizar senha)
-  - [ ] DELETE /passwords/:id (remover senha)
+### 🟢 Controllers e Endpoints
+- [x] PasswordVaultController
+  - [x] POST /api/providers/:providerId/passwords (adicionar senha)
+  - [x] GET /api/providers/:providerId/passwords (listar senhas)
+  - [x] GET /api/passwords/:id (detalhes da senha)
+  - [x] PUT /api/passwords/:id (atualizar senha)
+  - [x] DELETE /api/passwords/:id (remover senha)
 
-### 🔴 Segurança
-- [ ] Criptografia de senhas (AES-256)
-- [ ] Controle de acesso por usuário
+### 🟢 Segurança
+- [x] Criptografia AES-256-GCM para armazenamento seguro
+- [x] Descriptografia condicionada por papel (admin/manager/super_admin)
 - [ ] Log de acessos às senhas
-- [ ] Expiração de senhas
+- [ ] Expiração/rotação de senhas
+- [ ] RBAC refinado por provedor (regras finas)
 
-### 🔴 Services e Repositories
-- [ ] PasswordVaultService
-- [ ] PasswordVaultRepository
-- [ ] passwordVaultValidators
-- [ ] Utilitários de criptografia (encryptionUtils)
+### 🟢 Services e Repositories
+- [x] PasswordVaultService
+- [x] PasswordVaultRepository
+- [x] passwordVaultValidators
+- [x] Utilitários de criptografia (encryptionUtils)
+
+### 🟢 Rotas e Validação
+- [x] Rotas registradas em `/api/providers`
+- [x] Protegidas por `authMiddleware` e validadas com Zod
 
 ---
 
@@ -472,38 +478,36 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 
 ## 📊 **RESUMO DO PROGRESSO**
 
-### ✅ Concluído (40%)
+### ✅ Concluído (45%)
 - Estrutura base do projeto
-- Sistema de autenticação completo
+- Sistema de autenticação completo (AuthController, TokenService)
 - Configuração do banco de dados
 - Models básicos no Prisma
-- Gestão de provedores: Controller, Service, Repository, Validators, Rotas
-- Gestão de equipamentos: endpoints de criar/listar e rotas protegidas
-- Sistema de tickets: Controller, Service, Repository, Validators, Rotas
+- Gestão de provedores e equipamentos (Controllers e rotas)
+- Sistema de tickets (Controllers e rotas)
+- Cofre de senhas: endpoints CRUD, Service, Repository, Validators, Rotas, criptografia AES-256-GCM
 
-### 🚧 Em Desenvolvimento (Gestão de Equipamentos e Provedores)
-- Equipamentos: detalhes, atualização, remoção e estatísticas
-- Ajustes de permissões por papel (regras finas por provedor)
-- Geração automática de workspace (Provedores)
-- Estatísticas e métricas adicionais (Provedores)
+### 🚧 Em Desenvolvimento
+- Gestão de equipamentos: criar/detalhes/listar/atualizar (refinamentos)
+- Gestão de provedores: criar/detalhes/listar/atualizar (refinamentos)
+- Autorização por papéis de usuário (RBAC) e auditoria do cofre
 
-### 🔴 Pendente (60%)
-- Cofre de senhas
+### 🔴 Pendente (55%)
 - Dashboard e relatórios
 - Ordens de serviço
 - Melhorias e otimizações
-- Funcionalidades com IA
+- IA
 
 ---
 
 ## 🎯 **PRÓXIMOS PASSOS RECOMENDADOS**
 
-1. Implementar GET/PUT/DELETE para Equipment e endpoint de stats
-2. Adicionar campo de status para equipamentos e migração
-3. Definir enum de tipos de equipamentos e validação
-4. Melhorar paginação e filtros (search, type)
-5. Preparar migrações e seed de equipamentos (se necessário)
-6. Documentar endpoints no Swagger
+1. Validar e documentar endpoints de Equipments (CRUD + stats)
+2. Melhorar paginação e filtros (status, type, search)
+3. Configurar `ENCRYPTION_KEY` seguro em produção
+4. Implementar auditoria de acessos do cofre
+5. Definir RBAC refinado para leitura descriptografada
+6. Documentar APIs no Swagger
 
 ---
 
@@ -523,4 +527,4 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 ---
 
 *Roadmap atualizado em: Outubro 2025*
-*Status: 40% concluído - Autenticação finalizada; núcleo de Provedores concluído; Equipamentos iniciado; Tickets concluídos (núcleo)*
+*Status: 45% concluído - Autenticação finalizada; núcleo de Provedores concluído; Equipamentos iniciado; Tickets concluídos (núcleo); Cofre de Senhas concluído (núcleo)*
