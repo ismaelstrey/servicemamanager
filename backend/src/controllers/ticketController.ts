@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { TicketService } from '../services/ticketService';
 import { AuthenticatedRequest } from '../types/api.types';
 import { CreateTicketData, ListTicketsQuery, UpdateTicketData, TicketStatus } from '../repositories/ticketRepository';
+import { calculatePagination } from '../utils/paginationHelper';
 
 export class TicketController {
   private ticketService: TicketService;
@@ -22,9 +23,17 @@ export class TicketController {
         return;
       }
 
+      // Usar helper de paginação otimizada
+      const paginationParams = calculatePagination({
+        page: req.query.page ? parseInt(req.query.page as string) : undefined,
+        limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+        maxLimit: 100,
+        defaultLimit: 10
+      });
+
       const query: ListTicketsQuery = {
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10,
+        page: paginationParams.page,
+        limit: paginationParams.limit,
         search: (req.query.search as string) || undefined,
         status: (req.query.status as TicketStatus) || undefined,
         priority: (req.query.priority as any) || undefined

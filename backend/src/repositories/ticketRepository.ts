@@ -2,6 +2,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { PaginationMeta } from '../types/common.types';
+import { calculatePagination, createPaginationMeta } from '../utils/paginationHelper';
 
 export type TicketStatus = 'open' | 'in_progress' | 'waiting_client' | 'resolved' | 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';
@@ -77,8 +78,15 @@ export class TicketRepository {
 
   async listByProvider(providerId: number, query: ListTicketsQuery): Promise<{ tickets: TicketRecord[]; pagination: PaginationMeta; }> {
     try {
-      const { page = 1, limit = 10, search, status, priority } = query;
-      const skip = (page - 1) * limit;
+      const { search, status, priority } = query;
+      
+      // Usar helper de paginação otimizada
+      const paginationParams = calculatePagination({
+        page: query.page,
+        limit: query.limit,
+        maxLimit: 100,
+        defaultLimit: 10
+      });
 
       const where: any = { providerId };
       if (search) {
@@ -94,25 +102,35 @@ export class TicketRepository {
         where.priority = { equals: priority };
       }
 
-      const total = await this.prisma.ticket.count({ where });
-
-      const items = await this.prisma.ticket.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' }
-      });
+      // Executar count e findMany em paralelo para melhor performance
+      const [total, items] = await Promise.all([
+        this.prisma.ticket.count({ where }),
+        this.prisma.ticket.findMany({
+          where,
+          skip: paginationParams.skip,
+          take: paginationParams.take,
+          orderBy: { createdAt: 'desc' },
+          // Selecionar apenas campos necessários para otimização
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            status: true,
+            priority: true,
+            source: true,
+            providerId: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        })
+      ]);
 
       const tickets = items.map(this.mapFromPrisma);
-      const totalPages = Math.ceil(total / limit);
-      const pagination: PaginationMeta = {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
-      };
+      const pagination = createPaginationMeta(
+        paginationParams.page,
+        paginationParams.limit,
+        total
+      );
 
       return { tickets, pagination };
     } catch (error) {

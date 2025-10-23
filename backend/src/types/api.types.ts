@@ -7,6 +7,12 @@ import { User } from './user.types';
 export interface AuthenticatedRequest extends Request {
   user?: User;
   providerId?: number;
+  rateLimit?: {
+    limit: number;
+    current: number;
+    remaining: number;
+    resetTime: number;
+  };
 }
 
 // Tipos de método HTTP

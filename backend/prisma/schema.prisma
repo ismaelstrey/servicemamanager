@@ -38,6 +38,7 @@ model Provider {
   zabbixServers ZabbixServer[]
   providerUsers ProviderUser[]
   invites       ProviderInvite[]
+  serviceOrders ServiceOrder[]
 }
 
 model ProviderUser {
@@ -121,6 +122,48 @@ model Ticket {
   updatedAt   DateTime @updatedAt
 
   zabbixEvents ZabbixEvent[]
+  serviceOrders ServiceOrder[]
+}
+
+enum ServiceOrderStatus {
+  pending
+  in_progress
+  waiting_parts
+  waiting_client
+  completed
+  cancelled
+}
+
+enum ServiceOrderPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+model ServiceOrder {
+  id              Int      @id @default(autoincrement())
+  title           String
+  description     String
+  status          ServiceOrderStatus @default(pending)
+  priority        ServiceOrderPriority @default(medium)
+  scheduledDate   DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  estimatedHours  Float?
+  actualHours     Float?
+  cost            Float?
+  notes           String?
+  
+  provider        Provider @relation(fields: [providerId], references: [id])
+  providerId      Int
+  ticket          Ticket?  @relation(fields: [ticketId], references: [id])
+  ticketId        Int?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("service_orders")
 }
 
 model PasswordVault {

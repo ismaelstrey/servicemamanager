@@ -3,18 +3,35 @@
 import { z } from 'zod';
 import { validateSchema, validateParams, validateQuery } from './providerValidator';
 
-// Enums canônicos para tickets (alinhados ao TicketRepository)
-export const ticketStatusSchema = z.enum(['open', 'in_progress', 'waiting_client', 'resolved', 'closed'], {
-  errorMap: () => ({ message: 'Status deve ser open, in_progress, waiting_client, resolved ou closed' })
+// Enums canônicos para tickets (alinhados ao schema do Prisma)
+export const ticketStatusSchema = z.enum(['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed', 'cancelled'], {
+  errorMap: () => ({ message: 'Status deve ser open, assigned, in_progress, pending, resolved, closed ou cancelled' })
 });
 
 export const ticketPrioritySchema = z.enum(['low', 'medium', 'high', 'critical'], {
   errorMap: () => ({ message: 'Prioridade deve ser low, medium, high ou critical' })
 });
 
-export const ticketSourceSchema = z.enum(['manual', 'zabbix', 'api'], {
-  errorMap: () => ({ message: 'Fonte deve ser manual, zabbix ou api' })
+export const ticketCategorySchema = z.enum(['technical', 'billing', 'commercial', 'installation', 'maintenance', 'complaint', 'request', 'incident', 'change', 'other'], {
+  errorMap: () => ({ message: 'Categoria deve ser technical, billing, commercial, installation, maintenance, complaint, request, incident, change ou other' })
 });
+
+export const ticketSourceSchema = z.enum(['manual', 'email', 'phone', 'chat', 'portal', 'api', 'zabbix', 'mobile', 'social', 'other'], {
+  errorMap: () => ({ message: 'Fonte deve ser manual, email, phone, chat, portal, api, zabbix, mobile, social ou other' })
+});
+
+// Validador para email
+const emailSchema = z.string()
+  .email('Email deve ter um formato válido')
+  .max(255, 'Email deve ter no máximo 255 caracteres')
+  .trim()
+  .toLowerCase();
+
+// Validador para telefone (formato brasileiro)
+const phoneSchema = z.string()
+  .regex(/^(\+55\s?)?(\(?\d{2}\)?\s?)?\d{4,5}-?\d{4}$/, 'Telefone deve estar no formato válido brasileiro')
+  .max(20, 'Telefone deve ter no máximo 20 caracteres')
+  .trim();
 
 // Schema para criação de ticket
 export const createTicketSchema = z.object({

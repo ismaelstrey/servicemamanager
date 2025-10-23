@@ -2,6 +2,7 @@
 
 import { PrismaClient, $Enums } from '@prisma/client';
 import { PaginationMeta } from '../types/common.types';
+import { calculatePagination, createPaginationMeta } from '../utils/paginationHelper';
 
 export interface CreateEquipmentData {
   label: string;
@@ -76,8 +77,15 @@ export class EquipmentRepository {
     pagination: PaginationMeta;
   }> {
     try {
-      const { page = 1, limit = 10, search, type, status } = query;
-      const skip = (page - 1) * limit;
+      const { search, type, status } = query;
+      
+      // Usar helper de paginação otimizada
+      const paginationParams = calculatePagination({
+        page: query.page,
+        limit: query.limit,
+        maxLimit: 100,
+        defaultLimit: 10
+      });
 
       const where: any = { providerId };
       if (search) {
@@ -93,24 +101,34 @@ export class EquipmentRepository {
         where.status = { equals: status };
       }
 
-      const total = await this.prisma.equipment.count({ where });
-
-      const items = await this.prisma.equipment.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' }
-      });
+      // Executar count e findMany em paralelo para melhor performance
+      const [total, items] = await Promise.all([
+        this.prisma.equipment.count({ where }),
+        this.prisma.equipment.findMany({
+          where,
+          skip: paginationParams.skip,
+          take: paginationParams.take,
+          orderBy: { createdAt: 'desc' },
+          // Selecionar apenas campos necessários para otimização
+          select: {
+            id: true,
+            label: true,
+            type: true,
+            serial: true,
+            status: true,
+            providerId: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        })
+      ]);
 
       const equipments = items.map((e) => this.mapFromPrisma(e));
-      const pagination: PaginationMeta = {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page < Math.ceil(total / limit),
-        hasPrev: page > 1
-      };
+      const pagination = createPaginationMeta(
+        paginationParams.page,
+        paginationParams.limit,
+        total
+      );
 
       return { equipments, pagination };
     } catch (error) {

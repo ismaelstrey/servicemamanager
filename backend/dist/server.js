@@ -12,6 +12,7 @@ const equipmentRoutes_1 = __importDefault(require("./routes/equipmentRoutes"));
 const ticketRoutes_1 = __importDefault(require("./routes/ticketRoutes"));
 const passwordVaultRoutes_1 = __importDefault(require("./routes/passwordVaultRoutes"));
 const dashboardRoutes_1 = __importDefault(require("./routes/dashboardRoutes"));
+const serviceOrderRoutes_1 = __importDefault(require("./routes/serviceOrderRoutes"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const openapi_1 = __importDefault(require("./docs/openapi"));
 // Configura variáveis de ambiente
@@ -27,6 +28,7 @@ app.use('/api/providers', equipmentRoutes_1.default);
 app.use('/api/providers', ticketRoutes_1.default);
 app.use('/api/providers', passwordVaultRoutes_1.default);
 app.use('/api/dashboard', dashboardRoutes_1.default);
+app.use('/api/service-orders', serviceOrderRoutes_1.default);
 // Documentação Swagger
 app.use('/docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(openapi_1.default));
 // Rota de saúde
