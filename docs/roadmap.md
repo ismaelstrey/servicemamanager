@@ -114,3 +114,935 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
 - Paginação: usar `page` e `limit` nas listas; responses retornam metadados de paginação
 - Escopo: dados sempre filtrados por `providerId` do cliente
 - Validação: Zod aplicada nos endpoints; seguir formatos descritos acima
+
+## Roadmap Detalhado do Frontend (Styled-Components & Design System)
+
+### Fase 1 — Design System e Fundamentos
+- [ ] **Design System Base**
+  - [ ] `src/styles/theme/` — sistema de temas com tokens de design
+  - [ ] `src/styles/tokens/` — tokens de cores, tipografia, espaçamentos, shadows
+  - [ ] `src/styles/breakpoints/` — sistema de breakpoints responsivos
+  - [ ] `src/styles/animations/` — animações e transições padronizadas
+  - [ ] `src/styles/mixins/` — mixins reutilizáveis para styled-components
+  - [ ] `src/styles/globalStyles.ts` — estilos globais com styled-components
+
+- [ ] **Estrutura de Pastas Profissional**
+  - [ ] `src/components/ui/` — componentes de interface básicos (atoms)
+  - [ ] `src/components/composite/` — componentes compostos (molecules)
+  - [ ] `src/components/layout/` — componentes de layout (organisms)
+  - [ ] `src/components/forms/` — componentes de formulário especializados
+  - [ ] `src/templates/` — templates de página (templates)
+  - [ ] `src/pages/` — páginas da aplicação (pages)
+  - [ ] `src/hooks/` — custom hooks reutilizáveis
+  - [ ] `src/services/` — comunicação com API
+  - [ ] `src/types/` — interfaces TypeScript
+  - [ ] `src/utils/` — funções utilitárias
+  - [ ] `src/contexts/` — contextos React (Auth, Theme)
+
+- [ ] **Configuração Base**
+  - [ ] ThemeProvider configurado com styled-components
+  - [ ] Sistema de temas (light/dark) com Context API
+  - [ ] Configurar axios interceptors para autenticação
+  - [ ] Implementar hook `useApi` para requisições
+  - [ ] Configurar roteamento protegido
+  - [ ] Sistema de breakpoints responsivos
+
+### Fase 2 — Design Tokens e Tipagem
+- [ ] **Design Tokens**
+  - [ ] Paleta de cores primárias, secundárias e neutras
+  - [ ] Sistema tipográfico (font-family, sizes, weights, line-heights)
+  - [ ] Espaçamentos padronizados (4px, 8px, 16px, 24px, 32px, etc.)
+  - [ ] Bordas e raios (border-radius, border-width)
+  - [ ] Sombras e elevações (box-shadow levels)
+  - [ ] Z-index scale padronizado
+  - [ ] Durações de animação padronizadas
+
+- [ ] **Tipos TypeScript Avançados**
+  - [ ] `ThemeType` — tipagem completa do tema
+  - [ ] `ComponentVariants` — variantes de componentes
+  - [ ] `ResponsiveProps` — props responsivas
+  - [ ] `StyledProps` — props para styled-components
+  - [ ] `User`, `Ticket`, `ServiceOrder` — entidades de domínio
+  - [ ] `ApiResponse`, `PaginationMeta` — tipos de API
+  - [ ] `FormValidation` — tipos para validação de formulários
+
+### Fase 3 — Componentes UI Base (Atoms)
+- [ ] **Componentes Fundamentais**
+  - [ ] `Button` — com variantes (primary, secondary, outline, ghost, danger)
+  - [ ] `Input` — com estados (default, focus, error, disabled, success)
+  - [ ] `TextArea` — área de texto estilizada
+  - [ ] `Select` — dropdown customizado
+  - [ ] `Checkbox` — checkbox estilizado
+  - [ ] `Radio` — radio button customizado
+  - [ ] `Switch` — toggle switch
+  - [ ] `Label` — labels padronizados
+  - [ ] `Text` — componente de texto com variantes tipográficas
+  - [ ] `Heading` — títulos com hierarquia (h1-h6)
+  - [ ] `Icon` — sistema de ícones SVG
+  - [ ] `Avatar` — avatares de usuário
+  - [ ] `Badge` — badges de status e notificação
+  - [ ] `Divider` — separadores visuais
+  - [ ] `Spinner` — indicadores de carregamento
+
+### Fase 4 — Componentes Compostos (Molecules)
+- [ ] **Componentes Intermediários**
+  - [ ] `InputGroup` — input com label, helper text e validação
+  - [ ] `SearchBox` — caixa de busca com ícone
+  - [ ] `ButtonGroup` — grupo de botões
+  - [ ] `Card` — cartões com header, body, footer
+  - [ ] `Modal` — modais responsivos e acessíveis
+  - [ ] `Tooltip` — tooltips posicionáveis
+  - [ ] `Popover` — popovers customizáveis
+  - [ ] `Dropdown` — menus dropdown
+  - [ ] `Tabs` — sistema de abas
+  - [ ] `Accordion` — acordeões expansíveis
+  - [ ] `Breadcrumb` — navegação breadcrumb
+  - [ ] `Pagination` — paginação estilizada
+  - [ ] `ProgressBar` — barras de progresso
+  - [ ] `Alert` — alertas e notificações
+  - [ ] `Toast` — notificações temporárias
+
+### Fase 5 — Componentes de Layout (Organisms)
+- [ ] **Estruturas Complexas**
+  - [ ] `Header` — cabeçalho com navegação e perfil
+  - [ ] `Sidebar` — menu lateral responsivo
+  - [ ] `Navigation` — componentes de navegação
+  - [ ] `Footer` — rodapé estruturado
+  - [ ] `DataTable` — tabelas com sorting, filtering, paginação
+  - [ ] `DataGrid` — grid de dados avançado
+  - [ ] `FormSection` — seções de formulário
+  - [ ] `StatsCard` — cartões de estatísticas
+  - [ ] `ChartContainer` — containers para gráficos
+  - [ ] `FilterPanel` — painel de filtros
+  - [ ] `SearchResults` — resultados de busca
+  - [ ] `CommentThread` — thread de comentários
+  - [ ] `FileUpload` — upload de arquivos
+  - [ ] `Calendar` — componente de calendário
+  - [ ] `Timeline` — linha do tempo de eventos
+
+### Fase 6 — Templates e Layouts
+- [ ] **Templates de Página**
+  - [ ] `AuthTemplate` — template para páginas de autenticação
+  - [ ] `DashboardTemplate` — template do dashboard
+  - [ ] `ListTemplate` — template para listas (tickets, OS)
+  - [ ] `DetailTemplate` — template para detalhes
+  - [ ] `FormTemplate` — template para formulários
+  - [ ] `ErrorTemplate` — template para páginas de erro
+  - [ ] `EmptyStateTemplate` — template para estados vazios
+
+- [ ] **Sistema de Layout Responsivo**
+  - [ ] Grid system com styled-components
+  - [ ] Container responsivo
+  - [ ] Flexbox utilities
+  - [ ] Spacing utilities
+  - [ ] Visibility utilities (hide/show por breakpoint)
+
+### Fase 7 — Páginas de Autenticação
+- [ ] **Sistema de Auth Completo**
+  - [ ] `LoginPage` — página de login estilizada
+  - [ ] `RegisterPage` — página de registro
+  - [ ] `ForgotPasswordPage` — recuperação de senha
+  - [ ] `ResetPasswordPage` — redefinição de senha
+  - [ ] `AuthContext` — contexto de autenticação
+  - [ ] `useAuth` — hook de autenticação
+  - [ ] `ProtectedRoute` — proteção de rotas
+  - [ ] Interceptor para refresh token automático
+
+### Fase 8 — Dashboard e Métricas
+- [ ] **Dashboard Profissional**
+  - [ ] Cards de métricas com animações
+  - [ ] Gráficos integrados (Chart.js/Recharts)
+  - [ ] Widgets de resumo personalizáveis
+  - [ ] Timeline de atividades recentes
+  - [ ] Quick actions panel
+  - [ ] Filtros de período
+  - [ ] Exportação de relatórios
+  - [ ] Notificações em tempo real
+
+### Fase 9 — Gestão de Tickets
+- [ ] **Sistema de Tickets Avançado**
+  - [ ] Lista com filtros avançados e busca
+  - [ ] Visualizações: lista, grid, kanban
+  - [ ] Formulário de criação com validação
+  - [ ] Página de detalhes com comentários
+  - [ ] Sistema de anexos drag-and-drop
+  - [ ] Labels e tags personalizáveis
+  - [ ] Histórico de alterações
+  - [ ] Notificações de status
+
+### Fase 10 — Ordens de Serviço
+- [ ] **Sistema de OS Completo**
+  - [ ] Lista com múltiplas visualizações
+  - [ ] Calendário de agendamentos
+  - [ ] Formulário de criação avançado
+  - [ ] Sistema de qualificação (rating + feedback)
+  - [ ] Workflow de aprovação
+  - [ ] Integração com mapas (futuro)
+  - [ ] Relatórios de SLA
+  - [ ] Assinatura digital (futuro)
+
+### Fase 11 — Perfil e Configurações
+- [ ] **Gestão de Perfil Avançada**
+  - [ ] Página de perfil com edição inline
+  - [ ] Upload de avatar com crop
+  - [ ] Configurações de notificação
+  - [ ] Preferências de tema
+  - [ ] Histórico de atividades
+  - [ ] Configurações de privacidade
+  - [ ] Integração com 2FA (futuro)
+
+### Fase 12 — UX Avançado e Performance
+- [ ] **Experiência do Usuário**
+  - [ ] Animações com framer-motion
+  - [ ] Micro-interações
+  - [ ] Loading skeletons
+  - [ ] Estados vazios ilustrados
+  - [ ] Feedback visual imediato
+  - [ ] Atalhos de teclado
+  - [ ] Navegação por voz (futuro)
+  - [ ] Modo offline básico
+
+- [ ] **Performance e Otimização**
+  - [ ] Code splitting por rota
+  - [ ] Lazy loading de componentes
+  - [ ] Memoização estratégica
+  - [ ] Virtual scrolling para listas grandes
+  - [ ] Image optimization
+  - [ ] Bundle analysis
+  - [ ] Performance monitoring
+
+### Fase 13 — Funcionalidades Avançadas
+- [ ] **Recursos Premium**
+  - [ ] Sistema de notificações em tempo real (WebSocket)
+  - [ ] Colaboração em tempo real
+  - [ ] Exportação avançada (PDF, Excel, CSV)
+  - [ ] Busca global inteligente
+  - [ ] Favoritos e bookmarks
+  - [ ] Workspace personalizado
+  - [ ] PWA com offline support
+  - [ ] Integração com calendários externos
+
+## Arquitetura do Frontend (Styled-Components)
+
+### Estrutura de Pastas Profissional
+```
+src/
+├── components/
+│   ├── ui/                  # Componentes básicos (Atoms)
+│   │   ├── Button/
+│   │   │   ├── index.ts
+│   │   │   ├── Button.tsx
+│   │   │   ├── Button.styles.ts
+│   │   │   ├── Button.types.ts
+│   │   │   └── Button.stories.tsx
+│   │   ├── Input/
+│   │   ├── Text/
+│   │   ├── Icon/
+│   │   └── ...
+│   ├── composite/           # Componentes compostos (Molecules)
+│   │   ├── InputGroup/
+│   │   ├── Card/
+│   │   ├── Modal/
+│   │   └── ...
+│   ├── layout/              # Componentes de layout (Organisms)
+│   │   ├── Header/
+│   │   ├── Sidebar/
+│   │   ├── DataTable/
+│   │   └── ...
+│   └── forms/               # Formulários especializados
+│       ├── LoginForm/
+│       ├── TicketForm/
+│       └── ...
+├── templates/               # Templates de página
+│   ├── AuthTemplate/
+│   ├── DashboardTemplate/
+│   └── ...
+├── pages/                   # Páginas da aplicação
+│   ├── auth/
+│   ├── dashboard/
+│   ├── tickets/
+│   └── ...
+├── styles/                  # Sistema de design
+│   ├── theme/
+│   │   ├── index.ts
+│   │   ├── light.ts
+│   │   ├── dark.ts
+│   │   └── types.ts
+│   ├── tokens/
+│   │   ├── colors.ts
+│   │   ├── typography.ts
+│   │   ├── spacing.ts
+│   │   ├── shadows.ts
+│   │   └── animations.ts
+│   ├── breakpoints/
+│   │   └── index.ts
+│   ├── mixins/
+│   │   ├── flexbox.ts
+│   │   ├── grid.ts
+│   │   └── responsive.ts
+│   └── globalStyles.ts
+├── hooks/                   # Custom hooks
+├── services/                # Comunicação com API
+├── types/                   # Interfaces TypeScript
+├── utils/                   # Funções utilitárias
+├── contexts/                # Contextos React
+└── assets/                  # Imagens, ícones, etc.
+```
+
+### Padrão de Componentes Styled-Components
+
+#### 1. Estrutura de Componente Base
+```typescript
+// Button/Button.types.ts
+export interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  size?: 'small' | 'medium' | 'large';
+  disabled?: boolean;
+  loading?: boolean;
+  fullWidth?: boolean;
+  children: React.ReactNode;
+  onClick?: () => void;
+}
+
+// Button/Button.styles.ts
+import styled, { css } from 'styled-components';
+import { ButtonProps } from './Button.types';
+
+const variantStyles = {
+  primary: css`
+    background-color: ${({ theme }) => theme.colors.primary.main};
+    color: ${({ theme }) => theme.colors.primary.contrast};
+    &:hover {
+      background-color: ${({ theme }) => theme.colors.primary.dark};
+    }
+  `,
+  secondary: css`
+    background-color: ${({ theme }) => theme.colors.secondary.main};
+    color: ${({ theme }) => theme.colors.secondary.contrast};
+  `,
+  // ... outras variantes
+};
+
+const sizeStyles = {
+  small: css`
+    padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
+    font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  `,
+  medium: css`
+    padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+    font-size: ${({ theme }) => theme.typography.fontSize.base};
+  `,
+  // ... outros tamanhos
+};
+
+export const StyledButton = styled.button<ButtonProps>`
+  border: none;
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  cursor: pointer;
+  transition: ${({ theme }) => theme.transitions.default};
+  font-family: ${({ theme }) => theme.typography.fontFamily.primary};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  
+  ${({ variant = 'primary' }) => variantStyles[variant]}
+  ${({ size = 'medium' }) => sizeStyles[size]}
+  
+  ${({ disabled }) => disabled && css`
+    opacity: 0.6;
+    cursor: not-allowed;
+  `}
+  
+  ${({ fullWidth }) => fullWidth && css`
+    width: 100%;
+  `}
+  
+  ${({ loading }) => loading && css`
+    position: relative;
+    color: transparent;
+  `}
+`;
+
+// Button/Button.tsx
+import React from 'react';
+import { StyledButton } from './Button.styles';
+import { ButtonProps } from './Button.types';
+
+export const Button: React.FC<ButtonProps> = ({
+  children,
+  loading,
+  disabled,
+  ...props
+}) => {
+  return (
+    <StyledButton
+      disabled={disabled || loading}
+      loading={loading}
+      {...props}
+    >
+      {loading && <Spinner />}
+      {children}
+    </StyledButton>
+  );
+};
+
+// Button/index.ts
+export { Button } from './Button';
+export type { ButtonProps } from './Button.types';
+```
+
+#### 2. Sistema de Temas
+```typescript
+// styles/tokens/colors.ts
+export const colors = {
+  primary: {
+    50: '#f0f9ff',
+    100: '#e0f2fe',
+    500: '#0ea5e9',
+    600: '#0284c7',
+    900: '#0c4a6e',
+    main: '#0ea5e9',
+    dark: '#0284c7',
+    light: '#e0f2fe',
+    contrast: '#ffffff',
+  },
+  // ... outras cores
+};
+
+// styles/tokens/typography.ts
+export const typography = {
+  fontFamily: {
+    primary: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+    mono: '"Fira Code", "Monaco", monospace',
+  },
+  fontSize: {
+    xs: '0.75rem',
+    sm: '0.875rem',
+    base: '1rem',
+    lg: '1.125rem',
+    xl: '1.25rem',
+    '2xl': '1.5rem',
+    '3xl': '1.875rem',
+  },
+  fontWeight: {
+    light: 300,
+    normal: 400,
+    medium: 500,
+    semibold: 600,
+    bold: 700,
+  },
+  lineHeight: {
+    tight: 1.25,
+    normal: 1.5,
+    relaxed: 1.75,
+  },
+};
+
+// styles/theme/light.ts
+import { colors, typography, spacing, shadows } from '../tokens';
+
+export const lightTheme = {
+  colors: {
+    ...colors,
+    background: {
+      primary: '#ffffff',
+      secondary: '#f8fafc',
+      tertiary: '#f1f5f9',
+    },
+    text: {
+      primary: '#1e293b',
+      secondary: '#64748b',
+      tertiary: '#94a3b8',
+    },
+  },
+  typography,
+  spacing,
+  shadows,
+  borderRadius: {
+    none: '0',
+    sm: '0.125rem',
+    md: '0.375rem',
+    lg: '0.5rem',
+    xl: '0.75rem',
+    full: '9999px',
+  },
+  transitions: {
+    default: 'all 0.2s ease-in-out',
+    fast: 'all 0.1s ease-in-out',
+    slow: 'all 0.3s ease-in-out',
+  },
+  breakpoints: {
+    xs: '320px',
+    sm: '640px',
+    md: '768px',
+    lg: '1024px',
+    xl: '1280px',
+    '2xl': '1536px',
+  },
+  zIndex: {
+    dropdown: 1000,
+    sticky: 1020,
+    fixed: 1030,
+    modal: 1040,
+    popover: 1050,
+    tooltip: 1060,
+  },
+};
+```
+
+#### 3. Mixins Reutilizáveis
+```typescript
+// styles/mixins/flexbox.ts
+import { css } from 'styled-components';
+
+export const flexCenter = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+export const flexBetween = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+export const flexColumn = css`
+  display: flex;
+  flex-direction: column;
+`;
+
+// styles/mixins/responsive.ts
+import { css } from 'styled-components';
+
+export const mobile = (styles: any) => css`
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    ${styles}
+  }
+`;
+
+export const tablet = (styles: any) => css`
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) and (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${styles}
+  }
+`;
+
+export const desktop = (styles: any) => css`
+  @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${styles}
+  }
+`;
+```
+
+#### 4. Componentes Responsivos
+```typescript
+// components/layout/Container/Container.styles.ts
+import styled from 'styled-components';
+import { mobile, tablet, desktop } from '../../../styles/mixins/responsive';
+
+export const Container = styled.div<{ maxWidth?: string }>`
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 ${({ theme }) => theme.spacing.md};
+  
+  ${mobile`
+    padding: 0 ${({ theme }) => theme.spacing.sm};
+  `}
+  
+  ${tablet`
+    max-width: ${({ theme }) => theme.breakpoints.md};
+  `}
+  
+  ${desktop`
+    max-width: ${({ maxWidth, theme }) => maxWidth || theme.breakpoints.xl};
+  `}
+`;
+```
+
+### Sistema de Customização Avançada
+
+#### 1. Props Condicionais e Variantes
+```typescript
+// Exemplo de componente altamente customizável
+interface CardProps {
+  variant?: 'default' | 'outlined' | 'elevated' | 'filled';
+  padding?: 'none' | 'small' | 'medium' | 'large';
+  borderRadius?: 'none' | 'small' | 'medium' | 'large' | 'full';
+  shadow?: 'none' | 'small' | 'medium' | 'large';
+  hover?: boolean;
+  clickable?: boolean;
+}
+
+export const StyledCard = styled.div<CardProps>`
+  background-color: ${({ theme }) => theme.colors.background.primary};
+  transition: ${({ theme }) => theme.transitions.default};
+  
+  ${({ variant, theme }) => {
+    switch (variant) {
+      case 'outlined':
+        return css`
+          border: 1px solid ${theme.colors.border.light};
+        `;
+      case 'elevated':
+        return css`
+          box-shadow: ${theme.shadows.md};
+        `;
+      case 'filled':
+        return css`
+          background-color: ${theme.colors.background.secondary};
+        `;
+      default:
+        return css`
+          border: 1px solid ${theme.colors.border.light};
+        `;
+    }
+  }}
+  
+  ${({ padding, theme }) => {
+    const paddingMap = {
+      none: '0',
+      small: theme.spacing.sm,
+      medium: theme.spacing.md,
+      large: theme.spacing.lg,
+    };
+    return css`
+      padding: ${paddingMap[padding || 'medium']};
+    `;
+  }}
+  
+  ${({ hover, theme }) => hover && css`
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: ${theme.shadows.lg};
+    }
+  `}
+  
+  ${({ clickable }) => clickable && css`
+    cursor: pointer;
+  `}
+`;
+```
+
+### Convenções de Desenvolvimento com Styled-Components
+
+#### 1. Nomenclatura e Organização
+- **Arquivos de Estilo**: `ComponentName.styles.ts`
+- **Tipos**: `ComponentName.types.ts`
+- **Componente Principal**: `ComponentName.tsx`
+- **Barrel Export**: `index.ts`
+- **Stories (Storybook)**: `ComponentName.stories.tsx`
+
+#### 2. Padrões de Props
+- **Variantes**: usar union types (`'primary' | 'secondary'`)
+- **Tamanhos**: padronizar (`'small' | 'medium' | 'large'`)
+- **Estados**: boolean props (`disabled`, `loading`, `active`)
+- **Customização**: props opcionais para override de estilos
+
+#### 3. Performance e Otimização
+- **Memoização**: usar `React.memo` para componentes pesados
+- **Styled-components**: evitar criar styled-components dentro de render
+- **Theme**: acessar tema via props, não via hooks dentro de styled-components
+- **CSS-in-JS**: usar `css` helper para estilos condicionais complexos
+
+#### 4. Acessibilidade
+- **ARIA**: incluir atributos ARIA necessários
+- **Keyboard Navigation**: suporte a navegação por teclado
+- **Focus Management**: gerenciamento adequado de foco
+- **Color Contrast**: garantir contraste adequado nas cores do tema
+
+#### 5. Testes
+- **Unit Tests**: testar lógica de componentes
+- **Visual Tests**: usar Storybook para testes visuais
+- **Accessibility Tests**: testes de acessibilidade automatizados
+- **Theme Tests**: testar componentes com diferentes temas
+
+### Convenções de Desenvolvimento Frontend (Styled-Components)
+
+#### 1. Nomenclatura e Estrutura
+- **Componentes**: PascalCase (`Button`, `InputGroup`, `DataTable`)
+- **Arquivos**: camelCase para utilitários, PascalCase para componentes
+- **Styled Components**: prefixo `Styled` (`StyledButton`, `StyledCard`)
+- **Props Interfaces**: sufixo `Props` (`ButtonProps`, `CardProps`)
+- **Theme Types**: sufixo `Type` (`ThemeType`, `ColorType`)
+
+#### 2. Organização de Arquivos por Componente
+```
+Button/
+├── index.ts              # Barrel export
+├── Button.tsx            # Componente principal
+├── Button.styles.ts      # Styled components
+├── Button.types.ts       # Interfaces e tipos
+├── Button.stories.tsx    # Storybook stories
+├── Button.test.tsx       # Testes unitários
+└── Button.md            # Documentação (opcional)
+```
+
+#### 3. Padrões de Implementação
+- **Props**: sempre tipadas com interfaces TypeScript
+- **Default Props**: usar destructuring com valores padrão
+- **Forwarded Refs**: usar `React.forwardRef` quando necessário
+- **Memoização**: `React.memo` para componentes que recebem props complexas
+- **Hooks**: custom hooks para lógica reutilizável
+
+#### 4. Sistema de Design Tokens
+```typescript
+// Hierarquia de tokens
+tokens/
+├── colors.ts           # Paleta de cores completa
+├── typography.ts       # Sistema tipográfico
+├── spacing.ts          # Escala de espaçamentos
+├── shadows.ts          # Sombras e elevações
+├── animations.ts       # Durações e easings
+├── borders.ts          # Bordas e raios
+└── zIndex.ts          # Escala de z-index
+```
+
+#### 5. Responsividade e Breakpoints
+- **Mobile First**: sempre começar pelo mobile
+- **Breakpoints**: usar sistema padronizado (xs, sm, md, lg, xl, 2xl)
+- **Mixins**: criar mixins para media queries reutilizáveis
+- **Container Queries**: preparar para container queries futuras
+
+#### 6. Performance e Otimização
+- **Bundle Splitting**: separar componentes por funcionalidade
+- **Tree Shaking**: garantir que apenas código usado seja incluído
+- **CSS-in-JS**: otimizar styled-components para produção
+- **Lazy Loading**: carregar componentes sob demanda
+
+#### 7. Acessibilidade (A11y)
+- **WCAG 2.1**: seguir diretrizes de acessibilidade
+- **Semantic HTML**: usar elementos semânticos corretos
+- **ARIA**: implementar atributos ARIA quando necessário
+- **Focus Management**: gerenciar foco adequadamente
+- **Color Contrast**: garantir contraste mínimo de 4.5:1
+
+#### 8. Testes e Qualidade
+- **Unit Tests**: Jest + React Testing Library
+- **Visual Regression**: Storybook + Chromatic
+- **Accessibility Tests**: @testing-library/jest-dom
+- **Type Safety**: TypeScript strict mode
+- **Linting**: ESLint + Prettier + Stylelint
+
+#### 9. Documentação e Storybook
+- **Stories**: criar stories para todos os componentes
+- **Controls**: usar Storybook controls para props
+- **Docs**: documentação automática via Storybook
+- **Design Tokens**: documentar tokens no Storybook
+
+#### 10. Versionamento e Releases
+- **Semantic Versioning**: seguir semver para releases
+- **Changelog**: manter changelog atualizado
+- **Breaking Changes**: documentar mudanças que quebram compatibilidade
+- **Migration Guides**: guias de migração entre versões
+
+### Exemplo de Implementação Completa
+
+#### Design System Base
+```typescript
+// styles/tokens/index.ts
+export { colors } from './colors';
+export { typography } from './typography';
+export { spacing } from './spacing';
+export { shadows } from './shadows';
+export { animations } from './animations';
+export { borders } from './borders';
+export { zIndex } from './zIndex';
+
+// styles/theme/index.ts
+import * as tokens from '../tokens';
+
+export const createTheme = (mode: 'light' | 'dark') => ({
+  mode,
+  ...tokens,
+  colors: {
+    ...tokens.colors,
+    ...(mode === 'dark' ? darkColorOverrides : {}),
+  },
+});
+
+// App.tsx
+import { ThemeProvider } from 'styled-components';
+import { createTheme } from './styles/theme';
+
+function App() {
+  const [theme, setTheme] = useState('light');
+  
+  return (
+    <ThemeProvider theme={createTheme(theme)}>
+      <GlobalStyles />
+      <Router>
+        {/* App content */}
+      </Router>
+    </ThemeProvider>
+  );
+}
+```
+
+#### Componente Exemplo Completo
+```typescript
+// components/ui/Button/Button.types.ts
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  loading?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  fullWidth?: boolean;
+}
+
+// components/ui/Button/Button.styles.ts
+import styled, { css, keyframes } from 'styled-components';
+import { ButtonProps } from './Button.types';
+
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+const baseStyles = css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+  border: none;
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  font-family: ${({ theme }) => theme.typography.fontFamily.primary};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  text-decoration: none;
+  cursor: pointer;
+  transition: ${({ theme }) => theme.animations.default};
+  position: relative;
+  
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary.main};
+    outline-offset: 2px;
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const variantStyles = {
+  primary: css`
+    background-color: ${({ theme }) => theme.colors.primary.main};
+    color: ${({ theme }) => theme.colors.primary.contrast};
+    
+    &:hover:not(:disabled) {
+      background-color: ${({ theme }) => theme.colors.primary.dark};
+    }
+    
+    &:active:not(:disabled) {
+      background-color: ${({ theme }) => theme.colors.primary.darker};
+    }
+  `,
+  // ... outras variantes
+};
+
+const sizeStyles = {
+  xs: css`
+    padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.sm}`};
+    font-size: ${({ theme }) => theme.typography.fontSize.xs};
+    min-height: 24px;
+  `,
+  // ... outros tamanhos
+};
+
+export const StyledButton = styled.button<ButtonProps>`
+  ${baseStyles}
+  ${({ variant = 'primary' }) => variantStyles[variant]}
+  ${({ size = 'md' }) => sizeStyles[size]}
+  
+  ${({ fullWidth }) => fullWidth && css`
+    width: 100%;
+  `}
+  
+  ${({ loading }) => loading && css`
+    color: transparent;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: ${spin} 1s linear infinite;
+    }
+  `}
+`;
+
+// components/ui/Button/Button.tsx
+import React from 'react';
+import { StyledButton } from './Button.styles';
+import { ButtonProps } from './Button.types';
+
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ children, leftIcon, rightIcon, loading, disabled, ...props }, ref) => {
+    return (
+      <StyledButton
+        ref={ref}
+        disabled={disabled || loading}
+        loading={loading}
+        {...props}
+      >
+        {leftIcon && !loading && leftIcon}
+        {children}
+        {rightIcon && !loading && rightIcon}
+      </StyledButton>
+    );
+  }
+);
+
+Button.displayName = 'Button';
+
+// components/ui/Button/index.ts
+export { Button } from './Button';
+export type { ButtonProps } from './Button.types';
+
+// components/ui/Button/Button.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from './Button';
+
+const meta: Meta<typeof Button> = {
+  title: 'UI/Button',
+  component: Button,
+  parameters: {
+    layout: 'centered',
+  },
+  argTypes: {
+    variant: {
+      control: { type: 'select' },
+      options: ['primary', 'secondary', 'outline', 'ghost', 'danger'],
+    },
+    size: {
+      control: { type: 'select' },
+      options: ['xs', 'sm', 'md', 'lg', 'xl'],
+    },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Primary: Story = {
+  args: {
+    children: 'Button',
+    variant: 'primary',
+  },
+};
+
+export const AllVariants: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <Button variant="primary">Primary</Button>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="outline">Outline</Button>
+      <Button variant="ghost">Ghost</Button>
+      <Button variant="danger">Danger</Button>
+    </div>
+  ),
+};
+```
+
+Este roadmap atualizado fornece uma base sólida para construir um sistema de design profissional e escalável usando styled-components, com foco em reutilização, customização e manutenibilidade.

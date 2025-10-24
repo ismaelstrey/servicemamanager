@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import styled from 'styled-components'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
+import { ApiService } from '../services/api'
 
 const Wrapper = styled(motion.div)`
   padding: ${({ theme }) => theme.spacing.lg};
@@ -26,11 +27,11 @@ const Controls = styled.div`
 
 const Select = styled.select`
   padding: ${({ theme }) => theme.spacing.sm};
-  border-radius: ${({ theme }) => theme.radii.sm};
+  border-radius: ${({ theme }) => theme.borders.radius.sm};
   border: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.text};
-  transition: border-color ${({ theme }) => theme.transitions.fast}, box-shadow ${({ theme }) => theme.transitions.fast};
+  transition: border-color ${({ theme }) => theme.animations.transition.fast}, box-shadow ${({ theme }) => theme.animations.transition.fast};
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
@@ -48,11 +49,11 @@ const Card = styled.div<{ $type: EquipmentType }>`
   position: relative;
   background: linear-gradient(180deg, rgba(17,24,39,0.92) 0%, rgba(17,24,39,0.75) 100%);
   color: ${({ theme }) => theme.colors.text};
-  border-radius: ${({ theme }) => theme.radii.md};
+  border-radius: ${({ theme }) => theme.borders.radius.md};
   padding: ${({ theme }) => theme.spacing.md};
   box-shadow: ${({ theme }) => theme.shadows.md};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  transition: transform ${({ theme }) => theme.transitions.fast}, box-shadow ${({ theme }) => theme.transitions.fast};
+  transition: transform ${({ theme }) => theme.animations.transition.fast}, box-shadow ${({ theme }) => theme.animations.transition.fast};
   border-left: 3px solid ${({ theme, $type }) => {
     switch ($type) {
       case 'switch': return theme.colors.primary;
@@ -80,7 +81,7 @@ const Badge = styled.span<{ $status: 'active' | 'inactive' | 'maintenance' }>`
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
-  border-radius: ${({ theme }) => theme.radii.full};
+  border-radius: ${({ theme }) => theme.borders.radius.full};
   font-size: 0.8rem;
   font-weight: 600;
   background: ${({ theme, $status }) =>
@@ -103,7 +104,7 @@ const TypeTag = styled.span<{ $type: EquipmentType }>`
   align-items: center;
   gap: 6px;
   padding: 2px 10px;
-  border-radius: ${({ theme }) => theme.radii.full};
+  border-radius: ${({ theme }) => theme.borders.radius.full};
   border: 1px solid ${({ theme, $type }) => {
     switch ($type) {
       case 'switch': return theme.colors.primary;
@@ -166,7 +167,7 @@ function decodeJwt(token?: string) {
 }
 
 export function EquipmentsPage() {
-  const { authApi, token } = useAuth()
+  const { token } = useAuth()
   const [providerId, setProviderId] = useState<number | null>(null)
   const [items, setItems] = useState<Equipment[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
@@ -180,22 +181,22 @@ export function EquipmentsPage() {
     if (payload?.providerId) setProviderId(payload.providerId)
   }, [payload])
 
-  async function fetchData(pid: number) {
-    const params: any = { limit }
+  const fetchData = useCallback(async (pid: number) => {
+    const params: Record<string, unknown> = { limit }
     if (typeFilter) params.type = typeFilter
 
-    const listRes = await authApi.get(`/api/providers/${pid}/equipments`, { params })
-    const statsRes = await authApi.get(`/api/providers/${pid}/equipments/stats`)
+    const listRes = await ApiService.get(`/api/providers/${pid}/equipments`, { params })
+    const statsRes = await ApiService.get(`/api/providers/${pid}/equipments/stats`)
 
     setItems(listRes.data.data as Equipment[])
     setStats(statsRes.data.data as Stats)
-  }
+  }, [limit, typeFilter])
 
   useEffect(() => {
     if (providerId && hasToken) {
       fetchData(providerId).catch((err) => console.error('Erro ao carregar equipamentos:', err))
     }
-  }, [providerId, hasToken, typeFilter])
+  }, [providerId, hasToken, fetchData])
 
   return (
     <Wrapper initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

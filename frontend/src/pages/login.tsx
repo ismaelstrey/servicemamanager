@@ -2,74 +2,35 @@ import { useState, type FormEvent } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useLocation, useNavigate, type Location, Link } from 'react-router-dom'
 import styled from 'styled-components'
-import { motion } from 'framer-motion'
+import { AuthTemplate } from '../components/templates/AuthTemplate'
+import { Button } from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
+import { Text } from '../components/ui/Text'
 
-// Página de login com styled-components e animação (PT-BR)
-const Container = styled(motion.div)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding: ${({ theme }) => theme.spacing.lg};
-`
-
-const Card = styled(motion.div)`
-  width: 100%;
-  max-width: 420px;
-  background: linear-gradient(180deg, rgba(17,24,39,0.92) 0%, rgba(17,24,39,0.75) 100%);
-  color: ${({ theme }) => theme.colors.text};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  box-shadow: ${({ theme }) => theme.shadows.lg};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  padding: ${({ theme }) => theme.spacing.lg};
-  transition: transform ${({ theme }) => theme.transitions.fast}, box-shadow ${({ theme }) => theme.transitions.fast};
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.shadows.lg};
-  }
-`
-
-const Title = styled.h1`
-  margin: 0 0 ${({ theme }) => theme.spacing.md};
-  font-size: 1.5rem;
-`
-
-const Field = styled.div`
+const LoginForm = styled.form`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacing.lg};
 `
 
-const Label = styled.label`
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.colors.muted};
+const ErrorMessage = styled(Text)`
+  color: ${({ theme }) => theme.colors.error.main};
+  text-align: center;
 `
 
-const Input = styled.input`
-  padding: ${({ theme }) => theme.spacing.sm};
-  border-radius: ${({ theme }) => theme.radii.sm};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.surface};
-  color: ${({ theme }) => theme.colors.text};
-  transition: border-color ${({ theme }) => theme.transitions.fast}, box-shadow ${({ theme }) => theme.transitions.fast};
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.ring};
+const FooterText = styled.div`
+  text-align: center;
+  margin-top: ${({ theme }) => theme.spacing.lg};
+  
+  a {
+    color: ${({ theme }) => theme.colors.primary.main};
+    text-decoration: none;
+    font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+    
+    &:hover {
+      text-decoration: underline;
+    }
   }
-`
-
-const Button = styled.button`
-  padding: ${({ theme }) => theme.spacing.sm};
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.sm};
-  background: ${({ theme }) => theme.colors.primary};
-  color: white;
-  cursor: pointer;
-  font-weight: 600;
-  transition: filter ${({ theme }) => theme.transitions.fast}, transform ${({ theme }) => theme.transitions.fast};
-  &:hover { filter: brightness(1.05); transform: translateY(-1px); }
 `
 
 export function LoginPage() {
@@ -85,34 +46,62 @@ export function LoginPage() {
     e.preventDefault()
     setError(null)
     try {
-      await login(email, password)
+      await login({ email, password })
       const redirectTo = location.state?.from?.pathname || '/'
       navigate(redirectTo, { replace: true })
-    } catch (err) {
+    } catch {
       setError('Falha no login. Verifique suas credenciais.')
     }
   }
 
   return (
-    <Container initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      <Card initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 120 }}>
-        <Title>Entrar</Title>
-        <form onSubmit={handleSubmit}>
-          <Field>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </Field>
-          <Field>
-            <Label htmlFor="password">Senha</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </Field>
-          {error && <p style={{ color: 'tomato', marginBottom: '12px' }}>{error}</p>}
-          <Button type="submit">Entrar</Button>
-<p style={{ marginTop: '12px', fontSize: '0.9rem' }}>
-  Não tem conta? <Link to="/register">Criar conta</Link>
-</p>
-        </form>
-      </Card>
-    </Container>
+    <AuthTemplate
+      title="Bem-vindo de volta"
+      subtitle="Entre na sua conta para continuar"
+      backgroundImage='/images/logo.svg'
+    >
+      <LoginForm onSubmit={handleSubmit}>
+        <Input
+          label="Email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          fullWidth
+        />
+
+        <Input
+          label="Senha"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          fullWidth
+        />
+
+        {error && (
+          <ErrorMessage variant="body2">
+            {error}
+          </ErrorMessage>
+        )}
+
+        <Button
+          type="submit"
+          variant="primary"
+
+          fullWidth
+        >
+          Entrar
+        </Button>
+
+        <FooterText>
+          <Text variant="body2" color="secondary">
+            Não tem conta ##? <Link to="/register">Criar conta</Link>
+          </Text>
+        </FooterText>
+      </LoginForm>
+    </AuthTemplate>
   )
 }
+
+export default LoginPage;

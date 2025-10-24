@@ -5,12 +5,13 @@ import { ThemeProvider } from 'styled-components'
 import App from './App.tsx'
 import { theme } from './styles/theme.ts'
 import { GlobalStyle } from './styles/globalStyles.ts'
+import './styles/auth.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <BrowserRouter>
-        <GlobalStyle />
+        <GlobalStyle theme={theme} />
         <App />
       </BrowserRouter>
     </ThemeProvider>

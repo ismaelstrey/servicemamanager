@@ -1,41 +1,163 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import { useMemo } from 'react'
-import { Route, Routes, Navigate } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
-import { ProtectedRoute } from './components/protectedRoute'
-import { LoginPage } from './pages/login'
-import { DashboardPage } from './pages/dashboard'
-import { EquipmentsPage } from './pages/equipments'
-import { RegisterPage } from './pages/register'
+import React from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { ThemeProvider } from 'styled-components'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-function App() {
+// Contextos
+import { AuthProvider } from './contexts/AuthContext'
+import { useAuth } from './hooks/useAuth'
+import { theme } from './styles/theme.ts'
+
+// Estilos
+import { GlobalStyle } from './styles/globalStyles'
+import { darkTheme } from './styles/theme'
+
+// Páginas
+import LoginPage from './pages/auth/LoginPage'
+import RegisterPage from './pages/register'
+import DashboardPage from './pages/dashboard'
+import ProfilePage from './pages/ProfilePage'
+import SettingsPage from './pages/SettingsPage'
+import NotFoundPage from './pages/NotFoundPage'
+import TestPage from './pages/TestPage'
+
+// Layout
+import Layout from './components/layout/Layout'
+
+// Cliente React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutos
+    },
+  },
+})
+
+// Componente para rotas protegidas
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth()
+
+  if (isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh'
+      }}>
+        Carregando...
+      </div>
+    )
+  }
+
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
+}
+
+// Componente para rotas públicas (apenas para usuários não autenticados)
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth()
+
+  if (isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh'
+      }}>
+        Carregando...
+      </div>
+    )
+  }
+
+  return !isAuthenticated ? <>{children}</> : <Navigate to="/dashboard" replace />
+}
+
+// Componente principal da aplicação
+const App: React.FC = () => {
   return (
-    <AnimatePresence mode="wait">
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-<Route path="/register" element={<RegisterPage />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/equipments"
-          element={
-            <ProtectedRoute>
-              <EquipmentsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </AnimatePresence>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        <GlobalStyle theme={darkTheme} />
+        <AuthProvider>
+          <Routes>
+            {/* Rotas públicas */}
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <LoginPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicRoute>
+                  <RegisterPage />
+                </PublicRoute>
+              }
+            />
+
+            {/* Rotas protegidas */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <DashboardPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProfilePage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SettingsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/test"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <TestPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Redirecionamento da raiz */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+            {/* Página 404 */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </AuthProvider>
+
+        {/* DevTools apenas em desenvolvimento */}
+        {process.env.NODE_ENV === 'development' && (
+          <ReactQueryDevtools initialIsOpen={false} />
+        )}
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }
 
