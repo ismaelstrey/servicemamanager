@@ -45,6 +45,7 @@ model Provider {
   comments      Comment[]
   notifications Notification[]
   changeHistories ChangeHistory[]
+  customers      Customer[]
 }
 
 model ProviderUser {
@@ -157,8 +158,8 @@ model Comment {
   isEdited     Boolean  @default(false)
   editedAt     DateTime?
   
-  user         User     @relation(fields: [userId], references: [id])
-  userId       Int
+  user         User?    @relation(fields: [userId], references: [id])
+  userId       Int?
   provider     Provider @relation(fields: [providerId], references: [id])
   providerId   Int
   
@@ -167,6 +168,9 @@ model Comment {
   ticketId     Int?
   serviceOrder ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
   serviceOrderId Int?
+  
+  customer     Customer? @relation(fields: [customerId], references: [id])
+  customerId   Int?
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -193,6 +197,11 @@ model ServiceOrder {
   ticket          Ticket?  @relation(fields: [ticketId], references: [id])
   ticketId        Int?
   comments        Comment[]
+  
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  customerId      Int?
+  customerRating  Int?
+  customerFeedback String?
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -314,6 +323,8 @@ model Notification {
   providerId  Int
   user        User?    @relation(fields: [userId], references: [id])
   userId      Int?
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  customerId  Int?
 
   isRead      Boolean  @default(false)
   readAt      DateTime?
@@ -342,4 +353,30 @@ model ChangeHistory {
 
   @@index([providerId, entityType, entityId])
   @@map("change_history")
+}
+
+model Customer {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String   @unique
+  password    String
+  phone       String?
+  document    String?  // CPF/CNPJ
+  address     Json?
+  isActive    Boolean  @default(true)
+  resetToken  String?
+  resetTokenExpires DateTime?
+
+  provider    Provider @relation(fields: [providerId], references: [id])
+  providerId  Int
+
+  serviceOrders ServiceOrder[]
+  comments      Comment[]
+  notifications Notification[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([providerId, email])
+  @@map("customers")
 }

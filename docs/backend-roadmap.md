@@ -389,6 +389,115 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 
 ---
 
+## 🚧 **FASE 10: ÁREA DO CLIENTE (PORTAL DO PROVEDOR)** (EM PROGRESSO)
+
+### 🟡 Objetivo
+- Oferecer ao provedor uma interface de autoatendimento para abrir e acompanhar ordens de serviço e tickets, comentar, anexar evidências e qualificar atendimentos, com todas as informações úteis em um painel dedicado.
+
+### 🟡 Controllers e Endpoints
+- [x] ClientAuthController
+  - [x] POST /api/client/auth/register (registro do cliente; rate limit: authRateLimit; validação Zod)
+  - [x] POST /api/client/auth/login (login do cliente; rate limit: authRateLimit; validação Zod)
+  - [x] POST /api/client/auth/forgot-password (iniciar recuperação)
+  - [x] POST /api/client/auth/reset-password (concluir recuperação)
+- [x] ClientProfileController
+  - [x] GET /api/client/auth/profile (dados do cliente; auth: clientAuthMiddleware)
+  - [x] PUT /api/client/profile (atualizar preferências; validação Zod)
+- [x] ClientServiceOrderController
+  - [x] POST /api/client/service-orders (abrir ordem de serviço; body: title, description, scheduledDate opcional; auth: clientAuthMiddleware; validação Zod)
+  - [x] GET /api/client/service-orders (listar; query: page, limit, status; auth: clientAuthMiddleware; paginação aplicada)
+  - [x] GET /api/client/service-orders/:id (detalhes; auth: clientAuthMiddleware)
+  - [x] PUT /api/client/service-orders/:id (atualizar campos do cliente; validação Zod; auth: clientAuthMiddleware)
+  - [x] POST /api/client/service-orders/:id/comments (comentar; body: content; auth: clientAuthMiddleware; validação Zod)
+  - [x] POST /api/client/service-orders/:id/qualification (qualificar atendimento; body: rating 1-5, feedback opcional; auth: clientAuthMiddleware; validação Zod)
+  - [ ] POST /api/client/service-orders/:id/attachments (upload de anexos; multipart/form-data; validação de tipo/tamanho; auth: clientAuthMiddleware)
+- [ ] ClientTicketController
+  - [ ] POST /api/client/tickets (abrir ticket)
+  - [ ] GET /api/client/tickets (listar)
+  - [ ] GET /api/client/tickets/:id (detalhes)
+  - [ ] POST /api/client/tickets/:id/comments (comentar)
+  - [ ] POST /api/client/tickets/:id/attachments (upload de anexos)
+- [ ] ClientNotificationController
+  - [ ] GET /api/client/notifications (listar notificações)
+  - [ ] PUT /api/client/notifications/:id/read (marcar como lida)
+
+### 🟢 Validação (sem testes automatizados)
+- [x] Smoke test manual: login, abrir OS, listar, detalhar, atualizar, comentar e qualificar
+
+### 🟡 Segurança e Acesso
+- [x] Autenticação JWT dedicada (`clientAuth`) com escopo de cliente
+- [ ] RBAC por provedor e perfil de cliente (`customer_admin`, `customer_user`)
+- [x] Rate limiting específico para rotas de cliente
+- [ ] Auditoria completa das ações (abrir OS, comentar, anexar, qualificar)
+
+### 🟡 Services e Repositories
+- [ ] ClientAuthService, ClientProfileService
+- [ ] ClientServiceOrderService, ClientTicketService
+- [ ] ClientNotificationService
+- [ ] Repositórios com filtros e escopo por `providerId` e `customerId`
+
+### 🟢 Rotas e Middlewares
+- [x] `clientRoutes` registradas em `/api/client`
+- [x] Protegidas por `clientAuthMiddleware` e validadas com Zod
+- [x] CORS e rate limit ajustados para o portal
+
+### 🟡 Funcionalidades Específicas
+- [x] Comentários
+- [x] Qualificação de atendimentos com nota e feedback
+- [ ] Linha do tempo e histórico de atividades de OS/tickets
+- [ ] SLA, prazos e status visíveis para o cliente
+- [ ] Preferências do cliente (canal de contato, horários, notificações)
+- [ ] Consulta opcional aos equipamentos do cliente
+- [ ] Visualização em Kanban para o cliente
+- [ ] Notificações por e-mail e push (quando aplicável)
+
+### 🟡 Documentação
+- [ ] Swagger/OpenAPI com seção "Client Portal"
+- [ ] Exemplos de requests/responses e regras de RBAC
+
+### 🟡 Frontend (Portal Web)
+- [ ] Páginas: Login, Esqueci senha, Reset de senha, Dashboard do cliente
+- [ ] Dashboard: cards de status (OS, tickets), prazos e SLAs, próximas manutenções
+- [ ] Minhas Ordens de Serviço: lista, detalhe, abrir, comentários, anexos
+- [ ] Meus Tickets: lista, detalhe, abrir, comentários, anexos
+- [ ] Notificações: inbox e toasts, preferências por canal
+- [ ] Perfil e Preferências: dados, canais, horários, 2FA
+- [ ] Equipamentos: lista e detalhes vinculados ao cliente (opcional)
+- [ ] Agenda: agendamentos e janelas de manutenção (opcional)
+- [ ] Central de Ajuda: base de conhecimento e contatos
+
+### 🟡 Informações Úteis ao Cliente
+- [ ] SLA por serviço, prazos e etapas da OS/ticket
+- [ ] Status da rede, incidentes e manutenções programadas
+- [ ] Canal de suporte, horários e equipe responsável
+- [ ] Histórico e tempo médio de atendimento (MTTA/MTTR)
+- [ ] Documentos: contrato, políticas e termos (opcional)
+- [ ] Links rápidos: abrir OS, falar com suporte, ver equipamento
+
+### 🟡 Experiência e Acessibilidade
+- [ ] Responsivo, dark mode, acessibilidade (WCAG) e i18n
+- [ ] Navegação por teclado e `aria-labels`
+- [ ] Desempenho: lazy loading, cache e paginação
+- [ ] Observabilidade: métricas de uso e feedback
+
+### 🟡 Segurança (Cliente)
+- [ ] 2FA opcional, requisitos mínimos de senha
+- [ ] Sessão com refresh tokens e expiração
+- [ ] Proteção CSRF para formulários sensíveis
+- [ ] Logs e auditoria das ações do cliente
+
+### 🔜 Próximas Funções (Fase 10)
+- [ ] Recuperação de senha: `POST /api/client/auth/forgot-password`, `POST /api/client/auth/reset-password`
+- [x] Atualização de perfil: `PUT /api/client/profile` com validação Zod
+- [ ] Anexos em OS: `POST /api/client/service-orders/:id/attachments` com validação de tipo/tamanho; definir armazenamento (local/S3) e auditoria
+- [ ] Tickets do cliente: `POST /api/client/tickets`, `GET /api/client/tickets`, `GET /api/client/tickets/:id`, `POST /api/client/tickets/:id/comments`, `POST /api/client/tickets/:id/attachments`
+- [ ] Notificações: `GET /api/client/notifications`, `PUT /api/client/notifications/:id/read`
+- [ ] RBAC do cliente: papéis `customer_admin` e `customer_user` com escopo por `providerId`
+- [ ] Auditoria de ações do cliente: abrir OS/ticket, comentar, anexar, qualificar
+- [ ] Linha do tempo de OS/tickets: histórico de eventos visível ao cliente
+- [ ] OpenAPI: seção "Client Portal" com exemplos e regras de acesso
+- [ ] Frontend portal: Login, Esqueci senha, Reset, Dashboard, Minhas OS, Meus Tickets, Notificações, Perfil
+
 ## 🛠️ **TECNOLOGIAS UTILIZADAS**
 
 - **Runtime**: Node.js

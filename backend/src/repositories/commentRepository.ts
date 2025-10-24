@@ -11,7 +11,8 @@ export class CommentRepository {
       resourceId: data.resourceId,
       isInternal: data.isInternal || false,
       userId: data.userId,
-      providerId: data.providerId
+      providerId: data.providerId,
+      customerId: (data as any).customerId
     };
 
     // Set the appropriate foreign key based on resource type
@@ -36,6 +37,13 @@ export class CommentRepository {
             id: true,
             name: true
           }
+        },
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
         }
       }
     });
@@ -59,6 +67,13 @@ export class CommentRepository {
             id: true,
             name: true
           }
+        },
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
         }
       }
     });
@@ -77,7 +92,7 @@ export class CommentRepository {
       endDate,
       page = 1,
       limit = 20
-    } = filters;
+    } = filters as any;
 
     const where: any = {};
 
@@ -85,6 +100,7 @@ export class CommentRepository {
     if (resourceId) where.resourceId = resourceId;
     if (userId) where.userId = userId;
     if (providerId) where.providerId = providerId;
+    if ((filters as any).customerId) where.customerId = (filters as any).customerId;
     if (typeof isInternal === 'boolean') where.isInternal = isInternal;
 
     if (startDate || endDate) {
@@ -110,6 +126,13 @@ export class CommentRepository {
             select: {
               id: true,
               name: true
+            }
+          },
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              email: true
             }
           }
         },
@@ -154,6 +177,13 @@ export class CommentRepository {
             id: true,
             name: true
           }
+        },
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
         }
       },
       orderBy: { createdAt: 'asc' }
@@ -185,6 +215,13 @@ export class CommentRepository {
           select: {
             id: true,
             name: true
+          }
+        },
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            email: true
           }
         }
       }

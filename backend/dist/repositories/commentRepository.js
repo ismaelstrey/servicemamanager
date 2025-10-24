@@ -11,7 +11,8 @@ class CommentRepository {
             resourceId: data.resourceId,
             isInternal: data.isInternal || false,
             userId: data.userId,
-            providerId: data.providerId
+            providerId: data.providerId,
+            customerId: data.customerId
         };
         // Set the appropriate foreign key based on resource type
         if (data.resourceType === 'ticket') {
@@ -35,6 +36,13 @@ class CommentRepository {
                         id: true,
                         name: true
                     }
+                },
+                customer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
                 }
             }
         });
@@ -56,6 +64,13 @@ class CommentRepository {
                         id: true,
                         name: true
                     }
+                },
+                customer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
                 }
             }
         });
@@ -72,6 +87,8 @@ class CommentRepository {
             where.userId = userId;
         if (providerId)
             where.providerId = providerId;
+        if (filters.customerId)
+            where.customerId = filters.customerId;
         if (typeof isInternal === 'boolean')
             where.isInternal = isInternal;
         if (startDate || endDate) {
@@ -97,6 +114,13 @@ class CommentRepository {
                         select: {
                             id: true,
                             name: true
+                        }
+                    },
+                    customer: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
                         }
                     }
                 },
@@ -137,6 +161,13 @@ class CommentRepository {
                         id: true,
                         name: true
                     }
+                },
+                customer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
                 }
             },
             orderBy: { createdAt: 'asc' }
@@ -164,6 +195,13 @@ class CommentRepository {
                     select: {
                         id: true,
                         name: true
+                    }
+                },
+                customer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
                     }
                 }
             }

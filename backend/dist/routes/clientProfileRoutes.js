@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const clientProfileController_1 = require("../controllers/clientProfileController");
+const clientAuthMiddleware_1 = require("../middlewares/clientAuthMiddleware");
+const providerValidator_1 = require("../validators/providerValidator");
+const clientValidator_1 = require("../validators/clientValidator");
+const router = (0, express_1.Router)();
+const controller = new clientProfileController_1.ClientProfileController();
+router.put('/', clientAuthMiddleware_1.clientAuthMiddleware, (0, providerValidator_1.validateSchema)(clientValidator_1.clientUpdateProfileSchema), (req, res) => controller.update(req, res));
+exports.default = router;

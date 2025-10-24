@@ -15,6 +15,9 @@ const serviceOrderRoutes_1 = __importDefault(require("./routes/serviceOrderRoute
 const commentRoutes_1 = __importDefault(require("./routes/commentRoutes"));
 const aiRoutes_1 = __importDefault(require("./routes/aiRoutes"));
 const notificationRoutes_1 = __importDefault(require("./routes/notificationRoutes"));
+const clientProfileRoutes_1 = __importDefault(require("./routes/clientProfileRoutes"));
+const customerAuthRoutes_1 = __importDefault(require("./routes/customerAuthRoutes"));
+const clientServiceOrderRoutes_1 = __importDefault(require("./routes/clientServiceOrderRoutes"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const openapi_1 = __importDefault(require("./docs/openapi"));
 const rateLimitMiddleware_1 = require("./middleware/rateLimitMiddleware");
@@ -33,16 +36,21 @@ app.use(express_1.default.json());
 app.use('/api', rateLimitMiddleware_1.generalRateLimit);
 // Rate limiting específico para autenticação
 app.use('/auth', rateLimitMiddleware_1.authRateLimit);
+app.use('/api/client/auth', rateLimitMiddleware_1.authRateLimit);
 app.use('/auth', authRoutes_1.default);
+app.use('/api/client/auth', customerAuthRoutes_1.default);
 app.use('/api/providers', providerRoutes_1.default);
 app.use('/api/providers', equipmentRoutes_1.default);
 app.use('/api/providers', ticketRoutes_1.default);
 app.use('/api/providers', passwordVaultRoutes_1.default);
 app.use('/api/providers', notificationRoutes_1.default);
 app.use('/api/dashboard', dashboardRoutes_1.default);
+app.use('/api/client/profile', clientProfileRoutes_1.default);
 // Rate limiting específico para criação de recursos
 app.use('/api/service-orders', rateLimitMiddleware_1.createResourceRateLimit);
 app.use('/api/service-orders', serviceOrderRoutes_1.default);
+app.use('/api/client/service-orders', rateLimitMiddleware_1.createResourceRateLimit);
+app.use('/api/client/service-orders', clientServiceOrderRoutes_1.default);
 // Rotas de comentários
 app.use('/api/comments', commentRoutes_1.default);
 // Rate limiting específico para IA

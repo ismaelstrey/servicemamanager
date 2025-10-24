@@ -6,7 +6,8 @@ export interface Comment {
   isInternal: boolean;
   isEdited: boolean;
   editedAt?: Date;
-  userId: number;
+  userId?: number;
+  customerId?: number;
   providerId: number;
   ticketId?: number;
   serviceOrderId?: number;
@@ -23,6 +24,11 @@ export interface Comment {
     id: number;
     name: string;
   };
+  customer?: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }
 
 export interface CreateCommentData {
@@ -30,7 +36,8 @@ export interface CreateCommentData {
   resourceType: 'ticket' | 'service_order';
   resourceId: number;
   isInternal?: boolean;
-  userId: number;
+  userId?: number;
+  customerId?: number;
   providerId: number;
 }
 
@@ -43,6 +50,7 @@ export interface CommentFilters {
   resourceType?: 'ticket' | 'service_order';
   resourceId?: number;
   userId?: number;
+  customerId?: number;
   providerId?: number;
   isInternal?: boolean;
   startDate?: Date;
@@ -59,7 +67,12 @@ export interface CommentResponse {
   editedAt?: string;
   createdAt: string;
   updatedAt: string;
-  user: {
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  customer?: {
     id: number;
     name: string;
     email: string;

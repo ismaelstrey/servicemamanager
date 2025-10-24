@@ -1,4 +1,5 @@
 const { PrismaClient, $Enums } = require('@prisma/client');
+const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 
@@ -30,6 +31,23 @@ async function main() {
     }
   });
   console.log('🏢 Provider:', provider.name, 'id=', provider.id);
+
+  // Cliente de exemplo vinculado ao provider
+  const clientPasswordHash = await bcrypt.hash('clientpass', 10);
+  const customer = await prisma.customer.upsert({
+    where: { email: 'client@demo.local' },
+    update: {},
+    create: {
+      name: 'Cliente Demo',
+      email: 'client@demo.local',
+      password: clientPasswordHash,
+      providerId: provider.id,
+      phone: '11999999999',
+      document: '000.000.000-00',
+      isActive: true
+    }
+  });
+  console.log('🧑‍💼 Cliente:', customer.email, 'id=', customer.id);
 
   const equipments = [
     { label: 'Core Switch', type: $Enums.EquipmentType.switch, serial: 'SW-001', status: $Enums.EquipmentStatus.active },
