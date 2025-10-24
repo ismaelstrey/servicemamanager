@@ -411,11 +411,11 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
   - [x] POST /api/client/service-orders/:id/comments (comentar; body: content; auth: clientAuthMiddleware; validação Zod)
   - [x] POST /api/client/service-orders/:id/qualification (qualificar atendimento; body: rating 1-5, feedback opcional; auth: clientAuthMiddleware; validação Zod)
   - [ ] POST /api/client/service-orders/:id/attachments (upload de anexos; multipart/form-data; validação de tipo/tamanho; auth: clientAuthMiddleware)
-- [ ] ClientTicketController
-  - [ ] POST /api/client/tickets (abrir ticket)
-  - [ ] GET /api/client/tickets (listar)
-  - [ ] GET /api/client/tickets/:id (detalhes)
-  - [ ] POST /api/client/tickets/:id/comments (comentar)
+- [x] ClientTicketController
+  - [x] POST /api/client/tickets (abrir ticket)
+  - [x] GET /api/client/tickets (listar)
+  - [x] GET /api/client/tickets/:id (detalhes)
+  - [x] POST /api/client/tickets/:id/comments (comentar)
   - [ ] POST /api/client/tickets/:id/attachments (upload de anexos)
 - [ ] ClientNotificationController
   - [ ] GET /api/client/notifications (listar notificações)

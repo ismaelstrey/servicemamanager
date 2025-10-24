@@ -82,3 +82,17 @@ export const clientUpdateServiceOrderSchema = z.object({
     });
   }
 });
+
+export const clientCreateTicketSchema = z.object({
+  title: z.string().min(3).max(255).trim(),
+  description: z.string().min(10).max(2000).trim(),
+  priority: z.enum(['low','medium','high','critical']).optional()
+});
+
+export const clientListTicketsSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+  status: z.enum(['open','in_progress','waiting_client','resolved','closed']).optional(),
+  search: z.string().min(1).max(255).optional(),
+  priority: z.enum(['low','medium','high','critical']).optional()
+});

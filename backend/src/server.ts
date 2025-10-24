@@ -14,6 +14,7 @@ import notificationRoutes from './routes/notificationRoutes';
 import clientProfileRoutes from './routes/clientProfileRoutes';
 import customerAuthRoutes from './routes/customerAuthRoutes';
 import clientServiceOrderRoutes from './routes/clientServiceOrderRoutes';
+import clientTicketRoutes from './routes/clientTicketRoutes';
 import swaggerUi from 'swagger-ui-express';
 import openapiSpec from './docs/openapi';
 import { generalRateLimit, authRateLimit, aiRateLimit, createResourceRateLimit } from './middleware/rateLimitMiddleware';
@@ -55,6 +56,7 @@ app.use('/api/service-orders', createResourceRateLimit);
 app.use('/api/service-orders', serviceOrderRoutes);
 app.use('/api/client/service-orders', createResourceRateLimit);
 app.use('/api/client/service-orders', clientServiceOrderRoutes);
+app.use('/api/client/tickets', clientTicketRoutes);
 
 // Rotas de comentários
 app.use('/api/comments', commentRoutes);

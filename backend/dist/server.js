@@ -18,6 +18,7 @@ const notificationRoutes_1 = __importDefault(require("./routes/notificationRoute
 const clientProfileRoutes_1 = __importDefault(require("./routes/clientProfileRoutes"));
 const customerAuthRoutes_1 = __importDefault(require("./routes/customerAuthRoutes"));
 const clientServiceOrderRoutes_1 = __importDefault(require("./routes/clientServiceOrderRoutes"));
+const clientTicketRoutes_1 = __importDefault(require("./routes/clientTicketRoutes"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const openapi_1 = __importDefault(require("./docs/openapi"));
 const rateLimitMiddleware_1 = require("./middleware/rateLimitMiddleware");
@@ -51,6 +52,7 @@ app.use('/api/service-orders', rateLimitMiddleware_1.createResourceRateLimit);
 app.use('/api/service-orders', serviceOrderRoutes_1.default);
 app.use('/api/client/service-orders', rateLimitMiddleware_1.createResourceRateLimit);
 app.use('/api/client/service-orders', clientServiceOrderRoutes_1.default);
+app.use('/api/client/tickets', clientTicketRoutes_1.default);
 // Rotas de comentários
 app.use('/api/comments', commentRoutes_1.default);
 // Rate limiting específico para IA

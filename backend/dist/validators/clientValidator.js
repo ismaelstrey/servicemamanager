@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clientUpdateServiceOrderSchema = exports.clientUpdateProfileSchema = exports.clientQualificationSchema = exports.clientCommentSchema = exports.clientListServiceOrdersSchema = exports.clientCreateServiceOrderSchema = void 0;
+exports.clientListTicketsSchema = exports.clientCreateTicketSchema = exports.clientUpdateServiceOrderSchema = exports.clientUpdateProfileSchema = exports.clientQualificationSchema = exports.clientCommentSchema = exports.clientListServiceOrdersSchema = exports.clientCreateServiceOrderSchema = void 0;
 const zod_1 = require("zod");
 exports.clientCreateServiceOrderSchema = zod_1.z.object({
     title: zod_1.z.string().min(3).max(255).trim(),
@@ -74,4 +74,16 @@ exports.clientUpdateServiceOrderSchema = zod_1.z.object({
             path: ['_'],
         });
     }
+});
+exports.clientCreateTicketSchema = zod_1.z.object({
+    title: zod_1.z.string().min(3).max(255).trim(),
+    description: zod_1.z.string().min(10).max(2000).trim(),
+    priority: zod_1.z.enum(['low', 'medium', 'high', 'critical']).optional()
+});
+exports.clientListTicketsSchema = zod_1.z.object({
+    page: zod_1.z.coerce.number().int().min(1).default(1),
+    limit: zod_1.z.coerce.number().int().min(1).max(100).default(10),
+    status: zod_1.z.enum(['open', 'in_progress', 'waiting_client', 'resolved', 'closed']).optional(),
+    search: zod_1.z.string().min(1).max(255).optional(),
+    priority: zod_1.z.enum(['low', 'medium', 'high', 'critical']).optional()
 });
