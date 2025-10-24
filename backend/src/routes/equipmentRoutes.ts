@@ -9,9 +9,10 @@ import {
   equipmentIdParamSchema,
   validateSchema,
   validateParams,
-  validateQuery
+  validateQuery,
+  historyQuerySchema
 } from '../validators/equipmentValidator';
-import { listCacheMiddleware, equipmentCacheMiddleware, statsCacheMiddleware } from '../middleware/cacheMiddleware';
+import { listCacheMiddleware, equipmentCacheMiddleware, statsCacheMiddleware, cacheMiddleware } from '../middleware/cacheMiddleware';
 
 const router = Router();
 const controller = new EquipmentController();
@@ -23,6 +24,7 @@ router.get('/:providerId/equipments/stats', authMiddleware, validateParams(provi
 
 // CRUD por ID de equipamento com cache para consultas
 router.get('/equipments/:id', authMiddleware, validateParams(equipmentIdParamSchema), equipmentCacheMiddleware(), (req, res) => controller.getById(req as any, res));
+router.get('/equipments/:id/history', authMiddleware, validateParams(equipmentIdParamSchema), validateQuery(historyQuerySchema), cacheMiddleware({ ttl: 120, keyPrefix: 'history', varyBy: ['userId', 'providerId', 'params.id', 'query.page', 'query.limit'] }), (req, res) => controller.history(req as any, res));
 router.put('/equipments/:id', authMiddleware, validateParams(equipmentIdParamSchema), validateSchema(updateEquipmentSchema), (req, res) => controller.update(req as any, res));
 router.delete('/equipments/:id', authMiddleware, validateParams(equipmentIdParamSchema), (req, res) => controller.delete(req as any, res));
 

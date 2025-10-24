@@ -199,6 +199,16 @@ const openapiSpec = {
         responses: { '200': { description: 'Removido' } }
       }
     },
+    '/api/providers/passwords/{id}/rotate': {
+      post: {
+        summary: 'Rotacionar senha por ID',
+        tags: ['Password Vault'],
+        security: [{ bearerAuth: [] }],
+        parameters: [ { name: 'id', in: 'path', required: true, schema: { type: 'integer' } } ],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/PasswordRotateRequest' } } } },
+        responses: { '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/PasswordVaultOneResponse' } } } }, '404': { description: 'Não encontrado' } }
+      }
+    },
     
     '/api/providers/{providerId}/equipments': {
       get: {
@@ -281,7 +291,9 @@ const openapiSpec = {
           { name: 'limit', in: 'query', schema: { type: 'integer' } },
           { name: 'search', in: 'query', schema: { type: 'string' } },
           { name: 'status', in: 'query', schema: { type: 'string', enum: ['open','assigned','in_progress','pending','resolved','closed','cancelled'] } },
-          { name: 'priority', in: 'query', schema: { type: 'string', enum: ['low','medium','high','critical'] } }
+          { name: 'priority', in: 'query', schema: { type: 'string', enum: ['low','medium','high','critical'] } },
+          { name: 'startDate', in: 'query', schema: { type: 'string', format: 'date-time' } },
+          { name: 'endDate', in: 'query', schema: { type: 'string', format: 'date-time' } }
         ],
         responses: {
           '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketListResponse' } } } }
@@ -295,6 +307,24 @@ const openapiSpec = {
         requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketCreate' } } } },
         responses: {
           '201': { description: 'Criado', content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketOneResponse' } } } }
+        }
+      }
+    },
+    // Novo: criar ticket automaticamente vinculado ao provedor do usuário
+    '/api/tickets': {
+      post: {
+        summary: 'Criar novo ticket (vinculado ao provedor do usuário)',
+        tags: ['Tickets'],
+        security: [{ bearerAuth: [] }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketCreate' } } } },
+        responses: {
+          '201': { description: 'Criado', content: { 'application/json': { schema: { $ref: '#/components/schemas/TicketOneResponse' } } } },
+          '400': { description: 'ProviderId não encontrado no usuário' },
+          '401': { description: 'Não autorizado' },
+          '403': { description: 'Acesso negado ao provedor' },
+          '404': { description: 'Recurso não encontrado' },
+          '422': { description: 'Erro de validação' },
+          '500': { description: 'Erro interno' }
         }
       }
     },
@@ -402,6 +432,166 @@ const openapiSpec = {
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: { '204': { description: 'Removido' } }
+      }
+    },
+
+    // Comments routes
+    '/api/comments': {
+      get: {
+        summary: 'Listar comentários com filtros',
+        tags: ['Comments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'resourceType', in: 'query', schema: { type: 'string', enum: ['ticket','service_order'] } },
+          { name: 'resourceId', in: 'query', schema: { type: 'integer' } },
+          { name: 'userId', in: 'query', schema: { type: 'integer' } },
+          { name: 'isInternal', in: 'query', schema: { type: 'boolean' } },
+          { name: 'page', in: 'query', schema: { type: 'integer', minimum: 1, default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 } }
+        ],
+        responses: {
+          '200': {
+            description: 'Lista de comentários',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    message: { type: 'string' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        comments: { type: 'array', items: { $ref: '#/components/schemas/Comment' } },
+                        total: { type: 'integer' },
+                        page: { type: 'integer' },
+                        limit: { type: 'integer' },
+                        totalPages: { type: 'integer' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      post: {
+        summary: 'Criar novo comentário',
+        tags: ['Comments'],
+        security: [{ bearerAuth: [] }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateCommentRequest' } } } },
+        responses: {
+          '201': {
+            description: 'Comentário criado com sucesso',
+            content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, message: { type: 'string' }, data: { $ref: '#/components/schemas/Comment' } } } } }
+          },
+          '400': { description: 'Dados inválidos' },
+          '401': { description: 'Não autorizado' },
+          '500': { description: 'Erro interno do servidor' }
+        }
+      }
+    },
+    '/api/comments/recent': {
+      get: {
+        summary: 'Obter comentários recentes',
+        tags: ['Comments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 50, default: 10 } }],
+        responses: {
+          '200': {
+            description: 'Lista de comentários recentes',
+            content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, message: { type: 'string' }, data: { type: 'array', items: { $ref: '#/components/schemas/Comment' } } } } } }
+          }
+        }
+      }
+    },
+    '/api/comments/{resourceType}/{resourceId}': {
+      get: {
+        summary: 'Obter comentários de um recurso específico',
+        tags: ['Comments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'resourceType', in: 'path', required: true, schema: { type: 'string', enum: ['ticket','service_order'] } },
+          { name: 'resourceId', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'includeInternal', in: 'query', schema: { type: 'boolean', default: true } }
+        ],
+        responses: {
+          '200': {
+            description: 'Lista de comentários do recurso',
+            content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, message: { type: 'string' }, data: { type: 'array', items: { $ref: '#/components/schemas/Comment' } } } } } }
+          }
+        }
+      }
+    },
+    '/api/comments/{resourceType}/{resourceId}/count': {
+      get: {
+        summary: 'Obter contagem de comentários de um recurso',
+        tags: ['Comments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'resourceType', in: 'path', required: true, schema: { type: 'string', enum: ['ticket','service_order'] } },
+          { name: 'resourceId', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: {
+          '200': {
+            description: 'Contagem de comentários',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    message: { type: 'string' },
+                    data: { type: 'object', properties: { count: { type: 'integer' } } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/comments/{id}': {
+      get: {
+        summary: 'Obter comentário por ID',
+        tags: ['Comments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': {
+            description: 'Comentário encontrado',
+            content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, message: { type: 'string' }, data: { $ref: '#/components/schemas/Comment' } } } } }
+          },
+          '404': { description: 'Comentário não encontrado' }
+        }
+      },
+      put: {
+        summary: 'Atualizar comentário',
+        tags: ['Comments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateCommentRequest' } } } },
+        responses: {
+          '200': {
+            description: 'Comentário atualizado com sucesso',
+            content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, message: { type: 'string' }, data: { $ref: '#/components/schemas/Comment' } } } } }
+          },
+          '400': { description: 'Dados inválidos' },
+          '403': { description: 'Não autorizado' },
+          '404': { description: 'Comentário não encontrado' }
+        }
+      },
+      delete: {
+        summary: 'Excluir comentário',
+        tags: ['Comments'],
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'Comentário excluído com sucesso' },
+          '403': { description: 'Não autorizado' },
+          '404': { description: 'Comentário não encontrado' }
+        }
       }
     },
 
@@ -1298,6 +1488,9 @@ const openapiSpec = {
           username: { type: 'string' },
           password: { type: 'string' },
           providerId: { type: 'integer' },
+          expiresAt: { type: 'string', format: 'date-time', nullable: true },
+          lastRotatedAt: { type: 'string', format: 'date-time', nullable: true },
+          rotationIntervalDays: { type: 'integer', nullable: true },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' }
         }
@@ -1309,6 +1502,9 @@ const openapiSpec = {
           label: { type: 'string' },
           username: { type: 'string' },
           providerId: { type: 'integer' },
+          expiresAt: { type: 'string', format: 'date-time', nullable: true },
+          lastRotatedAt: { type: 'string', format: 'date-time', nullable: true },
+          rotationIntervalDays: { type: 'integer', nullable: true },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' }
         }
@@ -1318,7 +1514,9 @@ const openapiSpec = {
         properties: {
           label: { type: 'string' },
           username: { type: 'string' },
-          password: { type: 'string' }
+          password: { type: 'string' },
+          expiresAt: { type: 'string', format: 'date-time' },
+          rotationIntervalDays: { type: 'integer' }
         },
         required: ['label','username','password']
       },
@@ -1327,7 +1525,25 @@ const openapiSpec = {
         properties: {
           label: { type: 'string' },
           username: { type: 'string' },
-          password: { type: 'string' }
+          password: { type: 'string' },
+          expiresAt: { type: 'string', format: 'date-time' },
+          rotationIntervalDays: { type: 'integer' },
+          lastRotatedAt: { type: 'string', format: 'date-time' }
+        }
+      },
+      PasswordRotateRequest: {
+        type: 'object',
+        properties: {
+          password: { type: 'string' },
+          length: { type: 'integer' },
+          includeUppercase: { type: 'boolean' },
+          includeLowercase: { type: 'boolean' },
+          includeNumbers: { type: 'boolean' },
+          includeSymbols: { type: 'boolean' },
+          excludeSimilar: { type: 'boolean' },
+          excludeAmbiguous: { type: 'boolean' },
+          customCharacters: { type: 'string' },
+          pattern: { type: 'string' }
         }
       },
       PasswordVaultListResponse: {
@@ -1534,6 +1750,41 @@ const openapiSpec = {
           message: { type: 'string' }
         }
       },
+      // Comments
+      Comment: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          content: { type: 'string' },
+          resourceType: { type: 'string', enum: ['ticket','service_order'] },
+          resourceId: { type: 'integer' },
+          isInternal: { type: 'boolean' },
+          isEdited: { type: 'boolean' },
+          editedAt: { type: 'string', format: 'date-time', nullable: true },
+          userId: { type: 'integer' },
+          providerId: { type: 'integer' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' }
+        }
+      },
+      CreateCommentRequest: {
+        type: 'object',
+        required: ['content','resourceType','resourceId'],
+        properties: {
+          content: { type: 'string', minLength: 1, maxLength: 5000 },
+          resourceType: { type: 'string', enum: ['ticket','service_order'] },
+          resourceId: { type: 'integer', minimum: 1 },
+          isInternal: { type: 'boolean', default: false }
+        }
+      },
+      UpdateCommentRequest: {
+        type: 'object',
+        properties: {
+          content: { type: 'string', minLength: 1, maxLength: 5000 },
+          isInternal: { type: 'boolean' }
+        }
+      },
+
       // Dashboard
       DashboardOverview: {
         type: 'object',

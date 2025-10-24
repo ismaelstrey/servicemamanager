@@ -1,7 +1,7 @@
 "use strict";
 // Validadores Zod para operações de Equipamentos
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateQuery = exports.validateParams = exports.validateSchema = exports.equipmentIdParamSchema = exports.providerIdParamSchema = exports.listEquipmentsSchema = exports.updateEquipmentSchema = exports.createEquipmentSchema = exports.equipmentStatusSchema = exports.equipmentTypeSchema = void 0;
+exports.validateQuery = exports.validateParams = exports.validateSchema = exports.equipmentIdParamSchema = exports.providerIdParamSchema = exports.historyQuerySchema = exports.listEquipmentsSchema = exports.updateEquipmentSchema = exports.createEquipmentSchema = exports.equipmentStatusSchema = exports.equipmentTypeSchema = void 0;
 const zod_1 = require("zod");
 const providerValidator_1 = require("./providerValidator");
 Object.defineProperty(exports, "validateSchema", { enumerable: true, get: function () { return providerValidator_1.validateSchema; } });
@@ -64,6 +64,19 @@ exports.listEquipmentsSchema = zod_1.z.object({
         .optional(),
     type: exports.equipmentTypeSchema.optional(),
     status: exports.equipmentStatusSchema.optional()
+});
+// Schema de paginação para histórico
+exports.historyQuerySchema = zod_1.z.object({
+    page: zod_1.z.string()
+        .regex(/^\d+$/, 'Página deve ser um número')
+        .transform(Number)
+        .refine(n => n > 0, 'Página deve ser maior que 0')
+        .optional(),
+    limit: zod_1.z.string()
+        .regex(/^\d+$/, 'Limite deve ser um número')
+        .transform(Number)
+        .refine(n => n > 0 && n <= 100, 'Limite deve ser entre 1 e 100')
+        .optional()
 });
 // Params para rotas com providerId
 exports.providerIdParamSchema = zod_1.z.object({

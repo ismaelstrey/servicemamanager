@@ -3,6 +3,16 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Habilitação do Redis controlada por env
+const isRedisEnabled = (): boolean => {
+  const flag = process.env.REDIS_ENABLED;
+  if (typeof flag !== 'undefined') {
+    return flag === 'true';
+  }
+  // Se não houver REDIS_ENABLED explícito, habilita apenas quando REDIS_URL estiver definido
+  return !!process.env.REDIS_URL && process.env.REDIS_URL.trim().length > 0;
+};
+
 // Configuração do Redis baseada no ambiente
 const getRedisConfig = () => {
   const environment = process.env.NODE_ENV || 'development';
@@ -10,10 +20,13 @@ const getRedisConfig = () => {
   switch (environment) {
     case 'production':
       return {
-        url: process.env.REDIS_URL || 'redis://localhost:6379',
+        url: process.env.REDIS_URL || 'redis://127.0.0.1:6379',
+        password: process.env.REDIS_PASSWORD,
         socket: {
           connectTimeout: 60000,
           lazyConnect: true,
+          // Evita tentativas de reconexão infinitas quando indisponível
+          reconnectStrategy: (_retries: number): number | false | Error => false,
         },
         retryDelayOnFailover: 100,
         enableReadyCheck: true,
@@ -22,10 +35,12 @@ const getRedisConfig = () => {
     
     case 'staging':
       return {
-        url: process.env.REDIS_URL || 'redis://localhost:6379',
+        url: process.env.REDIS_URL || 'redis://127.0.0.1:6379',
+        password: process.env.REDIS_PASSWORD,
         socket: {
           connectTimeout: 30000,
           lazyConnect: true,
+          reconnectStrategy: (_retries: number): number | false | Error => false,
         },
         retryDelayOnFailover: 100,
         enableReadyCheck: true,
@@ -34,10 +49,12 @@ const getRedisConfig = () => {
     
     default: // development
       return {
-        url: process.env.REDIS_URL || 'redis://localhost:6379',
+        url: process.env.REDIS_URL || 'redis://127.0.0.1:6379',
+        password: process.env.REDIS_PASSWORD,
         socket: {
           connectTimeout: 10000,
           lazyConnect: true,
+          reconnectStrategy: (_retries: number): number | false | Error => false,
         },
         retryDelayOnFailover: 50,
         enableReadyCheck: false,
@@ -58,6 +75,10 @@ class RedisClient {
   }
 
   private createClient() {
+    if (!isRedisEnabled()) {
+      console.log('Redis desativado (defina REDIS_ENABLED=true para habilitar)');
+      return;
+    }
     if (!this.client) {
       const config = getRedisConfig();
       this.client = createClient(config);
@@ -93,6 +114,9 @@ class RedisClient {
   }
 
   public async connect(): Promise<void> {
+    if (!isRedisEnabled()) {
+      return; // Pula conexão quando desativado
+    }
     if (!this.connectionAttempted) {
       this.connectionAttempted = true;
       try {

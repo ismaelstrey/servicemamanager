@@ -13,7 +13,9 @@ class PasswordVaultRepository {
                     providerId,
                     label: data.label,
                     username: data.username,
-                    password: data.password
+                    password: data.password,
+                    expiresAt: data.expiresAt,
+                    rotationIntervalDays: data.rotationIntervalDays
                 }
             });
             return this.mapFromPrisma(rec);
@@ -80,6 +82,9 @@ class PasswordVaultRepository {
                     label: data.label,
                     username: data.username,
                     password: data.password,
+                    expiresAt: data.expiresAt,
+                    rotationIntervalDays: data.rotationIntervalDays,
+                    lastRotatedAt: data.lastRotatedAt,
                     updatedAt: new Date()
                 }
             });
@@ -123,6 +128,9 @@ class PasswordVaultRepository {
             username: p.username,
             password: p.password,
             providerId: p.providerId,
+            expiresAt: p.expiresAt ?? null,
+            lastRotatedAt: p.lastRotatedAt ?? null,
+            rotationIntervalDays: p.rotationIntervalDays ?? null,
             createdAt: p.createdAt,
             updatedAt: p.updatedAt
         };

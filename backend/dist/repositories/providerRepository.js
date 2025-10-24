@@ -539,17 +539,51 @@ class ProviderRepository {
      */
     async userHasAccess(userId, providerId) {
         try {
+            // Acesso se for owner
             const provider = await this.prisma.provider.findFirst({
-                where: {
-                    id: providerId,
-                    ownerId: userId
-                }
+                where: { id: providerId, ownerId: userId }
             });
-            return !!provider;
+            if (provider)
+                return true;
+            // Acesso se for membro ativo do provedor
+            const membership = await this.prisma.providerUser.findFirst({
+                where: { providerId, userId, isActive: true }
+            });
+            return !!membership;
         }
         catch (error) {
             console.error('Erro no ProviderRepository.userHasAccess:', error);
             return false;
+        }
+    }
+    /**
+     * Obter vínculo do usuário com o provedor, incluindo permissões
+     */
+    async getProviderUser(userId, providerId) {
+        try {
+            const up = await this.prisma.providerUser.findFirst({
+                where: { providerId, userId },
+                include: {
+                    user: {
+                        select: { id: true, name: true, email: true, role: true }
+                    }
+                }
+            });
+            if (!up)
+                return null;
+            return {
+                id: up.id,
+                userId: up.userId,
+                providerId: up.providerId,
+                role: up.role,
+                permissions: up.permissions || [],
+                status: up.isActive ? 'active' : 'inactive',
+                user: up.user
+            };
+        }
+        catch (error) {
+            console.error('Erro no ProviderRepository.getProviderUser:', error);
+            return null;
         }
     }
     /**

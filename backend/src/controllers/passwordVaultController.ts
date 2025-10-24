@@ -169,6 +169,22 @@ export class PasswordVaultController {
         { title: item.label }
       );
 
+      // Log adicional de auditoria para descriptografia (quando usuário pode ver segredos)
+      if ((item as any).password) {
+        logPasswordVaultAudit(
+          'decrypt',
+          req.user!.id.toString(),
+          req.user!.email,
+          id.toString(),
+          item.providerId.toString(),
+          true,
+          ipAddress,
+          userAgent,
+          undefined,
+          { title: item.label }
+        );
+      }
+
       res.json({ success: true, data: item, message: 'Senha obtida com sucesso' });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao obter senha';
@@ -246,6 +262,61 @@ export class PasswordVaultController {
   }
 
   /**
+   * Rotacionar senha
+   * POST /api/passwords/:id/rotate
+   */
+  async rotate(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get('User-Agent');
+    const id = parseInt(req.params.id);
+
+    try {
+      if (isNaN(id)) {
+        res.status(400).json({ success: false, message: 'id inválido' });
+        return;
+      }
+
+      const options = req.body || {};
+      const updated = await this.service.rotate(id, req.user!, options);
+
+      // Log de auditoria para rotação bem-sucedida (usando ação update)
+      logPasswordVaultAudit(
+        'update',
+        req.user!.id.toString(),
+        req.user!.email,
+        id.toString(),
+        updated.providerId.toString(),
+        true,
+        ipAddress,
+        userAgent,
+        undefined,
+        { action: 'rotate' }
+      );
+
+      res.json({ success: true, data: updated, message: 'Senha rotacionada com sucesso' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao rotacionar senha';
+      const status = (error as any)?.status || 500;
+
+      // Log de auditoria para rotação falhada
+      logPasswordVaultAudit(
+        'update',
+        req.user!.id.toString(),
+        req.user!.email,
+        id.toString(),
+        'unknown',
+        false,
+        ipAddress,
+        userAgent,
+        message,
+        { action: 'rotate' }
+      );
+
+      res.status(status).json({ success: false, message });
+    }
+  }
+
+  /**
    * Remover entrada
    * DELETE /api/passwords/:id
    */
@@ -277,6 +348,22 @@ export class PasswordVaultController {
         undefined,
         { title: item.label }
       );
+
+      // Log adicional de auditoria para descriptografia (quando usuário pode ver segredos ao recuperar antes da exclusão)
+      if ((item as any).password) {
+        logPasswordVaultAudit(
+          'decrypt',
+          req.user!.id.toString(),
+          req.user!.email,
+          id.toString(),
+          item.providerId.toString(),
+          true,
+          ipAddress,
+          userAgent,
+          undefined,
+          { title: item.label }
+        );
+      }
 
       res.json({ success: true, message: 'Senha removida com sucesso' });
     } catch (error) {

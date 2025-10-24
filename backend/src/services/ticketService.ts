@@ -2,14 +2,22 @@ import { AuthUser } from '../types/auth.types';
 import { PaginationMeta } from '../types/common.types';
 import { ProviderService } from './providerService';
 import { TicketRepository, CreateTicketData, ListTicketsQuery, TicketRecord, TicketStats, UpdateTicketData, TicketStatus } from '../repositories/ticketRepository';
+import { NotificationService } from './notificationService';
+import { ChangeHistoryService } from './changeHistoryService';
+import { logTicketAudit } from '../utils/auditLogger';
+import { invalidateProviderCache, invalidateResourceCache } from '../middleware/cacheMiddleware';
 
 export class TicketService {
   private repository: TicketRepository;
   private providerService: ProviderService;
+  private notificationService: NotificationService;
+  private changeHistoryService: ChangeHistoryService;
 
   constructor() {
     this.repository = new TicketRepository();
     this.providerService = new ProviderService();
+    this.notificationService = new NotificationService();
+    this.changeHistoryService = new ChangeHistoryService();
   }
 
   private async assertAccess(user: AuthUser, providerId: number): Promise<void> {
@@ -57,6 +65,43 @@ export class TicketService {
       err.status = 500;
       throw err;
     }
+
+    // Histórico de alterações e notificação se houve mudança de status
+    if (typeof data.status !== 'undefined' && data.status !== existing.status) {
+      await this.changeHistoryService.recordStatusChange('ticket', {
+        entityId: id,
+        providerId: existing.providerId,
+        changedById: user.id,
+        from: existing.status,
+        to: data.status,
+        metadata: { title: updated.title }
+      });
+      await this.notificationService.createStatusChangeNotification({
+        entityType: 'ticket',
+        entityId: id,
+        providerId: existing.providerId,
+        statusFrom: existing.status,
+        statusTo: data.status,
+        actorName: user.name,
+        title: `Ticket #${id} atualizado`
+      });
+      logTicketAudit(
+        'status_change',
+        String(user.id),
+        user.email,
+        String(id),
+        String(existing.providerId),
+        true,
+        undefined,
+        undefined,
+        undefined,
+        { from: existing.status, to: data.status }
+      );
+      await invalidateProviderCache(String(existing.providerId));
+      await invalidateResourceCache('ticket', String(id));
+      await invalidateResourceCache('stats');
+    }
+
     return updated;
   }
 
@@ -74,6 +119,42 @@ export class TicketService {
       err.status = 500;
       throw err;
     }
+
+    if (existing.status !== status) {
+      await this.changeHistoryService.recordStatusChange('ticket', {
+        entityId: id,
+        providerId: existing.providerId,
+        changedById: user.id,
+        from: existing.status,
+        to: status,
+        metadata: { title: updated.title }
+      });
+      await this.notificationService.createStatusChangeNotification({
+        entityType: 'ticket',
+        entityId: id,
+        providerId: existing.providerId,
+        statusFrom: existing.status,
+        statusTo: status,
+        actorName: user.name,
+        title: `Status do Ticket #${id} atualizado`
+      });
+      logTicketAudit(
+        'status_change',
+        String(user.id),
+        user.email,
+        String(id),
+        String(existing.providerId),
+        true,
+        undefined,
+        undefined,
+        undefined,
+        { from: existing.status, to: status }
+      );
+      await invalidateProviderCache(String(existing.providerId));
+      await invalidateResourceCache('ticket', String(id));
+      await invalidateResourceCache('stats');
+    }
+
     return updated;
   }
 
@@ -97,5 +178,20 @@ export class TicketService {
   async getStats(providerId: number, user: AuthUser): Promise<TicketStats> {
     await this.assertAccess(user, providerId);
     return this.repository.getStatsByProvider(providerId);
+  }
+  async getKanban(providerId: number, user: AuthUser) {
+    await this.assertAccess(user, providerId);
+    return this.repository.getKanbanByProvider(providerId);
+  }
+  // New: list change history for a ticket
+  async getHistory(id: number, user: AuthUser, page?: number, limit?: number) {
+    const existing = await this.repository.findById(id);
+    if (!existing) {
+      const err: any = new Error('Ticket não encontrado');
+      err.status = 404;
+      throw err;
+    }
+    await this.assertAccess(user, existing.providerId);
+    return await this.changeHistoryService.listByEntity(existing.providerId, 'ticket', id, page, limit);
   }
 }

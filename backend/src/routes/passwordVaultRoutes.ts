@@ -8,6 +8,7 @@ import {
   providerIdParamSchema,
   updatePasswordVaultSchema,
   vaultIdParamSchema,
+  rotatePasswordSchema,
   validateSchema,
   validateParams,
   validateQuery
@@ -23,6 +24,7 @@ router.post('/:providerId/passwords', authMiddleware, createResourceRateLimit, v
 // CRUD por ID com rate limiting sensível
 router.get('/passwords/:id', authMiddleware, sensitiveRateLimit, validateParams(vaultIdParamSchema), (req, res) => controller.getById(req as any, res));
 router.put('/passwords/:id', authMiddleware, sensitiveRateLimit, validateParams(vaultIdParamSchema), validateSchema(updatePasswordVaultSchema), (req, res) => controller.update(req as any, res));
+router.post('/passwords/:id/rotate', authMiddleware, sensitiveRateLimit, validateParams(vaultIdParamSchema), validateSchema(rotatePasswordSchema), (req, res) => controller.rotate(req as any, res));
 router.delete('/passwords/:id', authMiddleware, sensitiveRateLimit, validateParams(vaultIdParamSchema), (req, res) => controller.delete(req as any, res));
 
 export default router;

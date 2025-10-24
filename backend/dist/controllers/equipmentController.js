@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EquipmentController = void 0;
 const equipmentService_1 = require("../services/equipmentService");
+const paginationHelper_1 = require("../utils/paginationHelper");
 class EquipmentController {
     constructor() {
         this.equipmentService = new equipmentService_1.EquipmentService();
@@ -142,6 +143,42 @@ class EquipmentController {
         }
         catch (error) {
             const message = error instanceof Error ? error.message : 'Erro ao obter estatísticas';
+            const status = error?.status || 500;
+            res.status(status).json({ success: false, message });
+        }
+    }
+    /**
+     * Histórico de mudanças do equipamento
+     * GET /api/equipments/:id/history
+     */
+    async history(req, res) {
+        try {
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) {
+                res.status(400).json({ success: false, message: 'id inválido' });
+                return;
+            }
+            const { page, limit } = (0, paginationHelper_1.calculatePagination)({
+                page: req.query.page ? parseInt(req.query.page) : undefined,
+                limit: req.query.limit ? parseInt(req.query.limit) : undefined,
+                maxLimit: 100,
+                defaultLimit: 20
+            });
+            const result = await this.equipmentService.getHistory(id, req.user, page, limit);
+            res.json({
+                success: true,
+                data: result.history,
+                pagination: {
+                    page: result.page,
+                    limit: result.limit,
+                    total: result.total,
+                    totalPages: Math.ceil(result.total / result.limit)
+                },
+                message: 'Histórico obtido com sucesso'
+            });
+        }
+        catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro ao obter histórico do equipamento';
             const status = error?.status || 500;
             res.status(status).json({ success: false, message });
         }

@@ -60,7 +60,7 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 - [x] Protegidas por `authMiddleware` e validadas com Zod
 
 ### 🟡 Funcionalidades Específicas
-- [ ] Geração automática de workspace único (atual: verificação de disponibilidade)
+- [x] Geração automática de workspace único
 - [x] Validação de CNPJ (validator)
 - [x] Sistema de permissões básico por provedor (verificação de acesso por usuário e papéis; regras finas pendentes)
 
@@ -98,7 +98,7 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 - [x] Controle de serial único
 - [x] Categorização por tipo — Prisma enum `EquipmentType` e validação Zod implementados
 - [x] Status do equipamento (ativo/inativo/manutenção) — Prisma enum `EquipmentStatus` e coluna `status` adicionada ao model `Equipment` (default `active`)
-- [ ] Histórico de alterações
+- [x] Histórico de alterações
 
 ---
 
@@ -133,10 +133,10 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 - [x] ticketValidators
 
 ### 🟡 Funcionalidades Avançadas
-- [ ] Vinculação automática ao provedor
-- [ ] Sistema de comentários/atualizações
-- [ ] Notificações de mudança de status
-- [ ] Filtros avançados (status, prioridade, data)
+- [x] Vinculação automática ao provedor
+- [x] Sistema de comentários/atualizações
+- [x] Notificações de mudança de status
+- [x] Filtros avançados (status, prioridade, data)
 
 ---
 
@@ -153,9 +153,9 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 ### 🟢 Segurança
 - [x] Criptografia AES-256-GCM para armazenamento seguro
 - [x] Descriptografia condicionada por papel (admin/manager/super_admin)
-- [ ] Log de acessos às senhas (auditoria)
-- [ ] Expiração e rotação de senhas
-- [ ] RBAC refinado por provedor (regras finas)
+- [x] Log de acessos às senhas (auditoria)
+- [x] Expiração e rotação de senhas
+- [x] RBAC refinado por provedor (regras finas)
 
 ### 🟢 Services e Repositories
 - [x] PasswordVaultService
@@ -244,31 +244,42 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 - [x] Filtros por status e prioridade
 - [x] Estatísticas e métricas
 - [x] Vinculação opcional com tickets
-- [ ] Sistema de comentários/atualizações
-- [ ] Notificações de mudança de status
-- [ ] Visualização Kanban
-- [ ] Histórico de alterações
+- [x] Sistema de comentários/atualizações
+- [x] Notificações de mudança de status
+- [x] Visualização Kanban
+- [x] Histórico de alterações
 
 ---
 
 ## 🚧 **FASE 8: MELHORIAS E OTIMIZAÇÕES** (EM PROGRESSO)
 
-### 🟡 Performance
-- [ ] Implementar cache Redis
+### 🟢 Performance
+- [x] Cache Redis implementado e integrado via middlewares (listas, detalhes e estatísticas)
+- [x] Redis via Docker Compose (`redis:7-alpine`), persistência AOF, volume e healthcheck
+- [x] Autenticação Redis por senha (`REDIS_PASSWORD`) habilitada no ambiente local
+- [x] Integração por env: `REDIS_ENABLED`, `REDIS_URL` (IPv4), `REDIS_PASSWORD`
+- [x] Estratégia de conexão robusta (`lazyConnect`, `readyCheck`, reconexão desativada quando indisponível)
+- [x] Paginação otimizada em todos os endpoints (implementada com `calculatePagination` e `createPaginationMeta`)
 - [ ] Otimização de queries Prisma
-- [x] Paginação otimizada em todos os endpoints (implementada com calculatePagination e createPaginationMeta)
 - [ ] Índices no banco de dados
 
 ### 🟡 Segurança
-- [ ] Rate limiting
+- [x] Rate limiting
 - [x] Validação de entrada mais rigorosa (expandida nos validators com Zod, sanitização automática)
-- [ ] Logs de auditoria
+- [x] Logs de auditoria
 - [x] Sanitização de dados de entrada (implementada nos validators)
 
 ### 🟢 Documentação
-- [x] Swagger/OpenAPI completo (implementado para todos os endpoints: Tickets, Service Orders, Dashboard)
-- [x] Documentação de APIs (disponível em /docs)
-- [ ] Guias de desenvolvimento
+- [x] Swagger/OpenAPI completo cobrindo Providers, Equipments, Tickets, Service Orders, Dashboard, PasswordVault e Comments
+- [x] Documentação de APIs disponível em `/docs`
+- [x] Endpoints atualizados com exemplos, schemas e responses
+- [x] Guias de desenvolvimento
+
+### 🟢 Infra & DevOps
+- [x] Docker Compose com serviço Redis protegido por senha e volume persistente
+- [x] `.env` raiz para Compose (`REDIS_PASSWORD`, `REDIS_PORT`)
+- [x] `.env` do backend com `REDIS_ENABLED`, `REDIS_URL`, `REDIS_PASSWORD`
+- [x] CORS configurado para `http://localhost:5173` (frontend dev)
 
 ---
 
@@ -341,40 +352,40 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 - **Validação de entrada rigorosa com Zod e sanitização automática**
 
 ### 🟡 Funcionalidades Avançadas Pendentes (5%)
-- Sistema de comentários/atualizações (Tickets e Ordens de Serviço)
 - Notificações de mudança de status
 - Visualização Kanban para ordens de serviço
 - Histórico de alterações
-- RBAC refinado do cofre e auditoria de acessos
+- RBAC refinado do cofre
 
 ### 🔴 Pendente (5%)
-- Melhorias e otimizações restantes (cache Redis, índices no banco)
+- Melhorias e otimizações restantes (índices no banco)
 - Funcionalidades avançadas de IA (integração com LLMs externos, modelos personalizados)
 
 ---
 
 ## 🎯 **PRÓXIMOS PASSOS RECOMENDADOS**
 
-1. **Implementar Funcionalidades Avançadas**
-   - Sistema de comentários/atualizações para Tickets e Ordens de Serviço
+1. **Funcionalidades Avançadas**
    - Notificações de mudança de status
    - Visualização Kanban para ordens de serviço
    - Histórico de alterações nos módulos principais
+   - Comentários com menções, anexos e edição (refinar)
 
-2. **Melhorar Segurança e Auditoria**
-   - Implementar auditoria de acessos do cofre de senhas
-   - Definir RBAC refinado para leitura descriptografada
-   - Rate limiting nos endpoints
+2. **Segurança e Auditoria**
+   - Auditoria de acessos do cofre e eventos críticos
+   - RBAC refinado por provedor (regras finas)
+   - Expiração e rotação de senhas
    - Logs de auditoria completos
 
-3. **Otimizações de Performance Restantes**
-   - Implementar cache Redis
-   - Índices no banco de dados para otimização de consultas
+3. **Performance**
+   - Índices no banco de dados para otimizar consultas
+   - Otimização de queries Prisma
+   - Revisão de estratégias de invalidação de cache
 
-4. **Funcionalidades Avançadas de IA**
+4. **IA**
    - Integração com LLMs externos (OpenAI, Claude, etc.)
    - Modelos de ML personalizados por provedor
-   - Análise preditiva avançada com dados em tempo real
+   - Análise preditiva com dados em tempo real
 
 ---
 
@@ -385,10 +396,12 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 - **Framework**: Express.js
 - **ORM**: Prisma
 - **Banco**: PostgreSQL
+- **Cache**: Redis (Node-Redis)
 - **Autenticação**: JWT + bcrypt
 - **Validação**: Zod
 - **Documentação**: Swagger/OpenAPI (implementado e disponível em /docs)
 - **Gerenciador**: pnpm
+- **Orquestração local**: Docker Compose (PostgreSQL, Redis)
 - **Processo**: PM2
 
 ---

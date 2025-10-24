@@ -3,6 +3,7 @@ import { EquipmentService } from '../services/equipmentService';
 import { AuthenticatedRequest } from '../types/api.types';
 import { CreateEquipmentData, ListEquipmentsQuery, UpdateEquipmentData } from '../repositories/equipmentRepository';
 import { $Enums } from '@prisma/client'
+import { calculatePagination } from '../utils/paginationHelper';
 
 export class EquipmentController {
   private equipmentService: EquipmentService;
@@ -151,6 +152,42 @@ export class EquipmentController {
       res.json({ success: true, data: stats, message: 'Estatísticas obtidas com sucesso' });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao obter estatísticas';
+      const status = (error as any)?.status || 500;
+      res.status(status).json({ success: false, message });
+    }
+  }
+
+  /**
+   * Histórico de mudanças do equipamento
+   * GET /api/equipments/:id/history
+   */
+  async history(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        res.status(400).json({ success: false, message: 'id inválido' });
+        return;
+      }
+      const { page, limit } = calculatePagination({
+        page: req.query.page ? parseInt(req.query.page as string) : undefined,
+        limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+        maxLimit: 100,
+        defaultLimit: 20
+      });
+      const result = await this.equipmentService.getHistory(id, req.user!, page, limit);
+      res.json({
+        success: true,
+        data: result.history,
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          total: result.total,
+          totalPages: Math.ceil(result.total / result.limit)
+        },
+        message: 'Histórico obtido com sucesso'
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao obter histórico do equipamento';
       const status = (error as any)?.status || 500;
       res.status(status).json({ success: false, message });
     }

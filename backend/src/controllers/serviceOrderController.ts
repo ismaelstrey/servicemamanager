@@ -164,4 +164,56 @@ export class ServiceOrderController {
       res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
+  
+  // GET /api/service-orders/kanban
+  async kanban(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { providerId } = req.query;
+      const board = await this.serviceOrderService.getKanban(
+        req.user!,
+        providerId ? parseInt(providerId as string) : undefined
+      );
+      res.json(board);
+    } catch (error: any) {
+      const status = error?.status || 500;
+      const message = status === 400 ? error.message : 'Erro interno do servidor';
+      console.error('Error fetching service order kanban:', error);
+      res.status(status).json({ error: message });
+    }
+  }
+
+  // GET /api/service-orders/:id/history
+  async history(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const sid = parseInt(id);
+      if (isNaN(sid)) {
+        res.status(400).json({ error: 'id inválido' });
+        return;
+      }
+      const { page, limit } = calculatePagination({
+        page: req.query.page ? parseInt(req.query.page as string) : undefined,
+        limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+        maxLimit: 100,
+        defaultLimit: 20
+      });
+      const result = await this.serviceOrderService.getHistory(req.user!, sid, page, limit);
+      res.json({
+        success: true,
+        data: result.history,
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          total: result.total,
+          totalPages: Math.ceil(result.total / result.limit)
+        },
+        message: 'Histórico obtido com sucesso'
+      });
+    } catch (error) {
+      console.error('Error fetching service order history:', error);
+      const status = (error as any)?.status || 500;
+      const message = error instanceof Error ? error.message : 'Erro interno do servidor';
+      res.status(status).json({ error: message });
+    }
+  }
 }

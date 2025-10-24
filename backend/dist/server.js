@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const providerRoutes_1 = __importDefault(require("./routes/providerRoutes"));
@@ -13,31 +12,70 @@ const ticketRoutes_1 = __importDefault(require("./routes/ticketRoutes"));
 const passwordVaultRoutes_1 = __importDefault(require("./routes/passwordVaultRoutes"));
 const dashboardRoutes_1 = __importDefault(require("./routes/dashboardRoutes"));
 const serviceOrderRoutes_1 = __importDefault(require("./routes/serviceOrderRoutes"));
+const commentRoutes_1 = __importDefault(require("./routes/commentRoutes"));
+const aiRoutes_1 = __importDefault(require("./routes/aiRoutes"));
+const notificationRoutes_1 = __importDefault(require("./routes/notificationRoutes"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const openapi_1 = __importDefault(require("./docs/openapi"));
+const rateLimitMiddleware_1 = require("./middleware/rateLimitMiddleware");
+const corsMiddleware_1 = require("./middleware/corsMiddleware");
+const redis_1 = require("./config/redis");
 // Configura variáveis de ambiente
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = Number(process.env.PORT) || 4000;
+// Valida configuração de CORS
+(0, corsMiddleware_1.validateCorsConfig)();
 // Middlewares globais
-app.use((0, cors_1.default)());
+app.use(corsMiddleware_1.corsMiddleware);
 app.use(express_1.default.json());
+// Rate limiting geral para todas as rotas da API
+app.use('/api', rateLimitMiddleware_1.generalRateLimit);
+// Rate limiting específico para autenticação
+app.use('/auth', rateLimitMiddleware_1.authRateLimit);
 app.use('/auth', authRoutes_1.default);
 app.use('/api/providers', providerRoutes_1.default);
 app.use('/api/providers', equipmentRoutes_1.default);
 app.use('/api/providers', ticketRoutes_1.default);
 app.use('/api/providers', passwordVaultRoutes_1.default);
+app.use('/api/providers', notificationRoutes_1.default);
 app.use('/api/dashboard', dashboardRoutes_1.default);
+// Rate limiting específico para criação de recursos
+app.use('/api/service-orders', rateLimitMiddleware_1.createResourceRateLimit);
 app.use('/api/service-orders', serviceOrderRoutes_1.default);
-// Documentação Swagger
-app.use('/docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(openapi_1.default));
-// Rota de saúde
-app.get('/health', (_req, res) => {
+// Rotas de comentários
+app.use('/api/comments', commentRoutes_1.default);
+// Rate limiting específico para IA
+app.use('/api/ai', rateLimitMiddleware_1.aiRateLimit);
+app.use('/api/ai', aiRoutes_1.default);
+// Documentação Swagger (CORS público para permitir acesso)
+app.use('/docs', corsMiddleware_1.publicCorsMiddleware, swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(openapi_1.default));
+// Rota de saúde (CORS público)
+app.get('/health', corsMiddleware_1.publicCorsMiddleware, (_req, res) => {
     // Retorna status do servidor
     res.json({ status: 'ok' });
 });
 // TODO: Registrar rotas em src/routes
-app.listen(port, () => {
+// Inicializa conexão com Redis
+const initializeRedis = async () => {
+    try {
+        await redis_1.redisClient.connect();
+        if (redis_1.redisClient.isClientConnected()) {
+            console.log('Redis conectado com sucesso');
+        }
+        else {
+            console.log('Redis desativado ou indisponível; cache Redis não será usado');
+        }
+    }
+    catch (error) {
+        console.warn('Falha ao conectar com Redis:', error);
+        console.warn('Aplicação continuará sem cache Redis');
+        // Não bloqueia a inicialização do servidor
+    }
+};
+app.listen(port, async () => {
     // Log do servidor iniciado
     console.log(`Servidor iniciado na porta ${port}`);
+    // Inicializa Redis de forma assíncrona
+    await initializeRedis();
 });

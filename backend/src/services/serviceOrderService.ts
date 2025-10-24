@@ -2,6 +2,10 @@ import { ServiceOrderRepository } from '../repositories/serviceOrderRepository';
 import { ProviderService } from './providerService';
 import { AuthUser } from '../types/auth.types';
 import { ServiceOrderStatus, ServiceOrderPriority } from '@prisma/client';
+import { NotificationService } from './notificationService';
+import { ChangeHistoryService } from './changeHistoryService';
+import { logServiceOrderAudit } from '../utils/auditLogger';
+import { invalidateProviderCache, invalidateResourceCache } from '../middleware/cacheMiddleware';
 
 export interface CreateServiceOrderData {
   title: string;
@@ -49,10 +53,73 @@ export interface ServiceOrderStats {
 export class ServiceOrderService {
   private serviceOrderRepository: ServiceOrderRepository;
   private providerService: ProviderService;
+  private notificationService: NotificationService;
+  private changeHistoryService: ChangeHistoryService;
 
   constructor() {
     this.serviceOrderRepository = new ServiceOrderRepository();
     this.providerService = new ProviderService();
+    this.notificationService = new NotificationService();
+    this.changeHistoryService = new ChangeHistoryService();
+  }
+
+  async updateServiceOrder(user: AuthUser, id: number, data: UpdateServiceOrderData) {
+    const existingServiceOrder = await this.getServiceOrderById(user, id);
+    
+    if (!existingServiceOrder) {
+      return null;
+    }
+
+    // Auto-set timestamps based on status changes
+    const updateData = { ...data } as UpdateServiceOrderData;
+    
+    if (data.status) {
+      if (data.status === ServiceOrderStatus.in_progress && !existingServiceOrder.startedAt) {
+        updateData.startedAt = new Date();
+      } else if (data.status === ServiceOrderStatus.completed && !existingServiceOrder.completedAt) {
+        updateData.completedAt = new Date();
+      }
+    }
+
+    const updated = await this.serviceOrderRepository.update(id, updateData);
+
+    // Histórico e notificação de mudança de status
+    if (typeof data.status !== 'undefined' && data.status !== existingServiceOrder.status) {
+      await this.changeHistoryService.recordStatusChange('service_order', {
+        entityId: id,
+        providerId: existingServiceOrder.providerId,
+        changedById: user.id,
+        from: existingServiceOrder.status,
+        to: data.status as any,
+        metadata: { title: updated.title }
+      });
+      await this.notificationService.createStatusChangeNotification({
+        entityType: 'service_order',
+        entityId: id,
+        providerId: existingServiceOrder.providerId,
+        statusFrom: existingServiceOrder.status as any,
+        statusTo: data.status as any,
+        actorName: user.name,
+        title: `OS #${id} atualizada`
+      });
+      logServiceOrderAudit(
+        'status_change',
+        String(user.id),
+        user.email,
+        String(id),
+        String(existingServiceOrder.providerId),
+        true,
+        undefined,
+        undefined,
+        undefined,
+        { from: existingServiceOrder.status, to: data.status }
+      );
+      await invalidateProviderCache(String(existingServiceOrder.providerId));
+      await invalidateResourceCache('service-order', String(id));
+      await invalidateResourceCache('stats');
+    }
+
+    return updated;
   }
 
   async getServiceOrders(
@@ -158,27 +225,6 @@ export class ServiceOrderService {
     };
 
     return await this.serviceOrderRepository.create(serviceOrderData);
-  }
-
-  async updateServiceOrder(user: AuthUser, id: number, data: UpdateServiceOrderData) {
-    const existingServiceOrder = await this.getServiceOrderById(user, id);
-    
-    if (!existingServiceOrder) {
-      return null;
-    }
-
-    // Auto-set timestamps based on status changes
-    const updateData = { ...data };
-    
-    if (data.status) {
-      if (data.status === ServiceOrderStatus.in_progress && !existingServiceOrder.startedAt) {
-        updateData.startedAt = new Date();
-      } else if (data.status === ServiceOrderStatus.completed && !existingServiceOrder.completedAt) {
-        updateData.completedAt = new Date();
-      }
-    }
-
-    return await this.serviceOrderRepository.update(id, updateData);
   }
 
   async deleteServiceOrder(user: AuthUser, id: number): Promise<boolean> {
@@ -304,5 +350,26 @@ export class ServiceOrderService {
       totalRevenue: revenueData._sum.cost || 0,
       pendingRevenue: pendingRevenue._sum.cost || 0
     };
+  }
+
+  async getKanban(user: AuthUser, providerId?: number) {
+    const pid = providerId ?? (user.providerId || undefined);
+    if (!pid) {
+      const err: any = new Error('providerId obrigatório para Kanban');
+      err.status = 400;
+      throw err;
+    }
+    await this.providerService.findById(pid, user);
+    return await this.serviceOrderRepository.getKanbanByProvider(pid);
+  }
+  // New: list change history for a service order
+  async getHistory(user: AuthUser, id: number, page?: number, limit?: number) {
+    const serviceOrder = await this.getServiceOrderById(user, id);
+    if (!serviceOrder) {
+      const err: any = new Error('Ordem de serviço não encontrada');
+      err.status = 404;
+      throw err;
+    }
+    return await this.changeHistoryService.listByEntity(serviceOrder.providerId, 'service_order', id, page, limit);
   }
 }

@@ -3,6 +3,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProviderController = void 0;
 const providerService_1 = require("../services/providerService");
+const auditLogger_1 = require("../utils/auditLogger");
+const paginationHelper_1 = require("../utils/paginationHelper");
 class ProviderController {
     constructor() {
         this.providerService = new providerService_1.ProviderService();
@@ -12,6 +14,8 @@ class ProviderController {
      * POST /api/providers
      */
     async create(req, res) {
+        const ipAddress = req.ip || req.connection.remoteAddress;
+        const userAgent = req.get('User-Agent');
         try {
             const createData = req.body;
             // Validar se o workspace já existe
@@ -35,6 +39,8 @@ class ProviderController {
                 return;
             }
             const result = await this.providerService.create(createData, req.user?.id || 0);
+            // Log de auditoria para criação bem-sucedida
+            (0, auditLogger_1.logProviderAudit)('create', req.user.id.toString(), req.user.email, result.provider.id.toString(), true, ipAddress, userAgent, undefined, { name: result.provider.name, workspace: result.provider.workspace });
             res.status(201).json({
                 success: true,
                 data: result,
@@ -42,12 +48,11 @@ class ProviderController {
             });
         }
         catch (error) {
-            console.error('Erro ao criar provedor:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Erro interno do servidor',
-                error: error instanceof Error ? error.message : 'Unknown error'
-            });
+            const message = error instanceof Error ? error.message : 'Erro ao criar provedor';
+            const status = error?.status || 500;
+            // Log de auditoria para criação falhada
+            (0, auditLogger_1.logProviderAudit)('create', req.user.id.toString(), req.user.email, 'unknown', false, ipAddress, userAgent, message);
+            res.status(status).json({ success: false, message });
         }
     }
     /**
@@ -56,9 +61,16 @@ class ProviderController {
      */
     async list(req, res) {
         try {
+            // Usar helper de paginação otimizada
+            const paginationParams = (0, paginationHelper_1.calculatePagination)({
+                page: req.query.page ? parseInt(req.query.page) : undefined,
+                limit: req.query.limit ? parseInt(req.query.limit) : undefined,
+                maxLimit: 100,
+                defaultLimit: 10
+            });
             const query = {
-                page: parseInt(req.query.page) || 1,
-                limit: parseInt(req.query.limit) || 10,
+                page: paginationParams.page,
+                limit: paginationParams.limit,
                 search: req.query.search,
                 status: req.query.status,
                 plan: req.query.plan,
@@ -203,8 +215,10 @@ class ProviderController {
      * DELETE /api/providers/:id
      */
     async delete(req, res) {
+        const ipAddress = req.ip || req.connection.remoteAddress;
+        const userAgent = req.get('User-Agent');
+        const providerId = parseInt(req.params.id);
         try {
-            const providerId = parseInt(req.params.id);
             if (isNaN(providerId)) {
                 res.status(400).json({
                     success: false,
@@ -230,18 +244,19 @@ class ProviderController {
                 return;
             }
             await this.providerService.delete(providerId, req.user?.id || 0);
+            // Log de auditoria para exclusão bem-sucedida
+            (0, auditLogger_1.logProviderAudit)('delete', req.user.id.toString(), req.user.email, providerId.toString(), true, ipAddress, userAgent, undefined, { name: existingProvider.name, workspace: existingProvider.workspace });
             res.json({
                 success: true,
                 message: 'Provedor excluído com sucesso'
             });
         }
         catch (error) {
-            console.error('Erro ao excluir provedor:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Erro interno do servidor',
-                error: error instanceof Error ? error.message : 'Unknown error'
-            });
+            const message = error instanceof Error ? error.message : 'Erro ao excluir provedor';
+            const status = error?.status || 500;
+            // Log de auditoria para exclusão falhada
+            (0, auditLogger_1.logProviderAudit)('delete', req.user.id.toString(), req.user.email, providerId.toString(), false, ipAddress, userAgent, message);
+            res.status(status).json({ success: false, message });
         }
     }
     /**

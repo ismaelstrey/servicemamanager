@@ -10,6 +10,7 @@ import dashboardRoutes from './routes/dashboardRoutes';
 import serviceOrderRoutes from './routes/serviceOrderRoutes';
 import commentRoutes from './routes/commentRoutes';
 import aiRoutes from './routes/aiRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 import swaggerUi from 'swagger-ui-express';
 import openapiSpec from './docs/openapi';
 import { generalRateLimit, authRateLimit, aiRateLimit, createResourceRateLimit } from './middleware/rateLimitMiddleware';
@@ -40,6 +41,7 @@ app.use('/api/providers', providerRoutes);
 app.use('/api/providers', equipmentRoutes);
 app.use('/api/providers', ticketRoutes);
 app.use('/api/providers', passwordVaultRoutes);
+app.use('/api/providers', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 // Rate limiting específico para criação de recursos
@@ -68,7 +70,11 @@ app.get('/health', publicCorsMiddleware, (_req: Request, res: Response) => {
 const initializeRedis = async () => {
   try {
     await redisClient.connect();
-    console.log('Redis conectado com sucesso');
+    if (redisClient.isClientConnected()) {
+      console.log('Redis conectado com sucesso');
+    } else {
+      console.log('Redis desativado ou indisponível; cache Redis não será usado');
+    }
   } catch (error) {
     console.warn('Falha ao conectar com Redis:', error);
     console.warn('Aplicação continuará sem cache Redis');

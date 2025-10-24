@@ -106,7 +106,7 @@ export const listCacheMiddleware = (options: Omit<CacheOptions, 'varyBy'> = {}) 
   return cacheMiddleware({
     ...options,
     ttl: options.ttl || 180, // 3 minutos para listagens
-    varyBy: ['userId', 'providerId', 'query.page', 'query.limit', 'query.status', 'query.priority']
+    varyBy: ['userId', 'providerId', 'query.page', 'query.limit', 'query.status', 'query.priority', 'query.startDate', 'query.endDate']
   });
 };
 

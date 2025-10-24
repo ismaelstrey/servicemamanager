@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TicketRepository = void 0;
 const client_1 = require("@prisma/client");
+const paginationHelper_1 = require("../utils/paginationHelper");
 class TicketRepository {
     constructor() {
         this.prisma = new client_1.PrismaClient();
@@ -28,8 +29,14 @@ class TicketRepository {
     }
     async listByProvider(providerId, query) {
         try {
-            const { page = 1, limit = 10, search, status, priority } = query;
-            const skip = (page - 1) * limit;
+            const { search, status, priority } = query;
+            // Usar helper de paginação otimizada
+            const paginationParams = (0, paginationHelper_1.calculatePagination)({
+                page: query.page,
+                limit: query.limit,
+                maxLimit: 100,
+                defaultLimit: 10
+            });
             const where = { providerId };
             if (search) {
                 where.OR = [
@@ -43,23 +50,37 @@ class TicketRepository {
             if (priority) {
                 where.priority = { equals: priority };
             }
-            const total = await this.prisma.ticket.count({ where });
-            const items = await this.prisma.ticket.findMany({
-                where,
-                skip,
-                take: limit,
-                orderBy: { createdAt: 'desc' }
-            });
+            if (query.startDate || query.endDate) {
+                where.createdAt = {};
+                if (query.startDate)
+                    where.createdAt.gte = query.startDate;
+                if (query.endDate)
+                    where.createdAt.lte = query.endDate;
+            }
+            // Executar count e findMany em paralelo para melhor performance
+            const [total, items] = await Promise.all([
+                this.prisma.ticket.count({ where }),
+                this.prisma.ticket.findMany({
+                    where,
+                    skip: paginationParams.skip,
+                    take: paginationParams.take,
+                    orderBy: { createdAt: 'desc' },
+                    // Selecionar apenas campos necessários para otimização
+                    select: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        status: true,
+                        priority: true,
+                        source: true,
+                        providerId: true,
+                        createdAt: true,
+                        updatedAt: true
+                    }
+                })
+            ]);
             const tickets = items.map(this.mapFromPrisma);
-            const totalPages = Math.ceil(total / limit);
-            const pagination = {
-                page,
-                limit,
-                total,
-                totalPages,
-                hasNext: page < totalPages,
-                hasPrev: page > 1
-            };
+            const pagination = (0, paginationHelper_1.createPaginationMeta)(paginationParams.page, paginationParams.limit, total);
             return { tickets, pagination };
         }
         catch (error) {
@@ -161,6 +182,33 @@ class TicketRepository {
         catch (error) {
             console.error('Erro no TicketRepository.getStatsByProvider:', error);
             throw new Error(`Erro ao obter estatísticas: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        }
+    }
+    async getKanbanByProvider(providerId) {
+        try {
+            const items = await this.prisma.ticket.findMany({
+                where: { providerId },
+                select: { id: true, title: true, priority: true, status: true, updatedAt: true },
+                orderBy: { updatedAt: 'desc' }
+            });
+            const board = {
+                open: [],
+                in_progress: [],
+                waiting_client: [],
+                resolved: [],
+                closed: []
+            };
+            for (const t of items) {
+                const col = t.status;
+                if (!board[col])
+                    continue;
+                board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt });
+            }
+            return board;
+        }
+        catch (error) {
+            console.error('Erro no TicketRepository.getKanbanByProvider:', error);
+            throw new Error(`Erro ao obter kanban: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
         }
     }
     mapFromPrisma(t) {

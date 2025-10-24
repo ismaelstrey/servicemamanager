@@ -1,22 +1,36 @@
 "use strict";
 // Validadores Zod para operações de Tickets
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateQuery = exports.validateParams = exports.validateSchema = exports.updateTicketStatusSchema = exports.ticketIdParamSchema = exports.providerIdParamSchema = exports.listTicketsSchema = exports.updateTicketSchema = exports.createTicketSchema = exports.ticketSourceSchema = exports.ticketPrioritySchema = exports.ticketStatusSchema = void 0;
+exports.validateQuery = exports.validateParams = exports.validateSchema = exports.updateTicketStatusSchema = exports.ticketIdParamSchema = exports.providerIdParamSchema = exports.historyQuerySchema = exports.listTicketsSchema = exports.updateTicketSchema = exports.createTicketSchema = exports.ticketSourceSchema = exports.ticketCategorySchema = exports.ticketPrioritySchema = exports.ticketStatusSchema = void 0;
 const zod_1 = require("zod");
 const providerValidator_1 = require("./providerValidator");
 Object.defineProperty(exports, "validateSchema", { enumerable: true, get: function () { return providerValidator_1.validateSchema; } });
 Object.defineProperty(exports, "validateParams", { enumerable: true, get: function () { return providerValidator_1.validateParams; } });
 Object.defineProperty(exports, "validateQuery", { enumerable: true, get: function () { return providerValidator_1.validateQuery; } });
-// Enums canônicos para tickets (alinhados ao TicketRepository)
-exports.ticketStatusSchema = zod_1.z.enum(['open', 'in_progress', 'waiting_client', 'resolved', 'closed'], {
-    errorMap: () => ({ message: 'Status deve ser open, in_progress, waiting_client, resolved ou closed' })
+// Enums canônicos para tickets (alinhados ao schema do Prisma)
+exports.ticketStatusSchema = zod_1.z.enum(['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed', 'cancelled'], {
+    errorMap: () => ({ message: 'Status deve ser open, assigned, in_progress, pending, resolved, closed ou cancelled' })
 });
 exports.ticketPrioritySchema = zod_1.z.enum(['low', 'medium', 'high', 'critical'], {
     errorMap: () => ({ message: 'Prioridade deve ser low, medium, high ou critical' })
 });
-exports.ticketSourceSchema = zod_1.z.enum(['manual', 'zabbix', 'api'], {
-    errorMap: () => ({ message: 'Fonte deve ser manual, zabbix ou api' })
+exports.ticketCategorySchema = zod_1.z.enum(['technical', 'billing', 'commercial', 'installation', 'maintenance', 'complaint', 'request', 'incident', 'change', 'other'], {
+    errorMap: () => ({ message: 'Categoria deve ser technical, billing, commercial, installation, maintenance, complaint, request, incident, change ou other' })
 });
+exports.ticketSourceSchema = zod_1.z.enum(['manual', 'email', 'phone', 'chat', 'portal', 'api', 'zabbix', 'mobile', 'social', 'other'], {
+    errorMap: () => ({ message: 'Fonte deve ser manual, email, phone, chat, portal, api, zabbix, mobile, social ou other' })
+});
+// Validador para email
+const emailSchema = zod_1.z.string()
+    .email('Email deve ter um formato válido')
+    .max(255, 'Email deve ter no máximo 255 caracteres')
+    .trim()
+    .toLowerCase();
+// Validador para telefone (formato brasileiro)
+const phoneSchema = zod_1.z.string()
+    .regex(/^(\+55\s?)?(\(?\d{2}\)?\s?)?\d{4,5}-?\d{4}$/, 'Telefone deve estar no formato válido brasileiro')
+    .max(20, 'Telefone deve ter no máximo 20 caracteres')
+    .trim();
 // Schema para criação de ticket
 exports.createTicketSchema = zod_1.z.object({
     title: zod_1.z.string()
@@ -67,7 +81,26 @@ exports.listTicketsSchema = zod_1.z.object({
         .trim()
         .optional(),
     status: exports.ticketStatusSchema.optional(),
-    priority: exports.ticketPrioritySchema.optional()
+    priority: exports.ticketPrioritySchema.optional(),
+    startDate: zod_1.z.string()
+        .refine(v => !isNaN(Date.parse(v)), 'startDate deve ser uma data válida')
+        .optional(),
+    endDate: zod_1.z.string()
+        .refine(v => !isNaN(Date.parse(v)), 'endDate deve ser uma data válida')
+        .optional()
+});
+// Schema de paginação para histórico
+exports.historyQuerySchema = zod_1.z.object({
+    page: zod_1.z.string()
+        .regex(/^\d+$/, 'Página deve ser um número')
+        .transform(Number)
+        .refine(n => n > 0, 'Página deve ser maior que 0')
+        .optional(),
+    limit: zod_1.z.string()
+        .regex(/^\d+$/, 'Limite deve ser um número')
+        .transform(Number)
+        .refine(n => n > 0 && n <= 100, 'Limite deve ser entre 1 e 100')
+        .optional()
 });
 // Params para rotas com providerId
 exports.providerIdParamSchema = zod_1.z.object({

@@ -20,6 +20,8 @@ model User {
   providerUsers ProviderUser[]
   sentInvites ProviderInvite[] @relation("InvitedBy")
   comments Comment[]
+  notifications Notification[]
+  changeHistories ChangeHistory[]
 }
 
 model Provider {
@@ -41,6 +43,8 @@ model Provider {
   invites       ProviderInvite[]
   serviceOrders ServiceOrder[]
   comments      Comment[]
+  notifications Notification[]
+  changeHistories ChangeHistory[]
 }
 
 model ProviderUser {
@@ -203,6 +207,9 @@ model PasswordVault {
   password    String
   provider    Provider @relation(fields: [providerId], references: [id])
   providerId  Int
+  expiresAt   DateTime?
+  lastRotatedAt DateTime?
+  rotationIntervalDays Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -291,4 +298,48 @@ model ZabbixEvent {
   @@index([zabbixServerId, processed])
   @@index([zabbixServerId, eventTime])
   @@map("zabbix_events")
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  type        String   // e.g. ticket_status_changed, service_order_status_changed
+  entityType  String   // 'ticket' | 'service_order'
+  entityId    Int
+  title       String
+  message     String
+  statusFrom  String?
+  statusTo    String?
+
+  provider    Provider @relation(fields: [providerId], references: [id])
+  providerId  Int
+  user        User?    @relation(fields: [userId], references: [id])
+  userId      Int?
+
+  isRead      Boolean  @default(false)
+  readAt      DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([providerId, isRead])
+  @@index([providerId, entityType, entityId])
+  @@map("notifications")
+}
+
+model ChangeHistory {
+  id          Int      @id @default(autoincrement())
+  entityType  String   // 'ticket' | 'service_order' | other
+  entityId    Int
+  provider    Provider @relation(fields: [providerId], references: [id])
+  providerId  Int
+  changedBy   User?    @relation(fields: [changedById], references: [id])
+  changedById Int?
+  field       String   // e.g. status, priority
+  oldValue    String?
+  newValue    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([providerId, entityType, entityId])
+  @@map("change_history")
 }

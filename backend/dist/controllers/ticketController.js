@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TicketController = void 0;
 const ticketService_1 = require("../services/ticketService");
+const paginationHelper_1 = require("../utils/paginationHelper");
 class TicketController {
     constructor() {
         this.ticketService = new ticketService_1.TicketService();
@@ -17,12 +18,23 @@ class TicketController {
                 res.status(400).json({ success: false, message: 'providerId inválido' });
                 return;
             }
+            // Usar helper de paginação otimizada
+            const paginationParams = (0, paginationHelper_1.calculatePagination)({
+                page: req.query.page ? parseInt(req.query.page) : undefined,
+                limit: req.query.limit ? parseInt(req.query.limit) : undefined,
+                maxLimit: 100,
+                defaultLimit: 10
+            });
+            const startDateStr = req.query.startDate || undefined;
+            const endDateStr = req.query.endDate || undefined;
             const query = {
-                page: parseInt(req.query.page) || 1,
-                limit: parseInt(req.query.limit) || 10,
+                page: paginationParams.page,
+                limit: paginationParams.limit,
                 search: req.query.search || undefined,
                 status: req.query.status || undefined,
-                priority: req.query.priority || undefined
+                priority: req.query.priority || undefined,
+                startDate: startDateStr ? new Date(startDateStr) : undefined,
+                endDate: endDateStr ? new Date(endDateStr) : undefined
             };
             const result = await this.ticketService.list(providerId, query, req.user);
             res.json({
@@ -47,6 +59,31 @@ class TicketController {
             const providerId = parseInt(req.params.providerId);
             if (isNaN(providerId)) {
                 res.status(400).json({ success: false, message: 'providerId inválido' });
+                return;
+            }
+            const data = req.body;
+            const ticket = await this.ticketService.create(providerId, data, req.user);
+            res.status(201).json({
+                success: true,
+                data: ticket,
+                message: 'Ticket criado com sucesso'
+            });
+        }
+        catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro ao criar ticket';
+            const status = error?.status || 500;
+            res.status(status).json({ success: false, message });
+        }
+    }
+    /**
+     * Novo: criar ticket vinculado automaticamente ao provedor do usuário
+     * POST /api/tickets
+     */
+    async createForCurrentProvider(req, res) {
+        try {
+            const providerId = req.user?.providerId;
+            if (!providerId) {
+                res.status(400).json({ success: false, message: 'Usuário não vinculado a um provedor' });
                 return;
             }
             const data = req.body;
@@ -161,6 +198,62 @@ class TicketController {
         }
         catch (error) {
             const message = error instanceof Error ? error.message : 'Erro ao obter estatísticas';
+            const status = error?.status || 500;
+            res.status(status).json({ success: false, message });
+        }
+    }
+    /**
+     * Kanban por Provider
+     * GET /api/providers/:providerId/tickets/kanban
+     */
+    async kanban(req, res) {
+        try {
+            const providerId = parseInt(req.params.providerId);
+            if (isNaN(providerId)) {
+                res.status(400).json({ success: false, message: 'providerId inválido' });
+                return;
+            }
+            const board = await this.ticketService.getKanban(providerId, req.user);
+            res.json({ success: true, data: board, message: 'Kanban obtido com sucesso' });
+        }
+        catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro ao obter Kanban';
+            const status = error?.status || 500;
+            res.status(status).json({ success: false, message });
+        }
+    }
+    /**
+     * Histórico de mudanças do ticket
+     * GET /api/tickets/:id/history
+     */
+    async history(req, res) {
+        try {
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) {
+                res.status(400).json({ success: false, message: 'id inválido' });
+                return;
+            }
+            const { page, limit } = (0, paginationHelper_1.calculatePagination)({
+                page: req.query.page ? parseInt(req.query.page) : undefined,
+                limit: req.query.limit ? parseInt(req.query.limit) : undefined,
+                maxLimit: 100,
+                defaultLimit: 20
+            });
+            const result = await this.ticketService.getHistory(id, req.user, page, limit);
+            res.json({
+                success: true,
+                data: result.history,
+                pagination: {
+                    page: result.page,
+                    limit: result.limit,
+                    total: result.total,
+                    totalPages: Math.ceil(result.total / result.limit)
+                },
+                message: 'Histórico obtido com sucesso'
+            });
+        }
+        catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro ao obter histórico do ticket';
             const status = error?.status || 500;
             res.status(status).json({ success: false, message });
         }

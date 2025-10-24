@@ -66,6 +66,20 @@ export const listEquipmentsSchema = z.object({
   status: equipmentStatusSchema.optional()
 });
 
+// Schema de paginação para histórico
+export const historyQuerySchema = z.object({
+  page: z.string()
+    .regex(/^\d+$/, 'Página deve ser um número')
+    .transform(Number)
+    .refine(n => n > 0, 'Página deve ser maior que 0')
+    .optional(),
+  limit: z.string()
+    .regex(/^\d+$/, 'Limite deve ser um número')
+    .transform(Number)
+    .refine(n => n > 0 && n <= 100, 'Limite deve ser entre 1 e 100')
+    .optional()
+});
+
 // Params para rotas com providerId
 export const providerIdParamSchema = z.object({
   providerId: z.string()

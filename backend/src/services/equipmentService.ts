@@ -3,14 +3,19 @@ import { PaginationMeta } from '../types/common.types';
 import { ProviderService } from './providerService';
 import { EquipmentRepository, CreateEquipmentData, ListEquipmentsQuery, EquipmentRecord, UpdateEquipmentData } from '../repositories/equipmentRepository';
 import { $Enums } from '@prisma/client';
+import { ChangeHistoryService } from './changeHistoryService';
+import { logEquipmentAudit } from '../utils/auditLogger';
+import { invalidateProviderCache, invalidateResourceCache } from '../middleware/cacheMiddleware';
 
 export class EquipmentService {
   private repository: EquipmentRepository;
   private providerService: ProviderService;
+  private changeHistoryService: ChangeHistoryService;
 
   constructor() {
     this.repository = new EquipmentRepository();
     this.providerService = new ProviderService();
+    this.changeHistoryService = new ChangeHistoryService();
   }
 
   private async assertAccess(user: AuthUser, providerId: number): Promise<void> {
@@ -33,7 +38,19 @@ export class EquipmentService {
 
   async create(providerId: number, data: CreateEquipmentData, user: AuthUser): Promise<EquipmentRecord> {
     await this.assertAccess(user, providerId);
-    return this.repository.create(providerId, data);
+    const created = await this.repository.create(providerId, data);
+    logEquipmentAudit(
+      'create',
+      String(user.id),
+      user.email,
+      String(created.id),
+      String(providerId),
+      true
+    );
+    await invalidateProviderCache(String(providerId));
+    await invalidateResourceCache('equipment', String(created.id));
+    await invalidateResourceCache('stats');
+    return created;
   }
 
   async getById(id: number, user: AuthUser): Promise<EquipmentRecord> {
@@ -44,6 +61,14 @@ export class EquipmentService {
       throw err;
     }
     await this.assertAccess(user, equipment.providerId);
+    logEquipmentAudit(
+      'read',
+      String(user.id),
+      user.email,
+      String(id),
+      String(equipment.providerId),
+      true
+    );
     return equipment;
   }
 
@@ -61,6 +86,34 @@ export class EquipmentService {
       err.status = 500;
       throw err;
     }
+
+    // Registrar histórico se houve mudança de status
+    if (typeof data.status !== 'undefined' && data.status !== existing.status) {
+      await this.changeHistoryService.recordStatusChange('equipment', {
+        entityId: id,
+        providerId: existing.providerId,
+        changedById: user.id,
+        from: existing.status,
+        to: data.status,
+        metadata: { label: updated.label, serial: updated.serial }
+      });
+      logEquipmentAudit(
+        'update',
+        String(user.id),
+        user.email,
+        String(id),
+        String(existing.providerId),
+        true,
+        undefined,
+        undefined,
+        undefined,
+        { from: existing.status, to: data.status }
+      );
+      await invalidateProviderCache(String(existing.providerId));
+      await invalidateResourceCache('equipment', String(id));
+      await invalidateResourceCache('stats');
+    }
+
     return updated;
   }
 
@@ -78,11 +131,34 @@ export class EquipmentService {
       err.status = 500;
       throw err;
     }
+    logEquipmentAudit(
+      'delete',
+      String(user.id),
+      user.email,
+      String(id),
+      String(existing.providerId),
+      true
+    );
+    await invalidateProviderCache(String(existing.providerId));
+    await invalidateResourceCache('equipment', String(id));
+    await invalidateResourceCache('stats');
     return true;
   }
 
   async getStats(providerId: number, user: AuthUser): Promise<{ total: number; byType: Record<$Enums.EquipmentType, number>; }> {
     await this.assertAccess(user, providerId);
     return this.repository.getStatsByProvider(providerId);
+  }
+
+  // Novo: listar histórico de mudanças do equipamento
+  async getHistory(id: number, user: AuthUser, page?: number, limit?: number) {
+    const existing = await this.repository.findById(id);
+    if (!existing) {
+      const err: any = new Error('Equipamento não encontrado');
+      err.status = 404;
+      throw err;
+    }
+    await this.assertAccess(user, existing.providerId);
+    return await this.changeHistoryService.listByEntity(existing.providerId, 'equipment', id, page, limit);
   }
 }

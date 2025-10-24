@@ -383,6 +383,42 @@ export class ProviderService {
     }
   }
 
+  /**
+   * Obter vínculo e permissões do usuário no provedor
+   */
+  async getProviderUser(userId: number, providerId: number): Promise<ProviderUser | null> {
+    try {
+      return await this.providerRepository.getProviderUser(userId, providerId);
+    } catch (error) {
+      console.error('Erro no ProviderService.getProviderUser:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Verificar permissão granular por provedor
+   */
+  async hasPermission(user: AuthUser, providerId: number, permission: string): Promise<boolean> {
+    try {
+      // Papéis globais têm acesso amplo
+      if (user.role === 'super_admin' || user.role === 'admin') {
+        return true;
+      }
+      const membership = await this.getProviderUser(user.id, providerId);
+      if (!membership || membership.status !== 'active') {
+        return false;
+      }
+      // Dono e manager têm todas as permissões do provedor
+      if (membership.role === 'admin' || membership.role === 'manager') {
+        return true;
+      }
+      return (membership.permissions || []).includes(permission);
+    } catch (error) {
+      console.error('Erro no ProviderService.hasPermission:', error);
+      return false;
+    }
+  }
+
   // Métodos privados
 
   /**

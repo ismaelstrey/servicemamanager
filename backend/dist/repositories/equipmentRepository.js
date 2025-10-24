@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EquipmentRepository = void 0;
 const client_1 = require("@prisma/client");
+const paginationHelper_1 = require("../utils/paginationHelper");
 class EquipmentRepository {
     constructor() {
         this.prisma = new client_1.PrismaClient();
@@ -36,8 +37,14 @@ class EquipmentRepository {
      */
     async listByProvider(providerId, query) {
         try {
-            const { page = 1, limit = 10, search, type, status } = query;
-            const skip = (page - 1) * limit;
+            const { search, type, status } = query;
+            // Usar helper de paginação otimizada
+            const paginationParams = (0, paginationHelper_1.calculatePagination)({
+                page: query.page,
+                limit: query.limit,
+                maxLimit: 100,
+                defaultLimit: 10
+            });
             const where = { providerId };
             if (search) {
                 where.OR = [
@@ -51,22 +58,29 @@ class EquipmentRepository {
             if (status) {
                 where.status = { equals: status };
             }
-            const total = await this.prisma.equipment.count({ where });
-            const items = await this.prisma.equipment.findMany({
-                where,
-                skip,
-                take: limit,
-                orderBy: { createdAt: 'desc' }
-            });
+            // Executar count e findMany em paralelo para melhor performance
+            const [total, items] = await Promise.all([
+                this.prisma.equipment.count({ where }),
+                this.prisma.equipment.findMany({
+                    where,
+                    skip: paginationParams.skip,
+                    take: paginationParams.take,
+                    orderBy: { createdAt: 'desc' },
+                    // Selecionar apenas campos necessários para otimização
+                    select: {
+                        id: true,
+                        label: true,
+                        type: true,
+                        serial: true,
+                        status: true,
+                        providerId: true,
+                        createdAt: true,
+                        updatedAt: true
+                    }
+                })
+            ]);
             const equipments = items.map((e) => this.mapFromPrisma(e));
-            const pagination = {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-                hasNext: page < Math.ceil(total / limit),
-                hasPrev: page > 1
-            };
+            const pagination = (0, paginationHelper_1.createPaginationMeta)(paginationParams.page, paginationParams.limit, total);
             return { equipments, pagination };
         }
         catch (error) {

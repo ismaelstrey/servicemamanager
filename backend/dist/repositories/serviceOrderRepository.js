@@ -77,5 +77,27 @@ class ServiceOrderRepository {
             ...params
         });
     }
+    async getKanbanByProvider(providerId) {
+        const items = await this.prisma.serviceOrder.findMany({
+            where: { providerId },
+            select: { id: true, title: true, priority: true, status: true, updatedAt: true },
+            orderBy: { updatedAt: 'desc' }
+        });
+        const board = {
+            pending: [],
+            in_progress: [],
+            waiting_parts: [],
+            waiting_client: [],
+            completed: [],
+            cancelled: []
+        };
+        for (const so of items) {
+            const col = so.status;
+            if (!board[col])
+                continue;
+            board[col].push({ id: so.id, title: so.title, priority: so.priority, updatedAt: so.updatedAt });
+        }
+        return board;
+    }
 }
 exports.ServiceOrderRepository = ServiceOrderRepository;

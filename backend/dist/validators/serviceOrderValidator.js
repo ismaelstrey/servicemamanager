@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateQuery = exports.validateParams = exports.validateSchema = exports.serviceOrderIdParamSchema = exports.serviceOrderStatsSchema = exports.listServiceOrdersSchema = exports.updateServiceOrderStatusSchema = exports.updateServiceOrderSchema = exports.createServiceOrderSchema = exports.serviceOrderPrioritySchema = exports.serviceOrderStatusSchema = void 0;
+exports.validateQuery = exports.validateParams = exports.validateSchema = exports.serviceOrderIdParamSchema = exports.serviceOrderStatsSchema = exports.historyQuerySchema = exports.listServiceOrdersSchema = exports.updateServiceOrderStatusSchema = exports.updateServiceOrderSchema = exports.createServiceOrderSchema = exports.serviceOrderPrioritySchema = exports.serviceOrderStatusSchema = void 0;
 const zod_1 = require("zod");
 const providerValidator_1 = require("./providerValidator");
 Object.defineProperty(exports, "validateSchema", { enumerable: true, get: function () { return providerValidator_1.validateSchema; } });
@@ -77,6 +77,11 @@ exports.listServiceOrdersSchema = zod_1.z.object({
     status: exports.serviceOrderStatusSchema.optional(),
     priority: exports.serviceOrderPrioritySchema.optional(),
     providerId: zod_1.z.coerce.number().int().min(1).optional()
+});
+// Schema for history pagination
+exports.historyQuerySchema = zod_1.z.object({
+    page: zod_1.z.coerce.number().int().min(1).default(1),
+    limit: zod_1.z.coerce.number().int().min(1).max(100).default(20)
 });
 // Schema for service order stats
 exports.serviceOrderStatsSchema = zod_1.z.object({

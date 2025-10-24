@@ -5,12 +5,17 @@ export interface CreatePasswordVaultData {
   label: string;
   username: string;
   password: string; // encrypted string (packed iv+tag+cipher)
+  expiresAt?: Date;
+  rotationIntervalDays?: number;
 }
 
 export interface UpdatePasswordVaultData {
   label?: string;
   username?: string;
   password?: string; // encrypted string
+  expiresAt?: Date | null;
+  rotationIntervalDays?: number | null;
+  lastRotatedAt?: Date;
 }
 
 export interface ListPasswordVaultsQuery {
@@ -25,6 +30,9 @@ export interface PasswordVaultRecord {
   username: string;
   password: string; // encrypted
   providerId: number;
+  expiresAt?: Date | null;
+  lastRotatedAt?: Date | null;
+  rotationIntervalDays?: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,7 +51,9 @@ export class PasswordVaultRepository {
           providerId,
           label: data.label,
           username: data.username,
-          password: data.password
+          password: data.password,
+          expiresAt: data.expiresAt,
+          rotationIntervalDays: data.rotationIntervalDays
         }
       });
       return this.mapFromPrisma(rec);
@@ -115,6 +125,9 @@ export class PasswordVaultRepository {
           label: data.label,
           username: data.username,
           password: data.password,
+          expiresAt: data.expiresAt,
+          rotationIntervalDays: data.rotationIntervalDays,
+          lastRotatedAt: data.lastRotatedAt,
           updatedAt: new Date()
         }
       });
@@ -158,6 +171,9 @@ export class PasswordVaultRepository {
       username: p.username,
       password: p.password,
       providerId: p.providerId,
+      expiresAt: p.expiresAt ?? null,
+      lastRotatedAt: p.lastRotatedAt ?? null,
+      rotationIntervalDays: p.rotationIntervalDays ?? null,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt
     };

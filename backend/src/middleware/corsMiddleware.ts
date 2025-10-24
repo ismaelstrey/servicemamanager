@@ -32,6 +32,7 @@ const getAllowedOrigins = (): string[] => {
         'http://localhost:8080', // Vue CLI
         'http://127.0.0.1:3000',
         'http://127.0.0.1:5173',
+        'http://127.0.0.1:6379',
         // Adicione outras portas de desenvolvimento conforme necessário
       ];
   }

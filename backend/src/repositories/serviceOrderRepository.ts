@@ -1,4 +1,5 @@
-import { PrismaClient, ServiceOrder, Prisma } from '@prisma/client';
+import { PrismaClient, ServiceOrder, Prisma, ServiceOrderStatus, ServiceOrderPriority } from '@prisma/client';
+import { ServiceOrderKanbanBoard } from '../types/serviceOrder.types'
 
 export class ServiceOrderRepository {
   private prisma: PrismaClient;
@@ -134,5 +135,27 @@ export class ServiceOrderRepository {
       },
       ...params
     });
+  }
+
+  async getKanbanByProvider(providerId: number): Promise<ServiceOrderKanbanBoard> {
+    const items = await this.prisma.serviceOrder.findMany({
+      where: { providerId },
+      select: { id: true, title: true, priority: true, status: true, updatedAt: true },
+      orderBy: { updatedAt: 'desc' }
+    });
+    const board = {
+      pending: [],
+      in_progress: [],
+      waiting_parts: [],
+      waiting_client: [],
+      completed: [],
+      cancelled: []
+    } as ServiceOrderKanbanBoard;
+    for (const so of items as any[]) {
+      const col = so.status as ServiceOrderStatus;
+      if (!board[col]) continue;
+      board[col].push({ id: so.id, title: so.title, priority: so.priority, updatedAt: so.updatedAt });
+    }
+    return board;
   }
 }

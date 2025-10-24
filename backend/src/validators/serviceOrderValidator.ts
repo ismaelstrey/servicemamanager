@@ -79,6 +79,12 @@ export const listServiceOrdersSchema = z.object({
   providerId: z.coerce.number().int().min(1).optional()
 });
 
+// Schema for history pagination
+export const historyQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20)
+});
+
 // Schema for service order stats
 export const serviceOrderStatsSchema = z.object({
   providerId: z.coerce.number().int().min(1).optional()

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServiceOrderController = void 0;
 const serviceOrderService_1 = require("../services/serviceOrderService");
+const paginationHelper_1 = require("../utils/paginationHelper");
 class ServiceOrderController {
     constructor() {
         this.serviceOrderService = new serviceOrderService_1.ServiceOrderService();
@@ -9,13 +10,20 @@ class ServiceOrderController {
     // GET /api/service-orders
     async getAll(req, res) {
         try {
-            const { page = 1, limit = 10, status, priority, providerId } = req.query;
+            const { status, priority, providerId } = req.query;
+            // Usar helper de paginação otimizada
+            const paginationParams = (0, paginationHelper_1.calculatePagination)({
+                page: req.query.page ? parseInt(req.query.page) : undefined,
+                limit: req.query.limit ? parseInt(req.query.limit) : undefined,
+                maxLimit: 100,
+                defaultLimit: 10
+            });
             const filters = {
                 status: status,
                 priority: priority,
                 providerId: providerId ? parseInt(providerId) : undefined
             };
-            const serviceOrders = await this.serviceOrderService.getServiceOrders(req.user, parseInt(page), parseInt(limit), filters);
+            const serviceOrders = await this.serviceOrderService.getServiceOrders(req.user, paginationParams.page, paginationParams.limit, filters);
             res.json(serviceOrders);
         }
         catch (error) {
@@ -111,6 +119,55 @@ class ServiceOrderController {
         catch (error) {
             console.error('Error fetching service order stats:', error);
             res.status(500).json({ error: 'Erro interno do servidor' });
+        }
+    }
+    // GET /api/service-orders/kanban
+    async kanban(req, res) {
+        try {
+            const { providerId } = req.query;
+            const board = await this.serviceOrderService.getKanban(req.user, providerId ? parseInt(providerId) : undefined);
+            res.json(board);
+        }
+        catch (error) {
+            const status = error?.status || 500;
+            const message = status === 400 ? error.message : 'Erro interno do servidor';
+            console.error('Error fetching service order kanban:', error);
+            res.status(status).json({ error: message });
+        }
+    }
+    // GET /api/service-orders/:id/history
+    async history(req, res) {
+        try {
+            const { id } = req.params;
+            const sid = parseInt(id);
+            if (isNaN(sid)) {
+                res.status(400).json({ error: 'id inválido' });
+                return;
+            }
+            const { page, limit } = (0, paginationHelper_1.calculatePagination)({
+                page: req.query.page ? parseInt(req.query.page) : undefined,
+                limit: req.query.limit ? parseInt(req.query.limit) : undefined,
+                maxLimit: 100,
+                defaultLimit: 20
+            });
+            const result = await this.serviceOrderService.getHistory(req.user, sid, page, limit);
+            res.json({
+                success: true,
+                data: result.history,
+                pagination: {
+                    page: result.page,
+                    limit: result.limit,
+                    total: result.total,
+                    totalPages: Math.ceil(result.total / result.limit)
+                },
+                message: 'Histórico obtido com sucesso'
+            });
+        }
+        catch (error) {
+            console.error('Error fetching service order history:', error);
+            const status = error?.status || 500;
+            const message = error instanceof Error ? error.message : 'Erro interno do servidor';
+            res.status(status).json({ error: message });
         }
     }
 }

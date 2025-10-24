@@ -30,6 +30,8 @@ export interface ListTicketsQuery {
   search?: string;
   status?: TicketStatus;
   priority?: TicketPriority;
+  startDate?: Date;
+  endDate?: Date;
 }
 
 export interface TicketRecord {
@@ -49,6 +51,15 @@ export interface TicketStats {
   byStatus: Record<TicketStatus, number>;
   byPriority: Record<TicketPriority, number>;
 }
+
+export interface KanbanColumnItem {
+  id: number;
+  title: string;
+  priority: TicketPriority;
+  updatedAt: Date;
+}
+
+export type KanbanBoard = Record<TicketStatus, KanbanColumnItem[]>;
 
 export class TicketRepository {
   private prisma: PrismaClient;
@@ -100,6 +111,11 @@ export class TicketRepository {
       }
       if (priority) {
         where.priority = { equals: priority };
+      }
+      if (query.startDate || query.endDate) {
+        where.createdAt = {};
+        if (query.startDate) where.createdAt.gte = query.startDate;
+        if (query.endDate) where.createdAt.lte = query.endDate;
       }
 
       // Executar count e findMany em paralelo para melhor performance
@@ -236,6 +252,32 @@ export class TicketRepository {
     } catch (error) {
       console.error('Erro no TicketRepository.getStatsByProvider:', error);
       throw new Error(`Erro ao obter estatísticas: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
+  }
+
+  async getKanbanByProvider(providerId: number): Promise<KanbanBoard> {
+    try {
+      const items = await this.prisma.ticket.findMany({
+        where: { providerId },
+        select: { id: true, title: true, priority: true, status: true, updatedAt: true },
+        orderBy: { updatedAt: 'desc' }
+      });
+      const board = {
+        open: [],
+        in_progress: [],
+        waiting_client: [],
+        resolved: [],
+        closed: []
+      } as KanbanBoard;
+      for (const t of items as any[]) {
+        const col = t.status as TicketStatus;
+        if (!board[col]) continue;
+        board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt });
+      }
+      return board;
+    } catch (error) {
+      console.error('Erro no TicketRepository.getKanbanByProvider:', error);
+      throw new Error(`Erro ao obter kanban: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
   }
 

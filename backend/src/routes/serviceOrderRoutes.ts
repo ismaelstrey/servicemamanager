@@ -10,9 +10,10 @@ import {
   serviceOrderIdParamSchema,
   validateSchema,
   validateParams,
-  validateQuery
+  validateQuery,
+  historyQuerySchema
 } from '../validators/serviceOrderValidator';
-import { listCacheMiddleware, serviceOrderCacheMiddleware, statsCacheMiddleware } from '../middleware/cacheMiddleware';
+import { listCacheMiddleware, serviceOrderCacheMiddleware, statsCacheMiddleware, cacheMiddleware } from '../middleware/cacheMiddleware';
 
 const router = Router();
 const controller = new ServiceOrderController();
@@ -20,11 +21,17 @@ const controller = new ServiceOrderController();
 // Service order statistics with cache
 router.get('/stats', authMiddleware, validateQuery(serviceOrderStatsSchema), statsCacheMiddleware(), (req, res) => controller.getStats(req as any, res));
 
+// Kanban board for service orders
+router.get('/kanban', authMiddleware, validateQuery(serviceOrderStatsSchema), cacheMiddleware({ ttl: 60, keyPrefix: 'kanban', varyBy: ['userId', 'providerId'] }), (req, res) => controller.kanban(req as any, res));
+
 // List service orders with cache
 router.get('/', authMiddleware, validateQuery(listServiceOrdersSchema), listCacheMiddleware(), (req, res) => controller.getAll(req as any, res));
 
 // Get service order by ID with cache
 router.get('/:id', authMiddleware, validateParams(serviceOrderIdParamSchema), serviceOrderCacheMiddleware(), (req, res) => controller.getById(req as any, res));
+
+// Get service order history by ID with cache
+router.get('/:id/history', authMiddleware, validateParams(serviceOrderIdParamSchema), validateQuery(historyQuerySchema), cacheMiddleware({ ttl: 120, keyPrefix: 'history', varyBy: ['userId', 'providerId', 'params.id', 'query.page', 'query.limit'] }), (req, res) => controller.history(req as any, res));
 
 // Create service order
 router.post('/', authMiddleware, validateSchema(createServiceOrderSchema), (req, res) => controller.create(req as any, res));

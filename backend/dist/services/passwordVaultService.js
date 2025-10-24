@@ -4,6 +4,7 @@ exports.PasswordVaultService = void 0;
 const providerService_1 = require("./providerService");
 const passwordVaultRepository_1 = require("../repositories/passwordVaultRepository");
 const encryptionUtils_1 = require("../utils/encryptionUtils");
+const passwordUtils_1 = require("../utils/passwordUtils");
 class PasswordVaultService {
     constructor() {
         this.repository = new passwordVaultRepository_1.PasswordVaultRepository();
@@ -19,8 +20,10 @@ class PasswordVaultService {
             throw err;
         }
     }
-    canViewSecrets(user) {
-        return user.role === 'super_admin' || user.role === 'admin' || user.role === 'manager';
+    async canViewSecrets(user, providerId) {
+        if (user.role === 'super_admin' || user.role === 'admin')
+            return true;
+        return this.providerService.hasPermission(user, providerId, 'passwords:view');
     }
     async list(providerId, query, user) {
         await this.assertAccess(user, providerId);
@@ -29,7 +32,8 @@ class PasswordVaultService {
     async create(providerId, data, user) {
         await this.assertAccess(user, providerId);
         const encrypted = (0, encryptionUtils_1.encryptString)(data.password);
-        const created = await this.repository.create(providerId, { ...data, password: encrypted });
+        const expiresAt = data.expiresAt ?? (data.rotationIntervalDays ? new Date(Date.now() + data.rotationIntervalDays * 24 * 60 * 60 * 1000) : undefined);
+        const created = await this.repository.create(providerId, { ...data, password: encrypted, expiresAt });
         const { password, ...rest } = created;
         return rest;
     }
@@ -41,7 +45,7 @@ class PasswordVaultService {
             throw err;
         }
         await this.assertAccess(user, rec.providerId);
-        if (this.canViewSecrets(user)) {
+        if (await this.canViewSecrets(user, rec.providerId)) {
             return { ...rec, password: (0, encryptionUtils_1.decryptString)(rec.password) };
         }
         const { password, ...rest } = rec;
@@ -59,14 +63,62 @@ class PasswordVaultService {
         if (data.password) {
             updateData.password = (0, encryptionUtils_1.encryptString)(data.password);
         }
+        // Permitir atualização de expiração/intervalo de rotação
+        if (data.expiresAt !== undefined) {
+            updateData.expiresAt = data.expiresAt;
+        }
+        if (data.rotationIntervalDays !== undefined) {
+            updateData.rotationIntervalDays = data.rotationIntervalDays;
+        }
         const updated = await this.repository.update(id, updateData);
         if (!updated) {
             const err = new Error('Registro de senha não encontrado');
             err.status = 404;
             throw err;
         }
-        if (this.canViewSecrets(user)) {
+        if (await this.canViewSecrets(user, current.providerId)) {
             return { ...updated, password: data.password ? data.password : (0, encryptionUtils_1.decryptString)(updated.password) };
+        }
+        const { password, ...rest } = updated;
+        return rest;
+    }
+    async rotate(id, user, options) {
+        const current = await this.repository.findById(id);
+        if (!current) {
+            const err = new Error('Registro de senha não encontrado');
+            err.status = 404;
+            throw err;
+        }
+        await this.assertAccess(user, current.providerId);
+        // Verificar permissão de rotação
+        const canRotate = await this.providerService.hasPermission(user, current.providerId, 'passwords:rotate');
+        if (!canRotate) {
+            const err = new Error('Permissão insuficiente para rotacionar senhas neste provedor');
+            err.status = 403;
+            throw err;
+        }
+        const newPlain = options?.password || (0, passwordUtils_1.generatePassword)({
+            length: options?.length ?? 16,
+            includeUppercase: options?.includeUppercase ?? true,
+            includeLowercase: options?.includeLowercase ?? true,
+            includeNumbers: options?.includeNumbers ?? true,
+            includeSymbols: options?.includeSymbols ?? true,
+            excludeSimilar: options?.excludeSimilar ?? true,
+            excludeAmbiguous: options?.excludeAmbiguous ?? false,
+            customCharacters: options?.customCharacters,
+            pattern: options?.pattern
+        });
+        const encrypted = (0, encryptionUtils_1.encryptString)(newPlain);
+        const now = new Date();
+        const expiresAt = current.rotationIntervalDays ? new Date(now.getTime() + current.rotationIntervalDays * 24 * 60 * 60 * 1000) : (current.expiresAt ?? undefined);
+        const updated = await this.repository.update(id, { password: encrypted, lastRotatedAt: now, expiresAt });
+        if (!updated) {
+            const err = new Error('Registro de senha não encontrado');
+            err.status = 404;
+            throw err;
+        }
+        if (await this.canViewSecrets(user, current.providerId)) {
+            return { ...updated, password: newPlain };
         }
         const { password, ...rest } = updated;
         return rest;
