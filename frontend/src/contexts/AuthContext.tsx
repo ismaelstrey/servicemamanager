@@ -11,6 +11,7 @@ import type {
   UserRole
 } from '../types/auth';
 import type { AuthUser } from '../types/auth';
+import type { LoginResponse, RegisterResponse, RefreshTokenResponse } from '../types/auth';
 
 // Estado inicial
 const initialState: AuthState = {
@@ -99,14 +100,9 @@ function AuthProvider({ children }: AuthProviderProps) {
     try {
       dispatch({ type: 'AUTH_START' });
 
-      const response = await ApiService.post<{
-        token: string;
-        refreshToken?: string;
-        user: AuthUser;
-        expiresIn: number;
-      }>('/auth/login', credentials);
+      const response = await ApiService.post<LoginResponse>('/auth/login', credentials);
 
-      const { token, refreshToken, user } = response.data;
+      const { token, refreshToken, user } = response;
 
       // Salvar no localStorage
       localStorage.setItem('token', token);
@@ -138,7 +134,7 @@ function AuthProvider({ children }: AuthProviderProps) {
         message: string;
       }>('/auth/register', data);
 
-      const { token, user } = response.data;
+      const { token, user } = response;
 
       // Salvar no localStorage
       localStorage.setItem('token', token);
@@ -179,7 +175,7 @@ function AuthProvider({ children }: AuthProviderProps) {
         refreshToken?: string;
       }>('/auth/refresh', { refreshToken: storedRefreshToken });
 
-      const { token, refreshToken: newRefreshToken } = response.data;
+      const { token, refreshToken: newRefreshToken } = response;
 
       // Atualizar localStorage
       localStorage.setItem('token', token);
