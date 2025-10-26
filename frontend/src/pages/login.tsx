@@ -96,7 +96,7 @@ export function LoginPage() {
 
         <FooterText>
           <Text variant="body2" color="secondary">
-            Não tem conta ##? <Link to="/register">Criar conta</Link>
+            Não tem conta ##? <Link to="/register">Criar contas</Link>
           </Text>
         </FooterText>
       </LoginForm>

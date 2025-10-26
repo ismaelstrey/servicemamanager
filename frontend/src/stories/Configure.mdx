@@ -1,35 +1,34 @@
 import { Meta } from "@storybook/addon-docs/blocks";
-
 import Github from "./assets/github.svg";
 import Discord from "./assets/discord.svg";
 import Youtube from "./assets/youtube.svg";
-import Tutorials from "./assets/tutorials.svg";
 import Styling from "./assets/styling.png";
 import Context from "./assets/context.png";
 import Assets from "./assets/assets.png";
 import Docs from "./assets/docs.png";
 import Share from "./assets/share.png";
 import FigmaPlugin from "./assets/figma-plugin.png";
-import Testing from "./assets/testing.png";
 import Accessibility from "./assets/accessibility.png";
 import Theming from "./assets/theming.png";
 import AddonLibrary from "./assets/addon-library.png";
+import Tutorials from "./assets/tutorials.svg";
 
-export const RightArrow = () => <svg 
-    viewBox="0 0 14 14" 
-    width="8px" 
-    height="14px" 
-    style={{ 
-      marginLeft: '4px',
-      display: 'inline-block',
-      shapeRendering: 'inherit',
-      verticalAlign: 'middle',
-      fill: 'currentColor',
-      'path fill': 'currentColor'
+export const RightArrow = () => (
+  <svg
+    viewBox="0 0 14 14"
+    width="8px"
+    height="14px"
+    style={{
+      marginLeft: "4px",
+      display: "inline-block",
+      shapeRendering: "inherit",
+      verticalAlign: "middle",
+      fill: "currentColor",
     }}
->
-  <path d="m11.1 7.35-5.5 5.5a.5.5 0 0 1-.7-.7L10.04 7 4.9 1.85a.5.5 0 1 1 .7-.7l5.5 5.5c.2.2.2.5 0 .7Z" />
-</svg>
+  >
+    <path d="m11.1 7.35-5.5 5.5a.5.5 0 0 1-.7-.7L10.04 7 4.9 1.85a.5.5 0 1 1 .7-.7l5.5 5.5c.2.2.2.5 0 .7Z" />
+  </svg>
+);
 
 <Meta title="Configure your project" />
 
@@ -37,8 +36,9 @@ export const RightArrow = () => <svg
   <div className='sb-section-title'>
     # Configure your project
 
-    Because Storybook works separately from your app, you'll need to configure it for your specific stack and setup. Below, explore guides for configuring Storybook with popular frameworks and tools. If you get stuck, learn how you can ask for help from our community.
+    The power of Storybook is that it works with any UI framework and supports many options for styling and testing. This section describes how to build out Storybook for your project.
   </div>
+
   <div className="sb-section">
     <div className="sb-section-item">
       <img
@@ -91,8 +91,7 @@ export const RightArrow = () => <svg
       <div className="sb-grid-item">
         <img src={Docs} alt="A screenshot showing the autodocs tag being set, pointing a docs page being generated" />
         <h4 className="sb-section-item-heading">Autodocs</h4>
-        <p className="sb-section-item-paragraph">Auto-generate living,
-          interactive reference documentation from your components and stories.</p>
+        <p className="sb-section-item-paragraph">Auto-generate living, interactive reference documentation from your components and stories.</p>
         <a
           href="https://storybook.js.org/docs/writing-docs/autodocs/?renderer=react&ref=configure"
           target="_blank"
@@ -118,8 +117,6 @@ export const RightArrow = () => <svg
         >Learn more<RightArrow /></a>
       </div>
       <div className="sb-grid-item">
-        <img src={Testing} alt="Screenshot of tests passing and failing" />
-        <h4 className="sb-section-item-heading">Testing</h4>
         <p className="sb-section-item-paragraph">Use stories to test a component in all its variations, no matter how
           complex.</p>
         <a
@@ -150,7 +147,6 @@ export const RightArrow = () => <svg
 </div>
 <div className='sb-addon'>
   <div className='sb-addon-text'>
-    <h4>Addons</h4>
     <p className="sb-section-item-paragraph">Integrate your tools with Storybook to connect workflows.</p>
     <a
         href="https://storybook.js.org/addons/?ref=configure"
@@ -274,91 +270,27 @@ export const RightArrow = () => <svg
     width: 100%;
     display: flex;
     align-items: center;
-    position: relative;
-    background-color: #EEF3F8;
-    border-radius: 5px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    background: #EEF3F8;
-    height: 180px;
-    margin-bottom: 48px;
-    overflow: hidden;
   }
 
   .sb-addon-text {
-    padding-left: 48px;
-    max-width: 240px;
-  }
-
-  .sb-addon-text h4 {
-    padding-top: 0px;
+    flex: 1;
   }
 
   .sb-addon-img {
-    position: absolute;
-    left: 345px;
-    top: 0;
-    height: 100%;
-    width: 200%;
-    overflow: hidden;
+    width: 100%;
+    display: flex;
+    justify-content: right;
   }
-
   .sb-addon-img img {
-    width: 650px;
-    transform: rotate(-15deg);
-    margin-left: 40px;
-    margin-top: -72px;
-    box-shadow: 0 0 1px rgba(255, 255, 255, 0);
-    backface-visibility: hidden;
+    width: 32%;
   }
 
-  @media screen and (max-width: 800px) {
-    .sb-addon-img {
-      left: 300px;
-    }
+  .spaced-text {
+    letter-spacing: 0.6px;
   }
 
-  @media screen and (max-width: 600px) {
-    .sb-section {
-      flex-direction: column;
-    }
-
-    .sb-features-grid {
-      grid-template-columns: repeat(1, 1fr);
-    }
-
-    .sb-socials {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .sb-addon {
-      height: 280px;
-      align-items: flex-start;
-      padding-top: 32px;
-      overflow: hidden;
-    }
-
-    .sb-addon-text {
-      padding-left: 24px;
-    }
-
-    .sb-addon-img {
-      right: 0;
-      left: 0;
-      top: 130px;
-      bottom: 0;
-      overflow: hidden;
-      height: auto;
-      width: 124%;
-    }
-
-    .sb-addon-img img {
-      width: 1200px;
-      transform: rotate(-12deg);
-      margin-left: 0;
-      margin-top: 48px;
-      margin-bottom: -40px;
-      margin-left: -24px;
-    }
+  .increased-line-height {
+    line-height: 1.4;
   }
   `}
 </style>

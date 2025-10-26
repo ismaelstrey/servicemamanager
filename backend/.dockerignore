@@ -1,0 +1,17 @@
+# Ignorar dependências e artefatos de build
+node_modules
+# dist
+coverage
+logs
+npm-debug.log*
+yarn-error.log*
+
+# Variáveis e configs locais
+.env
+.env.*
+
+# Metadados do VCS e IDE
+.git
+.gitignore
+.vscode
+.DS_Store

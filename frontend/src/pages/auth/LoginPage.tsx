@@ -85,7 +85,7 @@ export const LoginPage: React.FC = () => {
       <div className="auth-page__container">
         <div className="auth-page__brand">
           <div className="brand-logo">
-            <img src="/logo.svg" alt="TelecomAI" />
+            <img src="/images/logo.svg" alt="TelecomAI" />
           </div>
           <h1>TelecomAI</h1>
           <p>Sistema de Gestão de Tickets e Ordens de Serviço</p>

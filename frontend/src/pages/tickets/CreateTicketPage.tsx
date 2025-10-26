@@ -1,31 +1,57 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Input, Alert, Spinner } from '../../components/ui';
-import '../../styles/tickets.css';
+import styled from 'styled-components';
+import { PageHeader } from '../../components/layout/PageHeader';
+import { TicketForm } from '../../components/composite/TicketForm';
+import type { CreateTicketFormValues, PriorityOption, EquipmentOption } from '../../components/composite/TicketForm';
+import { Card, Spinner, Button } from '../../components/ui';
 
-interface CreateTicketForm {
-  title: string;
-  description: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  category: string;
-  equipmentId?: string;
-}
+const PageWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
 
-interface Equipment {
-  id: string;
-  name: string;
-  type: string;
-}
+const SuccessContainer = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
+const SuccessMessage = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.lg};
+`;
+
+const SuccessIcon = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${({ theme }) => theme.colors.success.main};
+  color: ${({ theme }) => theme.colors.success.contrast};
+  font-size: 24px;
+`;
+
+const RedirectText = styled.p`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
 
 const CreateTicketPage: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [equipment, setEquipment] = useState<EquipmentOption[]>([]);
   const [loadingEquipment, setLoadingEquipment] = useState(false);
 
-  const [form, setForm] = useState<CreateTicketForm>({
+  const [form, setForm] = useState<CreateTicketFormValues>({
     title: '',
     description: '',
     priority: 'medium',
@@ -33,7 +59,7 @@ const CreateTicketPage: React.FC = () => {
     equipmentId: ''
   });
 
-  const [errors, setErrors] = useState<Partial<CreateTicketForm>>({});
+  const [errors, setErrors] = useState<Partial<CreateTicketFormValues>>({});
 
   const categories = [
     'Hardware',
@@ -45,11 +71,11 @@ const CreateTicketPage: React.FC = () => {
     'Other'
   ];
 
-  const priorities = [
-    { value: 'low', label: 'Baixa', color: 'success' },
-    { value: 'medium', label: 'Média', color: 'warning' },
-    { value: 'high', label: 'Alta', color: 'danger' },
-    { value: 'urgent', label: 'Urgente', color: 'danger' }
+  const priorities: PriorityOption[] = [
+    { value: 'low', label: 'Baixa' },
+    { value: 'medium', label: 'Média' },
+    { value: 'high', label: 'Alta' },
+    { value: 'urgent', label: 'Urgente' },
   ];
 
   // Mock function to load equipment
@@ -58,7 +84,7 @@ const CreateTicketPage: React.FC = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      const mockEquipment: Equipment[] = [
+      const mockEquipment: EquipmentOption[] = [
         { id: '1', name: 'Server-01', type: 'Server' },
         { id: '2', name: 'Switch-Core-01', type: 'Network' },
         { id: '3', name: 'Firewall-01', type: 'Security' },
@@ -78,7 +104,7 @@ const CreateTicketPage: React.FC = () => {
   }, []);
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<CreateTicketForm> = {};
+    const newErrors: Partial<CreateTicketFormValues> = {};
 
     if (!form.title.trim()) {
       newErrors.title = 'Título é obrigatório';
@@ -102,10 +128,7 @@ const CreateTicketPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
     setError(null);
@@ -113,11 +136,7 @@ const CreateTicketPage: React.FC = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock success
       setSuccess(true);
-      
-      // Redirect after success
       setTimeout(() => {
         navigate('/tickets');
       }, 2000);
@@ -128,10 +147,8 @@ const CreateTicketPage: React.FC = () => {
     }
   };
 
-  const handleInputChange = (field: keyof CreateTicketForm, value: string) => {
+  const handleInputChange = (field: keyof CreateTicketFormValues, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
-    
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
@@ -139,163 +156,47 @@ const CreateTicketPage: React.FC = () => {
 
   if (success) {
     return (
-      <div className="create-ticket-page">
-        <div className="create-ticket-container">
+      <PageWrapper>
+        <SuccessContainer>
           <Card>
-            <div className="success-message">
-              <div className="success-icon">✓</div>
+            <SuccessMessage>
+              <SuccessIcon>✓</SuccessIcon>
               <h2>Ticket Criado com Sucesso!</h2>
               <p>Seu ticket foi criado e será processado em breve.</p>
               <Spinner size="sm" />
-              <p className="redirect-text">Redirecionando...</p>
-            </div>
+              <RedirectText>Redirecionando...</RedirectText>
+            </SuccessMessage>
           </Card>
-        </div>
-      </div>
+        </SuccessContainer>
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="create-ticket-page">
-      <div className="create-ticket-container">
-        <div className="create-ticket-header">
-          <h1>Criar Novo Ticket</h1>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/tickets')}
-          >
+    <PageWrapper>
+      <PageHeader
+        title="Criar Novo Ticket"
+        actions={(
+          <Button variant="secondary" onClick={() => navigate('/tickets')}>
             Voltar
           </Button>
-        </div>
-
-        {error && (
-          <Alert
-            variant="danger"
-            title="Erro"
-            onDismiss={() => setError(null)}
-          >
-            {error}
-          </Alert>
         )}
+      />
 
-        <Card>
-          <form onSubmit={handleSubmit} className="create-ticket-form">
-            <div className="form-row">
-              <div className="form-group">
-                <Input
-                  label="Título do Ticket *"
-                  value={form.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
-                  error={errors.title}
-                  placeholder="Descreva brevemente o problema"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Descrição *</label>
-                <textarea
-                  className={`form-textarea ${errors.description ? 'error' : ''}`}
-                  value={form.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  placeholder="Descreva detalhadamente o problema, incluindo passos para reproduzir, mensagens de erro, etc."
-                  rows={6}
-                  disabled={isLoading}
-                />
-                {errors.description && (
-                  <span className="error-message">{errors.description}</span>
-                )}
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Prioridade *</label>
-                <select
-                  className="form-select"
-                  value={form.priority}
-                  onChange={(e) => handleInputChange('priority', e.target.value as CreateTicketForm['priority'])}
-                  disabled={isLoading}
-                >
-                  {priorities.map(priority => (
-                    <option key={priority.value} value={priority.value}>
-                      {priority.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Categoria *</label>
-                <select
-                  className={`form-select ${errors.category ? 'error' : ''}`}
-                  value={form.category}
-                  onChange={(e) => handleInputChange('category', e.target.value)}
-                  disabled={isLoading}
-                >
-                  <option value="">Selecione uma categoria</option>
-                  {categories.map(category => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-                {errors.category && (
-                  <span className="error-message">{errors.category}</span>
-                )}
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Equipamento (Opcional)</label>
-                {loadingEquipment ? (
-                  <div className="loading-equipment">
-                    <Spinner size="sm" />
-                    <span>Carregando equipamentos...</span>
-                  </div>
-                ) : (
-                  <select
-                    className="form-select"
-                    value={form.equipmentId}
-                    onChange={(e) => handleInputChange('equipmentId', e.target.value)}
-                    disabled={isLoading}
-                  >
-                    <option value="">Nenhum equipamento específico</option>
-                    {equipment.map(eq => (
-                      <option key={eq.id} value={eq.id}>
-                        {eq.name} ({eq.type})
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-            </div>
-
-            <div className="form-actions">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate('/tickets')}
-                disabled={isLoading}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                loading={isLoading}
-                disabled={isLoading}
-              >
-                {isLoading ? 'Criando...' : 'Criar Ticket'}
-              </Button>
-            </div>
-          </form>
-        </Card>
-      </div>
-    </div>
+      <TicketForm
+        values={form}
+        errors={errors}
+        isLoading={isLoading || loadingEquipment}
+        errorMessage={error}
+        categories={categories}
+        priorities={priorities}
+        equipmentList={equipment}
+        onChange={handleInputChange}
+        onSubmit={handleSubmit}
+        onDismissError={() => setError(null)}
+        onCancel={() => navigate('/tickets')}
+      />
+    </PageWrapper>
   );
 };
 
