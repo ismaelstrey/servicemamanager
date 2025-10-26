@@ -1,5 +1,49 @@
 "use strict";
+/**
+ * @swagger
+ * tags:
+ *   name: Tickets
+ *   description: Gestão de tickets
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @swagger
+ * /api/providers/{providerId}/tickets:
+ *   get:
+ *     summary: Lista tickets do provedor
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista retornada
+ *   post:
+ *     summary: Cria ticket do provedor
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Ticket criado
+ */
 const express_1 = require("express");
 const ticketController_1 = require("../controllers/ticketController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");

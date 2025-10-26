@@ -1,5 +1,47 @@
 "use strict";
+/**
+ * @swagger
+ * tags:
+ *   name: Dashboard
+ *   description: Dados agregados do dashboard
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @swagger
+ * /api/dashboard/{providerId}:
+ *   get:
+ *     summary: Dados do dashboard
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Dados retornados
+ */
+/**
+ * @swagger
+ * /api/dashboard/{providerId}/equipment-stats:
+ *   get:
+ *     summary: Estatísticas de equipamentos
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Estatísticas retornadas
+ */
 const express_1 = require("express");
 const dashboardController_1 = require("../controllers/dashboardController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");

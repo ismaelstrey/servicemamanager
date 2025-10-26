@@ -1,5 +1,49 @@
 "use strict";
+/**
+ * @swagger
+ * tags:
+ *   name: Equipments
+ *   description: Gestão de equipamentos
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @swagger
+ * /api/providers/{providerId}/equipments:
+ *   get:
+ *     summary: Lista equipamentos do provedor
+ *     tags: [Equipments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista retornada
+ *   post:
+ *     summary: Cria equipamento
+ *     tags: [Equipments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Equipamento criado
+ */
 const express_1 = require("express");
 const equipmentController_1 = require("../controllers/equipmentController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");

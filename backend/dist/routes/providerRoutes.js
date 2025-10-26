@@ -1,5 +1,57 @@
 "use strict";
+/**
+ * @swagger
+ * tags:
+ *   name: Providers
+ *   description: Operações de provedores
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @swagger
+ * /api/providers/check-workspace/{workspace}:
+ *   get:
+ *     summary: Verifica disponibilidade de workspace
+ *     tags: [Providers]
+ *     parameters:
+ *       - in: path
+ *         name: workspace
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Situação do workspace
+ */
+/**
+ * @swagger
+ * /api/providers:
+ *   get:
+ *     summary: Lista provedores
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista retornada
+ */
+/**
+ * @swagger
+ * /api/providers/{id}:
+ *   get:
+ *     summary: Detalha provedor
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Detalhes retornados
+ */
 const express_1 = require("express");
 const providerController_1 = require("../controllers/providerController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");

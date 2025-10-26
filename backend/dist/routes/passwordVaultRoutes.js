@@ -1,5 +1,49 @@
 "use strict";
+/**
+ * @swagger
+ * tags:
+ *   name: Passwords
+ *   description: Cofre de senhas
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @swagger
+ * /api/providers/{providerId}/passwords:
+ *   get:
+ *     summary: Lista senhas do provedor
+ *     tags: [Passwords]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista retornada
+ *   post:
+ *     summary: Cria senha
+ *     tags: [Passwords]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Senha criada
+ */
 const express_1 = require("express");
 const passwordVaultController_1 = require("../controllers/passwordVaultController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");

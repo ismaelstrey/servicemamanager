@@ -1,5 +1,29 @@
 "use strict";
+/**
+ * @swagger
+ * tags:
+ *   name: Notifications
+ *   description: Notificações do provedor
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @swagger
+ * /api/providers/{providerId}/notifications:
+ *   get:
+ *     summary: Lista notificações do provedor
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista retornada
+ */
 const express_1 = require("express");
 const notificationController_1 = require("../controllers/notificationController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");

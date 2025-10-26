@@ -20,7 +20,7 @@ const customerAuthRoutes_1 = __importDefault(require("./routes/customerAuthRoute
 const clientServiceOrderRoutes_1 = __importDefault(require("./routes/clientServiceOrderRoutes"));
 const clientTicketRoutes_1 = __importDefault(require("./routes/clientTicketRoutes"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
-const openapi_1 = __importDefault(require("./docs/openapi"));
+const swagger_1 = __importDefault(require("./docs/swagger"));
 const rateLimitMiddleware_1 = require("./middleware/rateLimitMiddleware");
 const corsMiddleware_1 = require("./middleware/corsMiddleware");
 const redis_1 = require("./config/redis");
@@ -62,7 +62,7 @@ app.use('/api/comments', commentRoutes_1.default);
 app.use('/api/ai', rateLimitMiddleware_1.aiRateLimit);
 app.use('/api/ai', aiRoutes_1.default);
 // Documentação Swagger (CORS público para permitir acesso)
-app.use('/docs', corsMiddleware_1.publicCorsMiddleware, swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(openapi_1.default));
+app.use('/docs', corsMiddleware_1.publicCorsMiddleware, swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.default));
 // Rota de saúde (CORS público)
 app.get('/health', corsMiddleware_1.publicCorsMiddleware, (_req, res) => {
     // Retorna status do servidor

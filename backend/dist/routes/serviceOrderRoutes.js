@@ -1,5 +1,49 @@
 "use strict";
+/**
+ * @swagger
+ * tags:
+ *   name: Service Orders
+ *   description: Ordens de serviço
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @swagger
+ * /api/service-orders:
+ *   get:
+ *     summary: Lista ordens de serviço
+ *     tags: [Service Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista retornada
+ *   post:
+ *     summary: Cria ordem de serviço
+ *     tags: [Service Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: OS criada
+ */
+/**
+ * @swagger
+ * /api/service-orders/stats:
+ *   get:
+ *     summary: Estatísticas de OS
+ *     tags: [Service Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estatísticas retornadas
+ */
 const express_1 = require("express");
 const serviceOrderController_1 = require("../controllers/serviceOrderController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
