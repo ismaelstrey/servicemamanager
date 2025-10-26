@@ -1,3 +1,49 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Tickets
+ *   description: Gestão de tickets
+ */
+
+/**
+ * @swagger
+ * /api/providers/{providerId}/tickets:
+ *   get:
+ *     summary: Lista tickets do provedor
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista retornada
+ *   post:
+ *     summary: Cria ticket do provedor
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Ticket criado
+ */
+
 import { Router } from 'express';
 import { TicketController } from '../controllers/ticketController';
 import { authMiddleware } from '../middlewares/authMiddleware';

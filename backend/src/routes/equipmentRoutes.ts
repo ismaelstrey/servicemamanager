@@ -1,3 +1,49 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Equipments
+ *   description: Gestão de equipamentos
+ */
+
+/**
+ * @swagger
+ * /api/providers/{providerId}/equipments:
+ *   get:
+ *     summary: Lista equipamentos do provedor
+ *     tags: [Equipments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista retornada
+ *   post:
+ *     summary: Cria equipamento
+ *     tags: [Equipments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Equipamento criado
+ */
+
 import { Router } from 'express';
 import { EquipmentController } from '../controllers/equipmentController';
 import { authMiddleware } from '../middlewares/authMiddleware';

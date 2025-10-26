@@ -50,7 +50,7 @@ export function DashboardPage() {
       const providerId = (user as any)?.providerId ?? payload?.providerId;
   
       if (!providerId) {
-        setError('ProviderId não encontrado no usuário ou token.');
+        navigate('/providers/create');
         return;
       }
   

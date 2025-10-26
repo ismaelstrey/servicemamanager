@@ -1,3 +1,29 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Notifications
+ *   description: Notificações do provedor
+ */
+
+/**
+ * @swagger
+ * /api/providers/{providerId}/notifications:
+ *   get:
+ *     summary: Lista notificações do provedor
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista retornada
+ */
+
 import { Router } from 'express';
 import { NotificationController } from '../controllers/notificationController';
 import { authMiddleware } from '../middlewares/authMiddleware';

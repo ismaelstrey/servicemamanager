@@ -16,7 +16,7 @@ import customerAuthRoutes from './routes/customerAuthRoutes';
 import clientServiceOrderRoutes from './routes/clientServiceOrderRoutes';
 import clientTicketRoutes from './routes/clientTicketRoutes';
 import swaggerUi from 'swagger-ui-express';
-import openapiSpec from './docs/openapi';
+import swaggerSpec from './docs/swagger';
 import { generalRateLimit, authRateLimit, aiRateLimit, createResourceRateLimit } from './middleware/rateLimitMiddleware';
 import { corsMiddleware, restrictiveCorsMiddleware, publicCorsMiddleware, validateCorsConfig } from './middleware/corsMiddleware';
 import { redisClient } from './config/redis';
@@ -25,23 +25,26 @@ import { redisClient } from './config/redis';
 dotenv.config();
 
 const app = express();
-const port: number = Number(process.env.PORT) || 4000;
+// Usa porta fixa em desenvolvimento (ignora PORT), e respeita PORT em produção
+const port: number = process.env.NODE_ENV === 'production'
+  ? Number(process.env.PORT) || 4002
+  : 4000;
 
 // Valida configuração de CORS
 validateCorsConfig();
 
 // Middlewares globais
-app.use(corsMiddleware);
+app.use('/api', corsMiddleware);
 app.use(express.json());
 
 // Rate limiting geral para todas as rotas da API
 app.use('/api', generalRateLimit);
 
 // Rate limiting específico para autenticação
-app.use('/auth', authRateLimit);
+app.use('/api/auth', authRateLimit);
 app.use('/api/client/auth', authRateLimit);
 
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/client/auth', customerAuthRoutes);
 app.use('/api/providers', providerRoutes);
 app.use('/api/providers', equipmentRoutes);
@@ -66,7 +69,7 @@ app.use('/api/ai', aiRateLimit);
 app.use('/api/ai', aiRoutes);
 
 // Documentação Swagger (CORS público para permitir acesso)
-app.use('/docs', publicCorsMiddleware, swaggerUi.serve, swaggerUi.setup(openapiSpec));
+app.use('/docs', publicCorsMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Rota de saúde (CORS público)
 app.get('/health', publicCorsMiddleware, (_req: Request, res: Response) => {

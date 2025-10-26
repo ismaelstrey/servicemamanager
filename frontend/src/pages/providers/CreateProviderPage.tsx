@@ -1,0 +1,177 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ApiService } from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
+
+interface CreateProviderForm {
+  name: string;
+  cnpj: string;
+  email: string;
+  workspace?: string;
+  phone?: string;
+}
+
+interface ProviderCreateResponse {
+  id: number;
+  name: string;
+  cnpj: string;
+  workspace?: string;
+}
+
+export default function CreateProviderPage() {
+  const navigate = useNavigate();
+  const { updateUser } = useAuth();
+
+  const [form, setForm] = useState<CreateProviderForm>({
+    name: '',
+    cnpj: '',
+    email: '',
+    workspace: '',
+    phone: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    // Campos mínimos obrigatórios pelo backend: name, cnpj, email
+    if (!form.name || !form.cnpj || !form.email) {
+      setError('Preencha nome, CNPJ e e-mail.');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const payload: CreateProviderForm = {
+        name: form.name.trim(),
+        cnpj: form.cnpj.trim(),
+        email: form.email.trim(),
+        workspace: form.workspace?.trim() || undefined,
+        phone: form.phone?.trim() || undefined,
+      };
+
+      const res = await ApiService.post<ProviderCreateResponse>('/providers', payload);
+      const provider = res.data as unknown as ProviderCreateResponse;
+
+      // Atualiza o usuário no estado com o novo providerId
+      if (provider?.id) {
+        updateUser({ providerId: provider.id });
+      }
+
+      // Redireciona para o dashboard
+      navigate('/dashboard');
+    } catch (err: any) {
+      const message = err?.response?.data?.message || 'Erro ao criar provedor';
+      setError(message);
+      console.error('CreateProvider error:', err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: 640, margin: '40px auto', padding: 24 }}>
+      <h1 style={{ marginBottom: 16 }}>Criar Provedor</h1>
+      <p style={{ marginBottom: 24, color: '#666' }}>
+        Crie seu provedor para acessar o dashboard e gerenciar seus recursos.
+      </p>
+
+      {error && (
+        <div style={{ marginBottom: 16, padding: 12, background: '#ffe7e7', color: '#b00000', borderRadius: 8 }}>
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <div style={{ display: 'grid', gap: 12 }}>
+          <label style={{ display: 'grid', gap: 8 }}>
+            <span>Nome do Provedor *</span>
+            <input
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Ex: NetFiber Telecom"
+              required
+              style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
+            />
+          </label>
+
+          <label style={{ display: 'grid', gap: 8 }}>
+            <span>CNPJ *</span>
+            <input
+              type="text"
+              name="cnpj"
+              value={form.cnpj}
+              onChange={handleChange}
+              placeholder="00.000.000/0000-00"
+              required
+              style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
+            />
+          </label>
+
+          <label style={{ display: 'grid', gap: 8 }}>
+            <span>E-mail *</span>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="contato@seuprovedor.com"
+              required
+              style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
+            />
+          </label>
+
+          <label style={{ display: 'grid', gap: 8 }}>
+            <span>Workspace (opcional)</span>
+            <input
+              type="text"
+              name="workspace"
+              value={form.workspace}
+              onChange={handleChange}
+              placeholder="slug-do-workspace (ex: netfiber)"
+              style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
+            />
+          </label>
+
+          <label style={{ display: 'grid', gap: 8 }}>
+            <span>Telefone (opcional)</span>
+            <input
+              type="text"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="(00) 00000-0000"
+              style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
+            />
+          </label>
+
+          <button
+            type="submit"
+            disabled={submitting}
+            style={{
+              marginTop: 8,
+              padding: '10px 14px',
+              borderRadius: 8,
+              border: 'none',
+              background: submitting ? '#999' : '#2563eb',
+              color: '#fff',
+              cursor: submitting ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {submitting ? 'Criando...' : 'Criar Provedor'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}

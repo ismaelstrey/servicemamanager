@@ -96,6 +96,8 @@ export interface AuthUser {
   lastLoginAt?: string;
   avatar?: string;
   preferences?: UserPreferences;
+  // Adicionando providerId opcional para compatibilidade com backend e fluxo do dashboard
+  providerId?: number;
 }
 
 export interface UserPreferences {

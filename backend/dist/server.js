@@ -27,18 +27,21 @@ const redis_1 = require("./config/redis");
 // Configura variáveis de ambiente
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-const port = Number(process.env.PORT) || 4000;
+// Usa porta fixa em desenvolvimento (ignora PORT), e respeita PORT em produção
+const port = process.env.NODE_ENV === 'production'
+    ? Number(process.env.PORT) || 4002
+    : 4000;
 // Valida configuração de CORS
 (0, corsMiddleware_1.validateCorsConfig)();
 // Middlewares globais
-app.use(corsMiddleware_1.corsMiddleware);
+app.use('/api', corsMiddleware_1.corsMiddleware);
 app.use(express_1.default.json());
 // Rate limiting geral para todas as rotas da API
 app.use('/api', rateLimitMiddleware_1.generalRateLimit);
 // Rate limiting específico para autenticação
-app.use('/auth', rateLimitMiddleware_1.authRateLimit);
+app.use('/api/auth', rateLimitMiddleware_1.authRateLimit);
 app.use('/api/client/auth', rateLimitMiddleware_1.authRateLimit);
-app.use('/auth', authRoutes_1.default);
+app.use('/api/auth', authRoutes_1.default);
 app.use('/api/client/auth', customerAuthRoutes_1.default);
 app.use('/api/providers', providerRoutes_1.default);
 app.use('/api/providers', equipmentRoutes_1.default);

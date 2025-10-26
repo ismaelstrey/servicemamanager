@@ -1,3 +1,49 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Passwords
+ *   description: Cofre de senhas
+ */
+
+/**
+ * @swagger
+ * /api/providers/{providerId}/passwords:
+ *   get:
+ *     summary: Lista senhas do provedor
+ *     tags: [Passwords]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista retornada
+ *   post:
+ *     summary: Cria senha
+ *     tags: [Passwords]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Senha criada
+ */
+
 import { Router } from 'express';
 import { PasswordVaultController } from '../controllers/passwordVaultController';
 import { authMiddleware } from '../middlewares/authMiddleware';

@@ -1,3 +1,59 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Providers
+ *   description: Operações de provedores
+ */
+
+/**
+ * @swagger
+ * /api/providers/check-workspace/{workspace}:
+ *   get:
+ *     summary: Verifica disponibilidade de workspace
+ *     tags: [Providers]
+ *     parameters:
+ *       - in: path
+ *         name: workspace
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Situação do workspace
+ */
+
+/**
+ * @swagger
+ * /api/providers:
+ *   get:
+ *     summary: Lista provedores
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista retornada
+ */
+
+/**
+ * @swagger
+ * /api/providers/{id}:
+ *   get:
+ *     summary: Detalha provedor
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Detalhes retornados
+ */
+
 import { Router } from 'express';
 import { ProviderController } from '../controllers/providerController';
 import { authMiddleware } from '../middlewares/authMiddleware';

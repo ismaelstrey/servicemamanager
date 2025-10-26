@@ -21,6 +21,7 @@ import ProfilePage from './pages/ProfilePage'
 import SettingsPage from './pages/SettingsPage'
 import NotFoundPage from './pages/NotFoundPage'
 import TestPage from './pages/TestPage'
+import CreateProviderPage from './pages/providers/CreateProviderPage'
 
 // Layout
 import Layout from './components/layout/Layout'
@@ -113,6 +114,16 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+         <Route
+            path="/providers/create"
+            element={
+             <ProtectedRoute>
+                 <Layout>
+                   <CreateProviderPage />
+                 </Layout>
+               </ProtectedRoute>
+             }
+           />
             <Route
               path="/profile"
               element={

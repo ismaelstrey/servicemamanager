@@ -1,3 +1,48 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Dashboard
+ *   description: Dados agregados do dashboard
+ */
+
+/**
+ * @swagger
+ * /api/dashboard/{providerId}:
+ *   get:
+ *     summary: Dados do dashboard
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Dados retornados
+ */
+
+/**
+ * @swagger
+ * /api/dashboard/{providerId}/equipment-stats:
+ *   get:
+ *     summary: Estatísticas de equipamentos
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Estatísticas retornadas
+ */
+
 import { Router } from 'express';
 import { DashboardController } from '../controllers/dashboardController';
 import { authMiddleware } from '../middlewares/authMiddleware';
