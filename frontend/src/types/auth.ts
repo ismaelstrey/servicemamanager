@@ -27,6 +27,8 @@ export interface RegisterData {
 export interface RegisterResponse {
   message: string;
   user: AuthUser;
+  token?: string;
+  refreshToken?: string;
   requiresEmailVerification?: boolean;
 }
 

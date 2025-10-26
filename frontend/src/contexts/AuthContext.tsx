@@ -1,4 +1,4 @@
-import { createContext, useReducer, useEffect, ReactNode } from 'react';
+import { createContext, useReducer, useEffect, type ReactNode } from 'react';
 import { ApiService } from '../services/api';
 
 // Importando tipos diretamente
@@ -11,7 +11,7 @@ import type {
   UserRole
 } from '../types/auth';
 import type { AuthUser } from '../types/auth';
-import type { LoginResponse, RegisterResponse, RefreshTokenResponse } from '../types/auth';
+import type { LoginResponse, RegisterResponse } from '../types/auth';
 
 // Estado inicial
 const initialState: AuthState = {
@@ -102,7 +102,9 @@ function AuthProvider({ children }: AuthProviderProps) {
 
       const response = await ApiService.post<LoginResponse>('/auth/login', credentials);
 
-      const { token, refreshToken, user } = response;
+      const data = response.data;
+      if (!data) throw new Error('Resposta inválida do servidor');
+      const { token, refreshToken, user } = data;
 
       // Salvar no localStorage
       localStorage.setItem('token', token);
@@ -128,22 +130,29 @@ function AuthProvider({ children }: AuthProviderProps) {
     try {
       dispatch({ type: 'AUTH_START' });
 
-      const response = await ApiService.post<{
-        token: string;
-        user: AuthUser;
-        message: string;
-      }>('/auth/register', data);
+      const response = await ApiService.post<RegisterResponse>('/auth/register', data);
 
-      const { token, user } = response;
+      const registerData = response.data;
+      if (!registerData) throw new Error('Resposta inválida do servidor');
+      const { user, token, refreshToken } = registerData;
 
-      // Salvar no localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      if (token) {
+        // Salvar no localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        if (refreshToken) {
+          localStorage.setItem('refreshToken', refreshToken);
+        }
 
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: { user, token },
-      });
+        dispatch({
+          type: 'AUTH_SUCCESS',
+          payload: { user, token, refreshToken },
+        });
+      } else {
+        // Se não veio token no registro, efetua login automaticamente
+        await login({ email: data.email, password: data.password });
+        return;
+      }
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       const errorMessage = err.response?.data?.message || 'Erro ao criar conta';
@@ -175,7 +184,9 @@ function AuthProvider({ children }: AuthProviderProps) {
         refreshToken?: string;
       }>('/auth/refresh', { refreshToken: storedRefreshToken });
 
-      const { token, refreshToken: newRefreshToken } = response;
+      const refreshData = response.data;
+      if (!refreshData) throw new Error('Resposta inválida do servidor');
+      const { token, refreshToken: newRefreshToken } = refreshData;
 
       // Atualizar localStorage
       localStorage.setItem('token', token);
