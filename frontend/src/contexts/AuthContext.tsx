@@ -234,14 +234,15 @@ function AuthProvider({ children }: AuthProviderProps) {
         const userStr = localStorage.getItem('user');
         const refreshTokenStr = localStorage.getItem('refreshToken');
 
-        if (token && userStr && refreshTokenStr) {
+        // Aceita sessão mesmo sem refreshToken (compatível com backend atual)
+        if (token && userStr) {
           const user = JSON.parse(userStr);
           dispatch({
             type: 'AUTH_SUCCESS',
             payload: {
               user,
               token,
-              refreshToken: refreshTokenStr,
+              refreshToken: refreshTokenStr || undefined,
             },
           });
         } else {

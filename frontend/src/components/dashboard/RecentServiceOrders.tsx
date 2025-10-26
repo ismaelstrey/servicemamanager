@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from '../ui/Card';
+import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Spinner } from '../ui/Spinner';
@@ -72,7 +72,7 @@ export const RecentServiceOrders: React.FC<RecentServiceOrdersProps> = ({
   onViewAll,
   onServiceOrderClick,
 }) => {
-  const formatDate = (date: string) => {
+  const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -80,7 +80,7 @@ export const RecentServiceOrders: React.FC<RecentServiceOrdersProps> = ({
     });
   };
 
-  const formatTime = (date: string) => {
+  const formatTime = (date: Date | string) => {
     return new Date(date).toLocaleTimeString('pt-BR', {
       hour: '2-digit',
       minute: '2-digit',
@@ -96,7 +96,7 @@ export const RecentServiceOrders: React.FC<RecentServiceOrdersProps> = ({
 
   return (
     <Card variant="default" className="recent-service-orders">
-      <Card.Header>
+      <CardHeader>
         <div className="recent-service-orders__header">
           <h3 className="recent-service-orders__title">Ordens de Serviço Recentes</h3>
           {onViewAll && (
@@ -109,9 +109,9 @@ export const RecentServiceOrders: React.FC<RecentServiceOrdersProps> = ({
             </Button>
           )}
         </div>
-      </Card.Header>
+      </CardHeader>
 
-      <Card.Body>
+      <CardBody>
         {loading ? (
           <div className="recent-service-orders__loading">
             <Spinner size="md" label="Carregando ordens de serviço..." />
@@ -199,23 +199,23 @@ export const RecentServiceOrders: React.FC<RecentServiceOrdersProps> = ({
                     )}
                   </div>
                   
-                  {serviceOrder.estimatedCost && (
+                  {serviceOrder.cost?.totalCost != null && (
                     <div className="recent-service-orders__item-cost">
-                      <span className="recent-service-orders__item-cost-label">Valor estimado:</span>
+                      <span className="recent-service-orders__item-cost-label">Custo total:</span>
                       <span className="recent-service-orders__item-cost-value">
-                        {formatCurrency(serviceOrder.estimatedCost)}
+                        {formatCurrency(serviceOrder.cost.totalCost)}
                       </span>
                     </div>
                   )}
                 </div>
 
-                {serviceOrder.assignedTechnician && (
+                {serviceOrder.assignee && (
                   <div className="recent-service-orders__item-technician">
                     <span className="recent-service-orders__item-technician-label">
                       Técnico:
                     </span>
                     <span className="recent-service-orders__item-technician-name">
-                      {serviceOrder.assignedTechnician.name}
+                      {serviceOrder.assignee.name}
                     </span>
                   </div>
                 )}
@@ -223,7 +223,7 @@ export const RecentServiceOrders: React.FC<RecentServiceOrdersProps> = ({
             ))}
           </div>
         )}
-      </Card.Body>
+      </CardBody>
     </Card>
   );
 };

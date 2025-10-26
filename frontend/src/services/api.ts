@@ -61,36 +61,46 @@ export interface PaginatedResponse<T> {
   };
 }
 
+// Helper para normalizar respostas da API
+function normalizeApiResponse<T>(body: unknown): ApiResponse<T> {
+  // Se já estiver no formato envelope (possui "data"), retorna como está
+  if (body && typeof body === 'object' && body !== null && 'data' in (body as Record<string, unknown>)) {
+    return body as ApiResponse<T>;
+  }
+  // Caso contrário, embrulha o corpo cru em um envelope padrão
+  return { data: body as T, success: true };
+}
+
 // Classe para gerenciar requisições da API
 export class ApiService {
   // GET request
   static async get<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await api.get(url, config);
-    return response.data;
+    return normalizeApiResponse<T>(response.data as unknown);
   }
 
   // POST request
   static async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await api.post(url, data, config);
-    return response.data;
+    return normalizeApiResponse<T>(response.data as unknown);
   }
 
   // PUT request
   static async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await api.put(url, data, config);
-    return response.data;
+    return normalizeApiResponse<T>(response.data as unknown);
   }
 
   // PATCH request
   static async patch<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await api.patch(url, data, config);
-    return response.data;
+    return normalizeApiResponse<T>(response.data as unknown);
   }
 
   // DELETE request
   static async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await api.delete(url, config);
-    return response.data;
+    return normalizeApiResponse<T>(response.data as unknown);
   }
 }
 

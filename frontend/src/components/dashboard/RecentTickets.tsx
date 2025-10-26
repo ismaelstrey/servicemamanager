@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from '../ui/Card';
+import Card, { CardHeader, CardBody } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Spinner } from '../ui/Spinner';
@@ -18,6 +18,8 @@ const getStatusVariant = (status: TicketStatus) => {
       return 'info';
     case 'in_progress':
       return 'warning';
+    case 'pending':
+      return 'warning';
     case 'resolved':
       return 'success';
     case 'closed':
@@ -35,6 +37,8 @@ const getStatusLabel = (status: TicketStatus) => {
       return 'Aberto';
     case 'in_progress':
       return 'Em Andamento';
+    case 'pending':
+      return 'Pendente';
     case 'resolved':
       return 'Resolvido';
     case 'closed':
@@ -68,7 +72,7 @@ export const RecentTickets: React.FC<RecentTicketsProps> = ({
   onViewAll,
   onTicketClick,
 }) => {
-  const formatDate = (date: string) => {
+  const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -76,7 +80,7 @@ export const RecentTickets: React.FC<RecentTicketsProps> = ({
     });
   };
 
-  const formatTime = (date: string) => {
+  const formatTime = (date: Date | string) => {
     return new Date(date).toLocaleTimeString('pt-BR', {
       hour: '2-digit',
       minute: '2-digit',
@@ -85,7 +89,7 @@ export const RecentTickets: React.FC<RecentTicketsProps> = ({
 
   return (
     <Card variant="default" className="recent-tickets">
-      <Card.Header>
+      <CardHeader>
         <div className="recent-tickets__header">
           <h3 className="recent-tickets__title">Tickets Recentes</h3>
           {onViewAll && (
@@ -98,9 +102,9 @@ export const RecentTickets: React.FC<RecentTicketsProps> = ({
             </Button>
           )}
         </div>
-      </Card.Header>
+      </CardHeader>
 
-      <Card.Body>
+      <CardBody>
         {loading ? (
           <div className="recent-tickets__loading">
             <Spinner size="md" label="Carregando tickets..." />
@@ -175,7 +179,7 @@ export const RecentTickets: React.FC<RecentTicketsProps> = ({
                       Atribuído para:
                     </span>
                     <span className="recent-tickets__item-assignee-name">
-                      {ticket.assignedTo.name}
+                      {ticket.assignee?.name ?? `#${ticket.assignedTo}`}
                     </span>
                   </div>
                 )}
@@ -183,7 +187,7 @@ export const RecentTickets: React.FC<RecentTicketsProps> = ({
             ))}
           </div>
         )}
-      </Card.Body>
+      </CardBody>
     </Card>
   );
 };

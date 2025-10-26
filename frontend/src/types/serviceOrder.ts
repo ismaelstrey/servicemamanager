@@ -44,14 +44,17 @@ export interface ServiceOrder extends AuditFields {
 
 // Status da ordem de serviço
 export type ServiceOrderStatus =
-  | 'draft'        // Rascunho
-  | 'scheduled'    // Agendada
-  | 'in_progress'  // Em andamento
-  | 'on_hold'      // Em espera
-  | 'completed'    // Concluída
-  | 'cancelled'    // Cancelada
-  | 'approved'     // Aprovada
-  | 'rejected';    // Rejeitada
+  | 'pending'       // Pendente
+  | 'scheduled'     // Agendada
+  | 'in_progress'   // Em andamento
+  | 'waiting_parts' // Aguardando peças
+  | 'waiting_customer' // Aguardando cliente
+  | 'completed'     // Concluída
+  | 'cancelled'     // Cancelada
+  | 'on_hold'       // Em espera
+  | 'draft'         // Rascunho
+  | 'approved'      // Aprovada
+  | 'rejected';     // Rejeitada
 
 // Prioridade da ordem de serviço
 export type ServiceOrderPriority =

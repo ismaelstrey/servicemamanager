@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import StatsCard from '../components/dashboard/StatsCard';
 import RecentTickets from '../components/dashboard/RecentTickets';
@@ -9,6 +9,11 @@ import { Spinner } from '../components/ui/Spinner';
 import { Alert } from '../components/ui/Alert';
 import type { Ticket } from '../types/ticket';
 import type { ServiceOrder } from '../types/serviceOrder';
+import { useNavigate } from 'react-router-dom';
+import DashboardService from '../services/dashboardService';
+import ServiceOrderService from '../services/serviceOrderService';
+import { ApiService, type PaginatedResponse } from '../services/api';
+import { decodeJwt } from '../utils/jwt';
 
 interface DashboardStats {
   totalTickets: number;
@@ -40,116 +45,78 @@ export function DashboardPage() {
       setLoading(true);
       setError(null);
 
-      // Simulate API calls - replace with actual API calls
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Mock data - replace with actual API responses
-      const mockStats: DashboardStats = {
-        totalTickets: 1247,
-        openTickets: 89,
-        totalServiceOrders: 456,
-        pendingServiceOrders: 23,
-        completedThisMonth: 156,
-        revenue: 125000,
-        customerSatisfaction: 4.8,
-        averageResolutionTime: 2.5,
+      const token = localStorage.getItem('token');
+      const payload = decodeJwt(token ?? undefined);
+      const providerId = (user as any)?.providerId ?? payload?.providerId;
+  
+      if (!providerId) {
+        setError('ProviderId não encontrado no usuário ou token.');
+        return;
+      }
+  
+      const [dashboardData, serviceOrderStats, ticketsRes, serviceOrdersRes] = await Promise.all([
+        DashboardService.getDashboard(providerId),
+        ServiceOrderService.getServiceOrderStats(),
+        ApiService.get<PaginatedResponse<any>>(`/providers/${providerId}/tickets?page=1&limit=5`),
+        ServiceOrderService.getServiceOrders({ page: 1, limit: 5 })
+      ]);
+  
+      const newStats: DashboardStats = {
+        totalTickets: dashboardData.overview.totalTickets,
+        openTickets: dashboardData.overview.openTickets,
+        totalServiceOrders: (serviceOrderStats as any)?.total ?? 0,
+        pendingServiceOrders: (serviceOrderStats as any)?.pending ?? (serviceOrderStats as any)?.byStatus?.pending ?? 0,
+        completedThisMonth: (serviceOrderStats as any)?.completed ?? (serviceOrderStats as any)?.byStatus?.completed ?? 0,
+        revenue: (serviceOrderStats as any)?.totalRevenue ?? 0,
+        customerSatisfaction: 0,
+        averageResolutionTime: (serviceOrderStats as any)?.averageCompletionTime ?? 0,
       };
-
-      const mockTickets: Ticket[] = [
-        {
-          id: '1',
-          number: 'TK-2024-001',
-          title: 'Problema na conexão de internet',
-          description: 'Cliente relatando instabilidade na conexão',
-          status: 'open',
-          priority: 'high',
-          category: 'technical',
-          source: 'phone',
-          customerInfo: {
-            name: 'João Silva',
-            email: 'joao@email.com',
-            phone: '(11) 99999-9999',
-            company: 'Empresa ABC',
-          },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          assignedTo: {
-            id: '1',
-            name: 'Maria Santos',
-            email: 'maria@telecom.com',
-          },
-          comments: [],
-          attachments: [],
-          history: [],
-        },
-        {
-          id: '2',
-          number: 'TK-2024-002',
-          title: 'Solicitação de upgrade de plano',
-          description: 'Cliente deseja fazer upgrade para plano premium',
-          status: 'in_progress',
-          priority: 'medium',
-          category: 'billing',
-          source: 'email',
-          customerInfo: {
-            name: 'Ana Costa',
-            email: 'ana@email.com',
-            phone: '(11) 88888-8888',
-          },
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          updatedAt: new Date().toISOString(),
-          comments: [],
-          attachments: [],
-          history: [],
-        },
-      ];
-
-      const mockServiceOrders: ServiceOrder[] = [
-        {
-          id: '1',
-          number: 'OS-2024-001',
-          title: 'Instalação de fibra óptica',
-          description: 'Instalação de nova conexão de fibra óptica residencial',
-          status: 'scheduled',
-          priority: 'high',
-          type: 'installation',
-          category: 'fiber',
-          customerInfo: {
-            name: 'Pedro Oliveira',
-            email: 'pedro@email.com',
-            phone: '(11) 77777-7777',
-            company: 'Residencial',
-          },
-          location: {
-            address: 'Rua das Flores, 123',
-            city: 'São Paulo',
-            state: 'SP',
-            zipCode: '01234-567',
-            coordinates: {
-              latitude: -23.5505,
-              longitude: -46.6333,
-            },
-          },
-          scheduledDate: new Date(Date.now() + 86400000).toISOString(),
-          estimatedCost: 299.99,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          assignedTechnician: {
-            id: '1',
-            name: 'Carlos Técnico',
-            email: 'carlos@telecom.com',
-          },
-          tasks: [],
-          materials: [],
-          comments: [],
-          attachments: [],
-          history: [],
-        },
-      ];
-
-      setStats(mockStats);
-      setRecentTickets(mockTickets);
-      setRecentServiceOrders(mockServiceOrders);
+  
+      const recentTicketsData = (ticketsRes.data?.data ?? []);
+      const mappedTickets: Ticket[] = recentTicketsData.map((t: any) => ({
+        id: t.id,
+        providerId: t.providerId,
+        number: String(t.id),
+        title: t.title,
+        description: t.description,
+        status: t.status === 'waiting_client' ? 'pending' : t.status,
+        priority: t.priority,
+        category: 'other',
+        source: typeof t.source === 'string' ? (t.source === 'manual' ? 'web' : t.source) : 'web',
+        customerInfo: { name: '', email: '' },
+        comments: [],
+        attachments: [],
+        history: [],
+        tags: [],
+        slaStatus: t.slaStatus ?? 'within_sla',
+        createdAt: new Date(t.createdAt),
+        updatedAt: new Date(t.updatedAt),
+      }));
+  
+      const recentServiceOrdersData = (serviceOrdersRes.data ?? []);
+      const mappedServiceOrders: ServiceOrder[] = recentServiceOrdersData.map((so: any) => ({
+        id: so.id,
+        providerId: so.providerId ?? 0,
+        number: String(so.id),
+        title: so.title,
+        description: so.description,
+        status: so.status,
+        priority: so.priority,
+        type: 'maintenance',
+        category: 'support',
+        customerInfo: { name: '', email: '' },
+        tasks: [],
+        comments: [],
+        attachments: [],
+        history: [],
+        tags: [],
+        createdAt: new Date(so.createdAt),
+        updatedAt: new Date(so.updatedAt),
+      }));
+  
+      setStats(newStats);
+      setRecentTickets(mappedTickets);
+      setRecentServiceOrders(mappedServiceOrders);
     } catch (err) {
       setError('Erro ao carregar dados do dashboard');
       console.error('Dashboard loading error:', err);

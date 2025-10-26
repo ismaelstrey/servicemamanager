@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState, useCallback } from 'react'
 import styled from 'styled-components'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
-import { ApiService } from '../services/api'
+import { ApiService, type PaginatedResponse } from '../services/api'
+import { decodeJwt } from '../utils/jwt'
 
 const Wrapper = styled(motion.div)`
   padding: ${({ theme }) => theme.spacing.lg};
@@ -155,17 +156,6 @@ type Stats = {
   byType: Record<EquipmentType, number>
 }
 
-function decodeJwt(token?: string) {
-  if (!token) return null
-  try {
-    const base64 = token.split('.')[1]
-    const json = JSON.parse(atob(base64.replace(/-/g, '+').replace(/_/g, '/')))
-    return json as { userId: number; email: string; role?: string; providerId?: number }
-  } catch {
-    return null
-  }
-}
-
 export function EquipmentsPage() {
   const { token } = useAuth()
   const [providerId, setProviderId] = useState<number | null>(null)
@@ -185,11 +175,11 @@ export function EquipmentsPage() {
     const params: Record<string, unknown> = { limit }
     if (typeFilter) params.type = typeFilter
 
-    const listRes = await ApiService.get(`/api/providers/${pid}/equipments`, { params })
-    const statsRes = await ApiService.get(`/api/providers/${pid}/equipments/stats`)
+    const listRes = await ApiService.get<PaginatedResponse<Equipment>>(`/providers/${pid}/equipments`, { params })
+    const statsRes = await ApiService.get<Stats>(`/providers/${pid}/equipments/stats`)
 
-    setItems(listRes.data.data as Equipment[])
-    setStats(statsRes.data.data as Stats)
+    setItems(listRes.data.data)
+    setStats(statsRes.data)
   }, [limit, typeFilter])
 
   useEffect(() => {
