@@ -35,6 +35,7 @@ export function DashboardPage() {
   const [recentServiceOrders, setRecentServiceOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [missingProvider, setMissingProvider] = useState<boolean>(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -48,11 +49,15 @@ export function DashboardPage() {
       const token = localStorage.getItem('token');
       const payload = decodeJwt(token ?? undefined);
       const providerId = (user as any)?.providerId ?? payload?.providerId;
-  
+
+      // Se não há providerId, não redireciona automaticamente.
+      // Exibe estado de ausência de provedor com CTA para criar.
       if (!providerId) {
-        navigate('/providers/create');
+        setMissingProvider(true);
+        setLoading(false);
         return;
       }
+      setMissingProvider(false);
   
       const [dashboardData, serviceOrderStats, ticketsRes, serviceOrdersRes] = await Promise.all([
         DashboardService.getDashboard(providerId),
@@ -146,6 +151,31 @@ export function DashboardPage() {
     return (
       <div className="dashboard dashboard--loading">
         <Spinner size="lg" centered label="Carregando dashboard..." />
+      </div>
+    );
+  }
+
+  if (missingProvider) {
+    return (
+      <div className="dashboard dashboard--missing-provider" style={{ maxWidth: 720, margin: '40px auto' }}>
+        <Alert variant="warning" title="Nenhum provedor associado">
+          Você precisa criar um provedor para acessar o dashboard.
+        </Alert>
+        <div style={{ marginTop: 16 }}>
+          <button
+            onClick={() => navigate('/providers/create')}
+            style={{
+              padding: '10px 16px',
+              borderRadius: 8,
+              border: 'none',
+              background: '#2563eb',
+              color: '#fff',
+              cursor: 'pointer'
+            }}
+          >
+            Criar Provedor
+          </button>
+        </div>
       </div>
     );
   }
