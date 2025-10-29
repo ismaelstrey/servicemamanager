@@ -7,6 +7,7 @@ import QuickActions from '../components/dashboard/QuickActions';
 import { createQuickActions } from '../utils/quickActions';
 import { Spinner } from '../components/ui/Spinner';
 import { Alert } from '../components/ui/Alert';
+import { Select } from '../components/ui/Select';
 import type { Ticket } from '../types/ticket';
 import type { ServiceOrder } from '../types/serviceOrder';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +15,7 @@ import DashboardService from '../services/dashboardService';
 import ServiceOrderService from '../services/serviceOrderService';
 import { ApiService, type PaginatedResponse } from '../services/api';
 import { decodeJwt } from '../utils/jwt';
+import ProviderService, { type ProviderListItem } from '../services/providerService';
 
 interface DashboardStats {
   totalTickets: number;
@@ -35,36 +37,99 @@ export function DashboardPage() {
   const [recentServiceOrders, setRecentServiceOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [missingProvider, setMissingProvider] = useState<boolean>(false);
+  const [providers, setProviders] = useState<ProviderListItem[]>([]);
+  const [selectedProviderId, setSelectedProviderId] = useState<number | 'global'>('global');
 
   useEffect(() => {
-    loadDashboardData();
+    loadProvidersAndInit();
   }, []);
 
-  const loadDashboardData = async () => {
+  const loadProvidersAndInit = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const list = await ProviderService.listProviders({ limit: 50 });
+      setProviders(list);
+
+      const saved = localStorage.getItem('selectedProviderId');
+      let initialSelection: number | 'global' = 'global';
+      if (saved) {
+        initialSelection = saved === 'global' ? 'global' : Number(saved);
+      } else {
+        const token = localStorage.getItem('token');
+        const payload = decodeJwt(token ?? undefined);
+        const providerIdFromUser = (user as any)?.providerId ?? payload?.providerId;
+        initialSelection = providerIdFromUser ?? 'global';
+      }
+      setSelectedProviderId(initialSelection);
+      await loadDashboardData(initialSelection);
+    } catch (err) {
+      setError('Erro ao carregar provedores');
+      console.error('Providers loading error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadDashboardData = async (mode?: number | 'global') => {
     try {
       setLoading(true);
       setError(null);
 
-      const token = localStorage.getItem('token');
-      const payload = decodeJwt(token ?? undefined);
-      const providerId = (user as any)?.providerId ?? payload?.providerId;
+      const effectiveMode: number | 'global' =
+        typeof mode !== 'undefined'
+          ? mode
+          : (selectedProviderId ?? 'global');
 
-      // Se não há providerId, não redireciona automaticamente.
-      // Exibe estado de ausência de provedor com CTA para criar.
-      if (!providerId) {
-        setMissingProvider(true);
-        setLoading(false);
-        return;
-      }
-      setMissingProvider(false);
-  
-      const [dashboardData, serviceOrderStats, ticketsRes, serviceOrdersRes] = await Promise.all([
-        DashboardService.getDashboard(providerId),
-        ServiceOrderService.getServiceOrderStats(),
-        ApiService.get<PaginatedResponse<any>>(`/providers/${providerId}/tickets?page=1&limit=5`),
-        ServiceOrderService.getServiceOrders({ page: 1, limit: 5 })
-      ]);
+      if (effectiveMode === 'global') {
+        const [serviceOrderStats, serviceOrdersRes] = await Promise.all([
+          ServiceOrderService.getServiceOrderStats(),
+          ServiceOrderService.getServiceOrders({ page: 1, limit: 5 })
+        ]);
+
+        const newStats: DashboardStats = {
+          totalTickets: 0,
+          openTickets: 0,
+          totalServiceOrders: (serviceOrderStats as any)?.total ?? 0,
+          pendingServiceOrders: (serviceOrderStats as any)?.pending ?? (serviceOrderStats as any)?.byStatus?.pending ?? 0,
+          completedThisMonth: (serviceOrderStats as any)?.completed ?? (serviceOrderStats as any)?.byStatus?.completed ?? 0,
+          revenue: (serviceOrderStats as any)?.totalRevenue ?? 0,
+          customerSatisfaction: 0,
+          averageResolutionTime: (serviceOrderStats as any)?.averageCompletionTime ?? 0,
+        };
+
+        const recentServiceOrdersData = (serviceOrdersRes.data ?? []);
+        const mappedServiceOrders: ServiceOrder[] = recentServiceOrdersData.map((so: any) => ({
+          id: so.id,
+          providerId: so.providerId ?? 0,
+          number: String(so.id),
+          title: so.title,
+          description: so.description,
+          status: so.status,
+          priority: so.priority,
+          type: 'maintenance',
+          category: 'support',
+          customerInfo: { name: '', email: '' },
+          tasks: [],
+          comments: [],
+          attachments: [],
+          history: [],
+          tags: [],
+          createdAt: new Date(so.createdAt),
+          updatedAt: new Date(so.updatedAt),
+        }));
+
+        setStats(newStats);
+        setRecentTickets([]);
+        setRecentServiceOrders(mappedServiceOrders);
+      } else {
+        const providerId = effectiveMode as number;
+        const [dashboardData, serviceOrderStats, ticketsRes, serviceOrdersRes] = await Promise.all([
+          DashboardService.getDashboard(providerId),
+          ServiceOrderService.getServiceOrderStats(),
+          ApiService.get<PaginatedResponse<any>>(`/providers/${providerId}/tickets?page=1&limit=5`),
+          ServiceOrderService.getServiceOrders({ page: 1, limit: 5 })
+        ]);
   
       const newStats: DashboardStats = {
         totalTickets: dashboardData.overview.totalTickets,
@@ -122,12 +187,20 @@ export function DashboardPage() {
       setStats(newStats);
       setRecentTickets(mappedTickets);
       setRecentServiceOrders(mappedServiceOrders);
+    }
     } catch (err) {
       setError('Erro ao carregar dados do dashboard');
       console.error('Dashboard loading error:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleProviderChange = async (value: string) => {
+    const mode = value === 'global' ? 'global' : Number(value);
+    setSelectedProviderId(mode);
+    localStorage.setItem('selectedProviderId', value);
+    await loadDashboardData(mode);
   };
 
   const quickActions = createQuickActions({
@@ -155,30 +228,7 @@ export function DashboardPage() {
     );
   }
 
-  if (missingProvider) {
-    return (
-      <div className="dashboard dashboard--missing-provider" style={{ maxWidth: 720, margin: '40px auto' }}>
-        <Alert variant="warning" title="Nenhum provedor associado">
-          Você precisa criar um provedor para acessar o dashboard.
-        </Alert>
-        <div style={{ marginTop: 16 }}>
-          <button
-            onClick={() => navigate('/providers/create')}
-            style={{
-              padding: '10px 16px',
-              borderRadius: 8,
-              border: 'none',
-              background: '#2563eb',
-              color: '#fff',
-              cursor: 'pointer'
-            }}
-          >
-            Criar Provedor
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Visão global está sempre disponível — não há estado de provedor ausente aqui.
 
   if (error) {
     return (
@@ -199,32 +249,73 @@ export function DashboardPage() {
         <p className="dashboard__subtitle">
           Aqui está um resumo das suas atividades recentes
         </p>
+        <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div style={{ minWidth: 240 }}>
+            <Select
+              label="Contexto"
+              size="sm"
+              value={selectedProviderId === 'global' ? 'global' : String(selectedProviderId)}
+              onChange={(e) => handleProviderChange((e.target as HTMLSelectElement).value)}
+            >
+              <option value="global">Visão Global</option>
+              {providers.map((p) => (
+                <option key={p.id} value={String(p.id)}>{p.name}</option>
+              ))}
+            </Select>
+          </div>
+          {providers.length === 0 && (
+            <button
+              onClick={() => navigate('/providers/create')}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 8,
+                border: 'none',
+                background: '#2563eb',
+                color: '#fff',
+                cursor: 'pointer'
+              }}
+            >
+              Criar Provedor
+            </button>
+          )}
+        </div>
+        {selectedProviderId === 'global' && (
+          <div style={{ marginTop: 8 }}>
+            <Alert variant="info" title="Visão Global">
+              Você está visualizando dados gerais. Selecione um provedor para acessar o workspace específico.
+            </Alert>
+          </div>
+        )}
       </div>
 
       {stats && (
         <div className="dashboard__stats">
-          <StatsCard
-            title="Total de Tickets"
-            value={stats.totalTickets}
-            subtitle="Todos os tickets"
-            icon="🎫"
-            color="primary"
-            onClick={() => navigate('/tickets')}
-          />
-          
-          <StatsCard
-            title="Tickets Abertos"
-            value={stats.openTickets}
-            subtitle="Aguardando atendimento"
-            icon="🔓"
-            color="warning"
-            trend={{
-              value: 12,
-              label: 'vs. mês anterior',
-              isPositive: false,
-            }}
-            onClick={() => navigate('/tickets?status=open')}
-          />
+          {selectedProviderId !== 'global' && (
+            <>
+              <StatsCard
+                title="Total de Tickets"
+                value={stats.totalTickets}
+                subtitle="Todos os tickets"
+                icon="🎫"
+                color="primary"
+                onClick={() => navigate('/tickets')}
+              />
+              
+              <StatsCard
+                title="Tickets Abertos"
+                value={stats.openTickets}
+                subtitle="Aguardando atendimento"
+                icon="🔓"
+                color="warning"
+                trend={{
+                  value: 12,
+                  label: 'vs. mês anterior',
+                  isPositive: false,
+                }}
+                onClick={() => navigate('/tickets?status=open')}
+              />
+            </>
+          )}
           
           <StatsCard
             title="Ordens de Serviço"
@@ -305,11 +396,13 @@ export function DashboardPage() {
 
       <div className="dashboard__content">
         <div className="dashboard__main">
-          <RecentTickets
-            tickets={recentTickets}
-            onViewAll={() => navigate('/tickets')}
-            onTicketClick={handleTicketClick}
-          />
+          {selectedProviderId !== 'global' && (
+            <RecentTickets
+              tickets={recentTickets}
+              onViewAll={() => navigate('/tickets')}
+              onTicketClick={handleTicketClick}
+            />
+          )}
           
           <RecentServiceOrders
             serviceOrders={recentServiceOrders}
