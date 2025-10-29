@@ -28,7 +28,7 @@ const app = express();
 // Usa porta fixa em desenvolvimento (ignora PORT), e respeita PORT em produção
 const port: number = process.env.NODE_ENV === 'production'
   ? Number(process.env.PORT) || 4002
-  : 4000;
+  : 4002;
 
 // Valida configuração de CORS
 validateCorsConfig();

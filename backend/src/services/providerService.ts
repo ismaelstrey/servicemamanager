@@ -173,8 +173,18 @@ export class ProviderService {
       }
 
       // Verificar se o usuário tem acesso ao provedor
-      if (!this.userHasAccessToProvider(user, provider)) {
-        throw new Error('Acesso negado ao provedor');
+      // Papéis globais têm acesso amplo
+      let allowed = false;
+      if (user.role === 'super_admin' || user.role === 'admin') {
+        allowed = true;
+      } else {
+        allowed = await this.userHasAccess(user.id, provider.id);
+      }
+
+      if (!allowed) {
+        const err: any = new Error('Acesso negado ao provedor');
+        err.status = 403;
+        throw err;
       }
 
       return provider;
