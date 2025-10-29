@@ -10,7 +10,7 @@ interface TextProps {
   transform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
   truncate?: boolean;
   className?: string;
-  as?: keyof JSX.IntrinsicElements;
+  as?: React.ElementType;
 }
 
 // Estilos de variantes tipográficas

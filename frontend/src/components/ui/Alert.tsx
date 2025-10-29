@@ -1,9 +1,9 @@
 import React from 'react';
 
-export type AlertVariant = 'success' | 'danger' | 'warning' | 'info';
+export type AlertVariant = 'success' | 'danger' | 'warning' | 'info' | 'custom' | 'error' | 'primary';
 export type AlertSize = 'sm' | 'md' | 'lg';
 
-interface AlertProps {
+export interface AlertProps {
   children: React.ReactNode;
   variant: AlertVariant;
   size?: AlertSize;
@@ -44,7 +44,7 @@ export const Alert: React.FC<AlertProps> = ({
     className,
   ].filter(Boolean).join(' ');
 
-  const alertIcon = icon || defaultIcons[variant];
+  const alertIcon = icon || defaultIcons[variant as keyof typeof defaultIcons];
 
   return (
     <div className={classes} role="alert">

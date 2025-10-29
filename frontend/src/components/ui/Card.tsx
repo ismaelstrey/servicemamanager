@@ -3,7 +3,7 @@ import React from 'react';
 export type CardVariant = 'default' | 'outlined' | 'elevated' | 'filled';
 export type CardSize = 'sm' | 'md' | 'lg';
 
-interface CardProps {
+export interface CardProps {
   children: React.ReactNode;
   variant?: CardVariant;
   size?: CardSize;
@@ -119,8 +119,6 @@ export const CardFooter: React.FC<CardFooterProps> = ({
 };
 
 // Compound component pattern
-Card.Header = CardHeader;
-Card.Body = CardBody;
-Card.Footer = CardFooter;
+
 
 export default Card;

@@ -12,7 +12,7 @@ interface TabsContextType {
 
 const TabsContext = createContext<TabsContextType | undefined>(undefined);
 
-interface TabsProps {
+export interface TabsProps {
   children: React.ReactNode;
   defaultTab?: string;
   activeTab?: string;
@@ -194,10 +194,6 @@ export const TabPanel: React.FC<TabPanelProps> = ({
   );
 };
 
-// Compound component pattern
-Tabs.List = TabList;
-Tabs.Tab = Tab;
-Tabs.Panels = TabPanels;
-Tabs.Panel = TabPanel;
+
 
 export default Tabs;

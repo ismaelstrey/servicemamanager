@@ -3,7 +3,7 @@ import React from 'react';
 export type SpinnerSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export type SpinnerVariant = 'default' | 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info';
 
-interface SpinnerProps {
+export interface SpinnerProps {
   size?: SpinnerSize;
   variant?: SpinnerVariant;
   className?: string;

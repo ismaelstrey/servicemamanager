@@ -2,29 +2,38 @@ import React, { useState, useRef, useEffect } from 'react';
 
 export type DropdownPlacement = 'bottom-start' | 'bottom-end' | 'top-start' | 'top-end';
 
-interface DropdownProps {
+export interface DropdownProps {
   children: React.ReactNode;
-  trigger: React.ReactNode;
+  // trigger é opcional; se não fornecido, o primeiro filho é usado como trigger
+  trigger?: React.ReactNode;
   placement?: DropdownPlacement;
   className?: string;
   disabled?: boolean;
   closeOnClick?: boolean;
 }
 
-interface DropdownItemProps {
+export interface DropdownItemProps {
   children: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
   href?: string;
   target?: string;
+  // variante opcional para sinalizar estilos (ex.: danger)
+  variant?: 'default' | 'danger' | 'warning' | 'info' | 'success';
 }
 
-interface DropdownDividerProps {
+export interface DropdownDividerProps {
   className?: string;
 }
 
-export const Dropdown: React.FC<DropdownProps> = ({
+// Adiciona tipos para propriedades estáticas do componente composto
+type DropdownComponent = React.FC<DropdownProps> & {
+  Item: React.FC<DropdownItemProps>;
+  Divider: React.FC<DropdownDividerProps>;
+};
+
+export const Dropdown: DropdownComponent = ({
   children,
   trigger,
   placement = 'bottom-start',
@@ -86,6 +95,11 @@ export const Dropdown: React.FC<DropdownProps> = ({
     className,
   ].filter(Boolean).join(' ');
 
+  // Se trigger não for fornecido, usa o primeiro filho como trigger e o restante como itens
+  const childArray = React.Children.toArray(children);
+  const triggerNode = trigger ?? (childArray.length > 0 ? childArray[0] : null);
+  const menuChildren = trigger ? children : childArray.slice(1);
+
   return (
     <div ref={dropdownRef} className={classes}>
       <button
@@ -97,11 +111,11 @@ export const Dropdown: React.FC<DropdownProps> = ({
         aria-haspopup="true"
         type="button"
       >
-        {trigger}
+        {triggerNode}
       </button>
       {isOpen && (
         <div className="dropdown__menu" onClick={handleItemClick}>
-          {children}
+          {menuChildren}
         </div>
       )}
     </div>

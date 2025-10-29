@@ -11,13 +11,6 @@ interface CreateProviderForm {
   phone?: string;
 }
 
-interface ProviderCreateResponse {
-  id: number;
-  name: string;
-  cnpj: string;
-  workspace?: string;
-}
-
 export default function CreateProviderPage() {
   const navigate = useNavigate();
   const { updateUser } = useAuth();
@@ -58,16 +51,15 @@ export default function CreateProviderPage() {
         phone: form.phone?.trim() || undefined,
       };
 
-      const res = await ApiService.post<ProviderCreateResponse>('/providers', payload);
-      const provider = res.data as unknown as ProviderCreateResponse;
+      const res = await ApiService.post<any>('/providers', payload);
+      const providerId = res?.data?.data?.provider?.id ?? res?.data?.provider?.id ?? res?.data?.id;
 
-      // Atualiza o usuário no estado com o novo providerId
-      if (provider?.id) {
-        updateUser({ providerId: provider.id });
+      if (providerId) {
+        updateUser({ providerId });
+        navigate('/dashboard');
+      } else {
+        setError('Não foi possível obter o ID do provedor. Tente novamente.');
       }
-
-      // Redireciona para o dashboard
-      navigate('/dashboard');
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Erro ao criar provedor';
       setError(message);

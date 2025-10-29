@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
@@ -186,9 +186,6 @@ export const ModalFooter: React.FC<ModalFooterProps> = ({
   );
 };
 
-// Compound component pattern
-Modal.Header = ModalHeader;
-Modal.Body = ModalBody;
-Modal.Footer = ModalFooter;
+
 
 export default Modal;

@@ -20,13 +20,13 @@ export type { SpinnerProps, SpinnerSize, SpinnerVariant } from './Spinner';
 export { default as Alert } from './Alert';
 export type { AlertProps, AlertVariant, AlertSize } from './Alert';
 
-export { default as Dropdown } from './Dropdown';
+export { default as Dropdown, DropdownItem, DropdownDivider } from './Dropdown';
 export type { DropdownProps, DropdownPlacement } from './Dropdown';
 
-export { default as Tabs } from './Tabs';
+export { default as Tabs, Tab, TabList, TabPanels, TabPanel } from './Tabs';
 export type { TabsProps, TabsVariant, TabsSize } from './Tabs';
 
-export { default as Table } from './Table';
+export { default as Table, TableHeader, TableBody, TableFooter, TableRow, TableHeaderCell, TableCell } from './Table';
 export type { TableProps, TableVariant, TableSize } from './Table';
 
 export { default as Pagination } from './Pagination';

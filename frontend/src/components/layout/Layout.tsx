@@ -8,8 +8,8 @@ const LayoutContainer = styled.div`
 `
 
 const Header = styled.header`
-  background-color: ${({ theme }) => theme.colors.background.paper};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.main};
+  background-color: ${({ theme }) => theme.colors.background.secondary};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border.primary};
   padding: 1rem 2rem;
   box-shadow: ${({ theme }) => theme.shadows.sm};
 `
@@ -17,7 +17,7 @@ const Header = styled.header`
 const Main = styled.main`
   flex: 1;
   padding: 2rem;
-  background-color: ${({ theme }) => theme.colors.background.default};
+  background-color: ${({ theme }) => theme.colors.background.primary};
 `
 
 const Title = styled.h1`

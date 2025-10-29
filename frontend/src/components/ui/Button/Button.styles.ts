@@ -1,5 +1,5 @@
 import styled, { css, keyframes } from 'styled-components';
-import { StyledButtonProps } from './Button.types';
+import type { StyledButtonProps } from './Button.types';
 
 // Animação de loading
 const spin = keyframes`
@@ -170,10 +170,10 @@ export const StyledButton = styled.button<StyledButtonProps>`
   overflow: hidden;
 
   /* Aplicar estilos de variante */
-  ${({ variant = 'primary' }) => variantStyles[variant]}
+  ${({ variant = 'primary' }) => variantStyles[variant as keyof typeof variantStyles]}
   
   /* Aplicar estilos de tamanho */
-  ${({ size = 'medium' }) => sizeStyles[size]}
+  ${({ size = 'medium' }) => sizeStyles[size as keyof typeof sizeStyles]}
 
   /* Estado de largura total */
   ${({ fullWidth }) => fullWidth && css`

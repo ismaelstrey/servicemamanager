@@ -1,6 +1,16 @@
 // Design Tokens - Barrel Export
 // Exportação centralizada de todos os tokens de design
 
+// Imports de tipos necessários localmente para compor DesignTokens
+import type { ColorTokens } from './colors';
+import type { TypographyTokens } from './typography';
+import type { SpacingTokens } from './spacing';
+import type { ShadowTokens } from './shadows';
+import type { AnimationTokens } from './animations';
+import type { BorderTokens } from './borders';
+import type { ZIndexTokens } from './zIndex';
+import type { BreakpointTokens } from './breakpoints';
+
 export { colors, darkColors, lightColors, type ColorTokens } from './colors';
 export { typography, type TypographyTokens } from './typography';
 export { spacing, type SpacingTokens } from './spacing';

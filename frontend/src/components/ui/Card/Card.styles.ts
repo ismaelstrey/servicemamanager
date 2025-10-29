@@ -1,22 +1,22 @@
 import styled, { css } from 'styled-components';
-import { StyledCardProps } from './Card.types';
+import type { StyledCardProps } from './Card.types';
 
 // Estilos de variantes
 const variantStyles = {
   default: css`
-    background-color: ${({ theme }) => theme.colors.background.paper};
+    background-color: ${({ theme }) => theme.colors.background.secondary};
     border: 1px solid ${({ theme }) => theme.colors.border.primary};
     box-shadow: none;
   `,
   
   outlined: css`
-    background-color: ${({ theme }) => theme.colors.background.paper};
+    background-color: ${({ theme }) => theme.colors.background.secondary};
     border: 1px solid ${({ theme }) => theme.colors.border.secondary};
     box-shadow: none;
   `,
   
   elevated: css`
-    background-color: ${({ theme }) => theme.colors.background.paper};
+    background-color: ${({ theme }) => theme.colors.background.secondary};
     border: 1px solid transparent;
     box-shadow: ${({ theme }) => theme.shadows.md};
   `,

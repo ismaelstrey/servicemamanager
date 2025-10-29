@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 export interface CardProps {
   children: React.ReactNode;
@@ -22,4 +22,12 @@ export interface CardBodyProps {
 export interface CardFooterProps {
   children: React.ReactNode;
   className?: string;
+}
+
+// Props internos usados pelo StyledCard
+export interface StyledCardProps {
+  variant?: 'default' | 'outlined' | 'elevated';
+  padding?: 'none' | 'small' | 'medium' | 'large';
+  hoverable?: boolean;
+  onClick?: () => void;
 }

@@ -7,7 +7,7 @@ import {
   DatePicker,
   Button
 } from '../ui';
-import { ServiceOrderStatus, ServiceOrderPriority, ServiceOrderType, ServiceOrderCategory } from '../../types/serviceOrder';
+import type { ServiceOrderStatus, ServiceOrderPriority, ServiceOrderType, ServiceOrderCategory } from '../../types/serviceOrder';
 
 interface ServiceOrderFormData {
   title: string;

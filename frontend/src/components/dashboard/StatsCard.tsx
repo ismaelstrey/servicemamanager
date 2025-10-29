@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
+import { CardBody } from '../ui/Card';
 
 export interface StatsCardProps {
   title: string;
@@ -43,7 +44,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
       onClick={onClick}
       className="stats-card"
     >
-      <Card.Body>
+      <CardBody>
         <div className="stats-card__header">
           <div className="stats-card__title-section">
             <h3 className="stats-card__title">{title}</h3>
@@ -91,7 +92,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
             )}
           </div>
         </div>
-      </Card.Body>
+      </CardBody>
     </Card>
   );
 };

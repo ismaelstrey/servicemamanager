@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -13,7 +13,9 @@ import {
   Dropdown,
   DropdownItem
 } from '../../components/ui';
-import { ServiceOrder, ServiceOrderStatus, ServiceOrderPriority, ServiceOrderComment, ServiceOrderHistoryEntry } from '../../types/serviceOrder';
+import { UserRole } from '../../types/auth';
+import type { ServiceOrder, ServiceOrderStatus, ServiceOrderPriority, ServiceOrderComment, ServiceOrderHistory } from '../../types/serviceOrder';
+import type { User } from '../../types/user';
 import '../../styles/service-orders.css';
 
 const statusLabels: Record<ServiceOrderStatus, string> = {
@@ -23,8 +25,12 @@ const statusLabels: Record<ServiceOrderStatus, string> = {
   waiting_parts: 'Aguardando Peças',
   waiting_customer: 'Aguardando Cliente',
   completed: 'Concluída',
-  cancelled: 'Cancelada'
-};
+  cancelled: 'Cancelada',
+  on_hold: 'Em Espera',
+  draft: 'Rascunho',
+  approved: 'Aprovada',
+  rejected: 'Rejeitada'
+} as const;
 
 const priorityLabels: Record<ServiceOrderPriority, string> = {
   low: 'Baixa',
@@ -32,6 +38,8 @@ const priorityLabels: Record<ServiceOrderPriority, string> = {
   high: 'Alta',
   urgent: 'Urgente'
 };
+
+type TabValue = 'details' | 'tasks' | 'comments' | 'attachments' | 'history';
 
 const getStatusVariant = (status: ServiceOrderStatus): 'success' | 'warning' | 'danger' | 'info' | 'secondary' => {
   switch (status) {
@@ -61,7 +69,7 @@ export function ServiceOrderDetailsPage() {
   const [serviceOrder, setServiceOrder] = useState<ServiceOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('details');
+  const [activeTab, setActiveTab] = useState<TabValue>('details');
   
   // Estados para comentários
   const [newComment, setNewComment] = useState('');
@@ -88,206 +96,207 @@ export function ServiceOrderDetailsPage() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Mock data
+      const mockUser: User = {
+        id: 1,
+        name: 'Maria Santos',
+        email: 'maria.santos@telecom.com',
+        role: UserRole.USER,
+        status: 'active',
+        emailVerified: true,
+        loginAttempts: 0,
+        createdAt: new Date('2024-01-10T09:00:00Z'),
+        updatedAt: new Date('2024-01-10T09:00:00Z'),
+        
+      } as User;
+
+      const adminUser: User = {
+        id: 2,
+        name: 'Carlos Admin',
+        email: 'carlos@telecom.com',
+        role: UserRole.ADMIN,
+        status: 'active',
+        emailVerified: true,
+        loginAttempts: 0,
+        createdAt: new Date('2024-01-10T09:00:00Z'),
+        updatedAt: new Date('2024-01-10T09:00:00Z'),
+      } as User;
+
       const mockServiceOrder: ServiceOrder = {
-        id: serviceOrderId,
+        id: Number(serviceOrderId),
+        providerId: 1,
         number: `OS-2024-${serviceOrderId.padStart(3, '0')}`,
         title: 'Instalação de Servidor Dell PowerEdge',
         description: 'Instalação e configuração completa de servidor Dell PowerEdge R740 incluindo sistema operacional, configuração de RAID, instalação de aplicações básicas e testes de funcionamento.',
         status: 'in_progress',
         priority: 'high',
         type: 'installation',
-        category: 'technical',
+        category: 'hardware',
         customerInfo: {
           name: 'João Silva',
           email: 'joao.silva@empresa.com',
           phone: '(11) 99999-9999',
           company: 'Empresa ABC Ltda'
         },
-        assignedTo: {
-          id: '1',
-          name: 'Maria Santos',
-          email: 'maria.santos@telecom.com'
-        },
+        assignedTo: 1,
+        assignee: mockUser,
         location: {
           address: 'Rua das Flores, 123',
           city: 'São Paulo',
           state: 'SP',
           zipCode: '01234-567',
-          coordinates: '-23.5505,-46.6333'
+          country: 'Brasil',
+          coordinates: {
+            latitude: -23.5505,
+            longitude: -46.6333,
+          },
         },
         estimatedHours: 8,
         actualHours: 6,
-        estimatedCost: 2500.00,
-        actualCost: 2300.00,
-        dueDate: '2024-01-20T18:00:00Z',
-        scheduledDate: '2024-01-18T09:00:00Z',
-        completedDate: null,
-        createdAt: '2024-01-15T10:30:00Z',
-        updatedAt: '2024-01-16T14:20:00Z',
-        createdBy: {
-          id: '2',
-          name: 'Carlos Admin',
-          email: 'carlos@telecom.com'
+        cost: {
+          laborCost: 1800,
+          materialCost: 500,
+          travelCost: 0,
+          totalCost: 2300,
+          currency: 'BRL',
+          approved: true,
         },
+        dueDate: new Date('2024-01-20T18:00:00Z'),
+        scheduledDate: new Date('2024-01-18T09:00:00Z'),
+        completedAt: undefined,
+        createdAt: new Date('2024-01-15T10:30:00Z'),
+        updatedAt: new Date('2024-01-16T14:20:00Z'),
+        createdBy: 2,
         tasks: [
           {
-            id: '1',
+            id: 1,
             title: 'Preparar ambiente',
             description: 'Verificar espaço físico e infraestrutura elétrica',
             status: 'completed',
-            assignee: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria.santos@telecom.com'
-            },
+            assignedTo: 1,
+            assignee: mockUser,
             estimatedHours: 1,
             actualHours: 1,
-            completedAt: '2024-01-18T10:00:00Z'
+            completedAt: new Date('2024-01-18T10:00:00Z'),
+            order: 1,
           },
           {
-            id: '2',
+            id: 2,
             title: 'Instalar hardware',
             description: 'Instalação física do servidor no rack',
             status: 'completed',
-            assignee: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria.santos@telecom.com'
-            },
+            assignedTo: 1,
+            assignee: mockUser,
             estimatedHours: 2,
             actualHours: 2,
-            completedAt: '2024-01-18T12:30:00Z'
+            completedAt: new Date('2024-01-18T12:30:00Z'),
+            order: 2,
           },
           {
-            id: '3',
+            id: 3,
             title: 'Configurar sistema operacional',
             description: 'Instalação e configuração do Windows Server 2022',
             status: 'in_progress',
-            assignee: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria.santos@telecom.com'
-            },
+            assignedTo: 1,
+            assignee: mockUser,
             estimatedHours: 3,
-            actualHours: 2
+            actualHours: 2,
+            order: 3,
           },
           {
-            id: '4',
+            id: 4,
             title: 'Testes finais',
             description: 'Testes de funcionamento e performance',
             status: 'pending',
-            estimatedHours: 2
+            estimatedHours: 2,
+            order: 4,
           }
         ],
         comments: [
           {
-            id: '1',
+            id: 1,
             content: 'Ordem de serviço criada. Aguardando agendamento.',
-            author: {
-              id: '2',
-              name: 'Carlos Admin',
-              email: 'carlos@telecom.com'
-            },
-            createdAt: '2024-01-15T10:30:00Z',
-            isInternal: false
+            user: adminUser,
+            customer: undefined,
+            createdAt: new Date('2024-01-15T10:30:00Z'),
+            updatedAt: new Date('2024-01-15T10:30:00Z'),
+            isInternal: false,
+            isEdited: false,
           },
           {
-            id: '2',
+            id: 2,
             content: 'Agendado para 18/01 às 09:00. Cliente confirmou disponibilidade.',
-            author: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria.santos@telecom.com'
-            },
-            createdAt: '2024-01-16T14:20:00Z',
-            isInternal: false
+            user: mockUser,
+            customer: undefined,
+            createdAt: new Date('2024-01-16T14:20:00Z'),
+            updatedAt: new Date('2024-01-16T14:20:00Z'),
+            isInternal: false,
+            isEdited: false,
           },
           {
-            id: '3',
+            id: 3,
             content: 'Iniciando trabalhos no local. Ambiente adequado.',
-            author: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria.santos@telecom.com'
-            },
-            createdAt: '2024-01-18T09:15:00Z',
-            isInternal: true
+            user: mockUser,
+            customer: undefined,
+            createdAt: new Date('2024-01-18T09:15:00Z'),
+            updatedAt: new Date('2024-01-18T09:15:00Z'),
+            isInternal: true,
+            isEdited: false,
           }
         ],
         attachments: [
           {
-            id: '1',
-            name: 'especificacoes-servidor.pdf',
+            id: 1,
+            filename: 'especificacoes-servidor.pdf',
+            originalName: 'Especificações do Servidor.pdf',
             url: '/files/especificacoes-servidor.pdf',
             size: 245760,
-            type: 'application/pdf',
-            uploadedBy: {
-              id: '2',
-              name: 'Carlos Admin',
-              email: 'carlos@telecom.com'
-            },
-            uploadedAt: '2024-01-15T10:35:00Z'
+            mimeType: 'application/pdf',
+            uploadedBy: 2,
+            uploadedAt: new Date('2024-01-15T10:35:00Z'),
+            isPublic: true,
+            category: 'document',
           },
           {
-            id: '2',
-            name: 'foto-instalacao.jpg',
+            id: 2,
+            filename: 'foto-instalacao.jpg',
+            originalName: 'Foto da Instalação.jpg',
             url: '/files/foto-instalacao.jpg',
             size: 1024000,
-            type: 'image/jpeg',
-            uploadedBy: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria.santos@telecom.com'
-            },
-            uploadedAt: '2024-01-18T12:45:00Z'
+            mimeType: 'image/jpeg',
+            uploadedBy: 1,
+            uploadedAt: new Date('2024-01-18T12:45:00Z'),
+            isPublic: true,
+            category: 'photo',
           }
         ],
         history: [
           {
-            id: '1',
+            id: 1,
             action: 'created',
             description: 'Ordem de serviço criada',
-            user: {
-              id: '2',
-              name: 'Carlos Admin',
-              email: 'carlos@telecom.com'
-            },
-            timestamp: '2024-01-15T10:30:00Z',
-            changes: {}
+            user: adminUser,
+            createdAt: new Date('2024-01-15T10:30:00Z'),
           },
           {
-            id: '2',
+            id: 2,
             action: 'status_changed',
             description: 'Status alterado de Pendente para Agendada',
-            user: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria.santos@telecom.com'
-            },
-            timestamp: '2024-01-16T14:20:00Z',
-            changes: {
-              field: 'status',
-              oldValue: 'pending',
-              newValue: 'scheduled'
-            }
+            user: mockUser,
+            createdAt: new Date('2024-01-16T14:20:00Z'),
+            oldValue: 'pending',
+            newValue: 'scheduled',
           },
           {
-            id: '3',
+            id: 3,
             action: 'status_changed',
             description: 'Status alterado de Agendada para Em Andamento',
-            user: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria.santos@telecom.com'
-            },
-            timestamp: '2024-01-18T09:15:00Z',
-            changes: {
-              field: 'status',
-              oldValue: 'scheduled',
-              newValue: 'in_progress'
-            }
+            user: mockUser,
+            createdAt: new Date('2024-01-18T09:15:00Z'),
+            oldValue: 'scheduled',
+            newValue: 'in_progress',
           }
-        ]
+        ],
+        tags: ['server', 'installation'],
       };
 
       setServiceOrder(mockServiceOrder);
@@ -309,16 +318,26 @@ export function ServiceOrderDetailsPage() {
       // Simular chamada da API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      const currentUser: User = {
+        id: 1,
+        name: 'Usuário Atual',
+        email: 'usuario@telecom.com',
+        role: UserRole.USER,
+        status: 'active',
+        emailVerified: true,
+        loginAttempts: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as User;
+
       const comment: ServiceOrderComment = {
-        id: String(Date.now()),
+        id: Date.now(),
         content: newComment,
-        author: {
-          id: '1',
-          name: 'Usuário Atual',
-          email: 'usuario@telecom.com'
-        },
-        createdAt: new Date().toISOString(),
-        isInternal
+        isInternal,
+        isEdited: false,
+        user: currentUser,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       setServiceOrder(prev => prev ? {
@@ -344,42 +363,45 @@ export function ServiceOrderDetailsPage() {
       // Simular chamada da API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const historyEntry: ServiceOrderHistoryEntry = {
-        id: String(Date.now()),
+      const currentUser: User = {
+        id: 1,
+        name: 'Usuário Atual',
+        email: 'usuario@telecom.com',
+        role: UserRole.USER,
+        status: 'active',
+        emailVerified: true,
+        loginAttempts: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as User;
+
+      const historyEntry: ServiceOrderHistory = {
+        id: Date.now(),
         action: 'status_changed',
         description: `Status alterado de ${statusLabels[serviceOrder.status]} para ${statusLabels[newStatus]}`,
-        user: {
-          id: '1',
-          name: 'Usuário Atual',
-          email: 'usuario@telecom.com'
-        },
-        timestamp: new Date().toISOString(),
-        changes: {
-          field: 'status',
-          oldValue: serviceOrder.status,
-          newValue: newStatus
-        }
+        user: currentUser,
+        createdAt: new Date(),
+        oldValue: serviceOrder.status,
+        newValue: newStatus,
       };
 
       setServiceOrder(prev => prev ? {
         ...prev,
         status: newStatus,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),
         history: [...prev.history, historyEntry]
       } : null);
 
       // Adicionar comentário se fornecido
       if (statusComment.trim()) {
         const comment: ServiceOrderComment = {
-          id: String(Date.now() + 1),
+          id: Date.now() + 1,
           content: statusComment,
-          author: {
-            id: '1',
-            name: 'Usuário Atual',
-            email: 'usuario@telecom.com'
-          },
-          createdAt: new Date().toISOString(),
-          isInternal: false
+          isInternal: false,
+          isEdited: false,
+          user: currentUser,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         };
 
         setServiceOrder(prev => prev ? {
@@ -465,7 +487,7 @@ export function ServiceOrderDetailsPage() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs activeTab={activeTab} onTabChange={(val) => setActiveTab(val as TabValue)}>
         <Tab value="details">Detalhes</Tab>
         <Tab value="tasks">Tarefas ({serviceOrder.tasks.length})</Tab>
         <Tab value="comments">Comentários ({serviceOrder.comments.length})</Tab>
@@ -525,7 +547,7 @@ export function ServiceOrderDetailsPage() {
                 {serviceOrder.comments.map((comment) => (
                   <div key={comment.id} className={`service-order-comment ${comment.isInternal ? 'service-order-comment--internal' : ''}`}>
                     <div className="service-order-comment-header">
-                      <span className="service-order-comment-author">{comment.author.name}</span>
+                      <span className="service-order-comment-author">{comment.user?.name || comment.customer?.name || 'Usuário'}</span>
                       <span className="service-order-comment-date">
                         {new Date(comment.createdAt).toLocaleString('pt-BR')}
                       </span>
@@ -583,10 +605,10 @@ export function ServiceOrderDetailsPage() {
                       </div>
                       <div className="service-order-attachment-info">
                         <div className="service-order-attachment-name">
-                          {attachment.name}
+                          {attachment.originalName || attachment.filename}
                         </div>
                         <div className="service-order-attachment-meta">
-                          {(attachment.size / 1024).toFixed(1)} KB • {attachment.uploadedBy.name} • {new Date(attachment.uploadedAt).toLocaleDateString('pt-BR')}
+                          {(attachment.size / 1024).toFixed(1)} KB • Usuário #{attachment.uploadedBy} • {new Date(attachment.uploadedAt).toLocaleDateString('pt-BR')}
                         </div>
                       </div>
                     </div>
@@ -610,7 +632,7 @@ export function ServiceOrderDetailsPage() {
                         {entry.description}
                       </div>
                       <div className="service-order-history-meta">
-                        {entry.user.name} • {new Date(entry.timestamp).toLocaleString('pt-BR')}
+                        {(entry.user?.name) || (entry.userId ? `Usuário #${entry.userId}` : 'Usuário')} • {new Date(entry.createdAt).toLocaleString('pt-BR')}
                       </div>
                     </div>
                   </div>
@@ -647,15 +669,15 @@ export function ServiceOrderDetailsPage() {
             <h3>Informações da OS</h3>
             <div className="service-order-info-item">
               <label>Responsável:</label>
-              <span>{serviceOrder.assignedTo?.name || 'Não atribuído'}</span>
+              <span>{serviceOrder.assignee?.name || 'Não atribuído'}</span>
             </div>
             <div className="service-order-info-item">
               <label>Criado por:</label>
-              <span>{serviceOrder.createdBy.name}</span>
+              <span>{serviceOrder.createdBy !== undefined ? `Usuário #${serviceOrder.createdBy}` : 'Desconhecido'}</span>
             </div>
             <div className="service-order-info-item">
               <label>Data de criação:</label>
-              <span>{new Date(serviceOrder.createdAt).toLocaleDateString('pt-BR')}</span>
+              <span>{serviceOrder.createdAt ? new Date(serviceOrder.createdAt).toLocaleDateString('pt-BR') : '-'}</span>
             </div>
             {serviceOrder.dueDate && (
               <div className="service-order-info-item">
@@ -674,15 +696,13 @@ export function ServiceOrderDetailsPage() {
               </div>
             )}
             <div className="service-order-info-item">
-              <label>Custo estimado:</label>
-              <span>R$ {serviceOrder.estimatedCost?.toFixed(2)}</span>
+              <label>Custo total:</label>
+              <span>{serviceOrder.cost ? `R$ ${serviceOrder.cost.totalCost.toFixed(2)}` : 'N/A'}</span>
             </div>
-            {serviceOrder.actualCost && (
-              <div className="service-order-info-item">
-                <label>Custo real:</label>
-                <span>R$ {serviceOrder.actualCost.toFixed(2)}</span>
-              </div>
-            )}
+            <div className="service-order-info-item">
+              <label>Aprovado:</label>
+              <span>{serviceOrder.cost?.approved ? 'Sim' : 'Não'}</span>
+            </div>
           </Card>
 
           <Card className="service-order-status-form">

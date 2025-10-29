@@ -1,9 +1,9 @@
 import React from 'react';
-import { Card } from '../ui/Card';
+import Card, { CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
 import type { QuickAction } from '../../utils/quickActions';
 
-interface QuickActionsProps {
+export interface QuickActionsProps {
   actions: QuickAction[];
   className?: string;
 }
@@ -14,11 +14,11 @@ const QuickActions: React.FC<QuickActionsProps> = ({
 }) => {
   return (
     <Card variant="default" className={`quick-actions ${className}`}>
-      <Card.Header>
+      <CardHeader>
         <h3 className="quick-actions__title">Ações Rápidas</h3>
-      </Card.Header>
+      </CardHeader>
 
-      <Card.Body>
+      <CardBody>
         <div className="quick-actions__grid">
           {actions.map((action) => (
             <div
@@ -26,7 +26,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
               className="quick-actions__item"
             >
               <Button
-                variant="outline"
+                variant="primary"
                 size="lg"
                 fullWidth
                 onClick={action.onClick}
@@ -50,7 +50,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
             </div>
           ))}
         </div>
-      </Card.Body>
+      </CardBody>
     </Card>
   );
 };

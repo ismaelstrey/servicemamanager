@@ -1,5 +1,5 @@
-import React, { forwardRef } from 'react';
-import { InputProps } from './Input.types';
+import { forwardRef } from 'react';
+import type { InputProps } from './Input.types';
 import {
   InputContainer,
   InputLabel,

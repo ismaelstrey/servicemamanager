@@ -3,11 +3,12 @@ import React from 'react';
 export type BadgeVariant = 'default' | 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info';
 export type BadgeSize = 'sm' | 'md' | 'lg';
 
-interface BadgeProps {
+export interface BadgeProps {
   children: React.ReactNode;
   variant?: BadgeVariant;
   size?: BadgeSize;
   className?: string;
+  icon?: React.ReactNode;
   dot?: boolean;
   outline?: boolean;
   removable?: boolean;

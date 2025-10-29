@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components';
-import { StyledInputProps } from './Input.types';
+import type { StyledInputProps } from './Input.types';
 
 // Container principal do input
 export const InputContainer = styled.div<{ fullWidth?: boolean }>`

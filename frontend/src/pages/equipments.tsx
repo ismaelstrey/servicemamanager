@@ -29,13 +29,13 @@ const Controls = styled.div`
 const Select = styled.select`
   padding: ${({ theme }) => theme.spacing.sm};
   border-radius: ${({ theme }) => theme.borders.radius.sm};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
   background: ${({ theme }) => theme.colors.surface};
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme }) => theme.colors.text.primary};
   transition: border-color ${({ theme }) => theme.animations.transition.fast}, box-shadow ${({ theme }) => theme.animations.transition.fast};
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
+    border-color: ${({ theme }) => theme.colors.primary.main};
     box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.ring};
   }
 `
@@ -49,18 +49,18 @@ const Grid = styled.div`
 const Card = styled.div<{ $type: EquipmentType }>`
   position: relative;
   background: linear-gradient(180deg, rgba(17,24,39,0.92) 0%, rgba(17,24,39,0.75) 100%);
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme }) => theme.colors.text.primary};
   border-radius: ${({ theme }) => theme.borders.radius.md};
   padding: ${({ theme }) => theme.spacing.md};
   box-shadow: ${({ theme }) => theme.shadows.md};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
   transition: transform ${({ theme }) => theme.animations.transition.fast}, box-shadow ${({ theme }) => theme.animations.transition.fast};
   border-left: 3px solid ${({ theme, $type }) => {
     switch ($type) {
-      case 'switch': return theme.colors.primary;
+      case 'switch': return theme.colors.primary.main;
       case 'olt': return theme.colors.accent;
-      case 'router': return theme.colors.warning;
-      case 'server': return theme.colors.success;
+      case 'router': return theme.colors.warning.main;
+      case 'server': return theme.colors.success.main;
       case 'virtualizer': return theme.colors.accentHover;
       default: return theme.colors.muted;
     }
@@ -86,9 +86,9 @@ const Badge = styled.span<{ $status: 'active' | 'inactive' | 'maintenance' }>`
   font-size: 0.8rem;
   font-weight: 600;
   background: ${({ theme, $status }) =>
-    $status === 'active' ? theme.colors.success :
-    $status === 'maintenance' ? theme.colors.warning :
-    theme.colors.danger};
+    $status === 'active' ? theme.colors.success.main :
+    $status === 'maintenance' ? theme.colors.warning.main :
+    theme.colors.danger.main};
   color: #0b0f1a;
 `
 
@@ -108,15 +108,15 @@ const TypeTag = styled.span<{ $type: EquipmentType }>`
   border-radius: ${({ theme }) => theme.borders.radius.full};
   border: 1px solid ${({ theme, $type }) => {
     switch ($type) {
-      case 'switch': return theme.colors.primary;
+      case 'switch': return theme.colors.primary.main;
       case 'olt': return theme.colors.accent;
-      case 'router': return theme.colors.warning;
-      case 'server': return theme.colors.success;
+      case 'router': return theme.colors.warning.main;
+      case 'server': return theme.colors.success.main;
       case 'virtualizer': return theme.colors.accentHover;
       default: return theme.colors.muted;
     }
   }};
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme }) => theme.colors.text.primary};
 `
 
 const StatBar = styled.div`

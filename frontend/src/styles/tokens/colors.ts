@@ -1,6 +1,52 @@
 // Design Tokens - Cores
 // Sistema de cores semântico com suporte a temas claro/escuro
 
+// Tipos para assegurar formato dos tokens sem restringir a valores literais
+export type ColorScale = {
+  50: string; 100: string; 200: string; 300: string; 400: string; 500: string;
+  600: string; 700: string; 800: string; 900: string;
+  main: string; light: string; dark: string;
+  darker?: string; contrast?: string;
+};
+
+export type BackgroundColors = {
+  primary: string; secondary: string; tertiary: string; overlay: string;
+};
+
+export type TextColors = {
+  primary: string; secondary: string; tertiary: string; inverse: string; disabled: string;
+};
+
+export type BorderColors = {
+  primary: string; secondary: string; tertiary: string; focus: string;
+};
+
+export type AlphaScale = {
+  white: { 5: string; 10: string; 20: string; 30: string; 40: string; 50: string; };
+  black: { 5: string; 10: string; 20: string; 30: string; 40: string; 50: string; };
+};
+
+export type ColorTokens = {
+  primary: ColorScale;
+  secondary: ColorScale;
+  neutral: Omit<ColorScale, 'contrast'>;
+  success: ColorScale;
+  warning: ColorScale;
+  danger: ColorScale;
+  error: ColorScale;
+  info: ColorScale;
+  // Aliases/shortcuts para compatibilidade com código existente
+  surface: string;
+  ring: string;
+  accent: string;
+  accentHover: string;
+  muted: string;
+  background: BackgroundColors;
+  text: TextColors;
+  border: BorderColors;
+  alpha: AlphaScale;
+};
+
 export const colors = {
   // Cores primárias
   primary: {
@@ -20,6 +66,18 @@ export const colors = {
     darker: '#047857',
     contrast: '#ffffff',
   },
+
+  // Aliases/shortcuts (modo escuro padrão)
+  // surface: usa background.secondary
+  surface: '#121826',
+  // ring: usa mesma cor de foco da borda
+  ring: 'rgba(16, 185, 129, 0.35)',
+  // accent: baseado na paleta secondary
+  accent: '#2dd4bf',
+  // accentHover: versão light da paleta secondary
+  accentHover: '#5eead4',
+  // muted: usa texto secundário
+  muted: '#9ca3af',
 
   // Cores secundárias
   secondary: {
@@ -110,6 +168,24 @@ export const colors = {
     contrast: '#ffffff',
   },
 
+  // Alias semântico para erro (mesma paleta que danger)
+  error: {
+    50: '#fef2f2',
+    100: '#fee2e2',
+    200: '#fecaca',
+    300: '#fca5a5',
+    400: '#f87171',
+    500: '#ef4444', // main
+    600: '#dc2626',
+    700: '#b91c1c',
+    800: '#991b1b',
+    900: '#7f1d1d',
+    main: '#ef4444',
+    light: '#f87171',
+    dark: '#dc2626',
+    contrast: '#ffffff',
+  },
+
   info: {
     50: '#eff6ff',
     100: '#dbeafe',
@@ -171,7 +247,7 @@ export const colors = {
       50: 'rgba(0, 0, 0, 0.50)',
     },
   },
-} as const;
+} satisfies ColorTokens;
 
 // Tema escuro (padrão)
 export const darkColors = colors;
@@ -198,6 +274,11 @@ export const lightColors = {
     tertiary: '#9ca3af',
     focus: 'rgba(16, 185, 129, 0.35)',
   },
-} as const;
-
-export type ColorTokens = typeof colors;
+  // Overrides para aliases/shortcuts no modo claro
+  surface: '#f8fafc', // background.secondary
+  ring: 'rgba(16, 185, 129, 0.35)', // igual ao border.focus
+  accent: '#2dd4bf', // secondary.main
+  accentHover: '#5eead4', // secondary.light
+  muted: '#4b5563', // text.secondary
+} satisfies ColorTokens;
+// Mantemos tipos declarados acima como forma canônica

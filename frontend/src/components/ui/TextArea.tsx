@@ -3,7 +3,7 @@ import React, { forwardRef } from 'react';
 export type TextAreaSize = 'sm' | 'md' | 'lg';
 export type TextAreaVariant = 'default' | 'filled' | 'outlined';
 
-interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
   helperText?: string;
@@ -80,4 +80,4 @@ TextArea.displayName = 'TextArea';
 
 export default TextArea;
 
-export type { TextAreaProps };
+// (remove the conflicting re-export; TextAreaProps is already exported via the interface declaration)

@@ -5,7 +5,7 @@ import { Button } from '../ui/Button';
 import { Spinner } from '../ui/Spinner';
 import type { ServiceOrder, ServiceOrderStatus } from '../../types/serviceOrder';
 
-interface RecentServiceOrdersProps {
+export interface RecentServiceOrdersProps {
   serviceOrders: ServiceOrder[];
   loading?: boolean;
   onViewAll?: () => void;

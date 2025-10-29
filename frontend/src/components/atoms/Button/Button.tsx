@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from 'react'
 import styled, { css } from 'styled-components'
 
 // Tipos para as props do Button
@@ -57,37 +57,32 @@ const StyledButton = styled.button<ButtonProps>`
     switch (size) {
       case 'xs':
         return css`
-          height: ${theme.spacing.component.button.xs.height};
-          padding: ${theme.spacing.component.button.xs.padding};
-          font-size: ${theme.typography.ui.xs.fontSize};
+          padding: ${theme.spacing.component.button.xs};
+          font-size: ${theme.typography.fontSize.xs};
           border-radius: ${theme.borders.radius.sm};
         `
       case 'sm':
         return css`
-          height: ${theme.spacing.component.button.sm.height};
-          padding: ${theme.spacing.component.button.sm.padding};
-          font-size: ${theme.typography.ui.sm.fontSize};
+          padding: ${theme.spacing.component.button.sm};
+          font-size: ${theme.typography.fontSize.sm};
           border-radius: ${theme.borders.radius.sm};
         `
       case 'lg':
         return css`
-          height: ${theme.spacing.component.button.lg.height};
-          padding: ${theme.spacing.component.button.lg.padding};
-          font-size: ${theme.typography.ui.lg.fontSize};
+          padding: ${theme.spacing.component.button.lg};
+          font-size: ${theme.typography.fontSize.lg};
           border-radius: ${theme.borders.radius.md};
         `
       case 'xl':
         return css`
-          height: ${theme.spacing.component.button.xl.height};
-          padding: ${theme.spacing.component.button.xl.padding};
-          font-size: ${theme.typography.ui.xl.fontSize};
+          padding: ${theme.spacing.component.button.xl};
+          font-size: ${theme.typography.fontSize.xl};
           border-radius: ${theme.borders.radius.md};
         `
       default: // md
         return css`
-          height: ${theme.spacing.component.button.md.height};
-          padding: ${theme.spacing.component.button.md.padding};
-          font-size: ${theme.typography.ui.base.fontSize};
+          padding: ${theme.spacing.component.button.md};
+          font-size: ${theme.typography.fontSize.base};
           border-radius: ${theme.borders.radius.md};
         `
     }
@@ -118,7 +113,7 @@ const StyledButton = styled.button<ButtonProps>`
         return css`
           background-color: transparent;
           color: ${theme.colors.primary.main};
-          border: ${theme.borders.width.md} solid ${theme.colors.primary.main};
+          border: ${theme.borders.width.medium} solid ${theme.colors.primary.main};
           
           &:hover:not(:disabled) {
             background-color: ${theme.colors.primary.main};
@@ -147,18 +142,18 @@ const StyledButton = styled.button<ButtonProps>`
         `
       case 'danger':
         return css`
-          background-color: ${theme.colors.semantic.danger.main};
-          color: ${theme.colors.semantic.danger.contrast};
+          background-color: ${theme.colors.danger.main};
+          color: ${theme.colors.danger.contrast};
           box-shadow: ${theme.shadows.component.button.default};
           
           &:hover:not(:disabled) {
-            background-color: ${theme.colors.semantic.danger.dark};
+            background-color: ${theme.colors.danger.dark};
             box-shadow: ${theme.shadows.component.button.hover};
             transform: translateY(-1px);
           }
           
           &:active:not(:disabled) {
-            background-color: ${theme.colors.semantic.danger.darker};
+            background-color: ${theme.colors.danger.darker};
             box-shadow: ${theme.shadows.component.button.active};
             transform: translateY(0);
           }

@@ -19,7 +19,7 @@ export const createTheme = (mode: 'light' | 'dark' = 'dark'): DesignTokens & { m
   colors: mode === 'dark' ? darkColors : lightColors,
   typography,
   spacing,
-  shadows: mode === 'dark' ? shadows.dark : shadows,
+  shadows,
   animations,
   borders,
   zIndex,

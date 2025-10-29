@@ -1,23 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardHeader } from '../../components/ui/Card';
+import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Tabs } from '../../components/ui/Tabs';
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from '../../components/ui/Tabs';
 import { Spinner } from '../../components/ui/Spinner';
 import { Alert } from '../../components/ui/Alert';
-import { Modal } from '../../components/ui/Modal';
-import type { Ticket, TicketStatus, TicketPriority, TicketComment, TicketHistoryEntry } from '../../types/ticket';
+import { Modal, ModalHeader, ModalBody, ModalFooter } from '../../components/ui/Modal';
+import type { Ticket, TicketStatus, TicketComment, TicketHistory } from '../../types/ticket';
+import type { Priority } from '../../types/common';
 
 const statusLabels: Record<TicketStatus, string> = {
   open: 'Aberto',
   in_progress: 'Em Andamento',
-  waiting_customer: 'Aguardando Cliente',
+  pending: 'Aguardando Cliente',
   resolved: 'Resolvido',
   closed: 'Fechado',
+  assigned: 'Atribuído',
+  cancelled: 'Cancelado',
 };
 
-const priorityLabels: Record<TicketPriority, string> = {
+const priorityLabels: Record<Priority, string> = {
   low: 'Baixa',
   medium: 'Média',
   high: 'Alta',
@@ -28,14 +31,16 @@ const getStatusVariant = (status: TicketStatus): 'success' | 'warning' | 'danger
   switch (status) {
     case 'open': return 'danger';
     case 'in_progress': return 'warning';
-    case 'waiting_customer': return 'info';
+    case 'pending': return 'info';
     case 'resolved': return 'success';
     case 'closed': return 'secondary';
+    case 'assigned': return 'info';
+    case 'cancelled': return 'secondary';
     default: return 'secondary';
   }
 };
 
-const getPriorityVariant = (priority: TicketPriority): 'success' | 'warning' | 'danger' | 'info' | 'secondary' => {
+const getPriorityVariant = (priority: Priority): 'success' | 'warning' | 'danger' | 'info' | 'secondary' => {
   switch (priority) {
     case 'low': return 'success';
     case 'medium': return 'info';
@@ -81,117 +86,95 @@ export function TicketDetailsPage() {
 
       // Mock data - replace with actual API response
       const mockTicket: Ticket = {
-        id: ticketId,
+        id: Number(ticketId),
+        providerId: 1,
         number: 'TK-2024-001',
         title: 'Problema na conexão de internet',
         description: 'Cliente relatando instabilidade na conexão de internet. A conexão fica intermitente durante o dia, principalmente no período da manhã. Cliente já reiniciou o modem várias vezes mas o problema persiste.',
         status: 'in_progress',
         priority: 'high',
-        category: 'technical',
+        category: 'network',
         source: 'phone',
         customerInfo: {
           name: 'João Silva',
           email: 'joao@email.com',
           phone: '(11) 99999-9999',
           company: 'Empresa ABC',
-          address: 'Rua das Flores, 123 - São Paulo, SP',
+          department: 'Suporte',
         },
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-        updatedAt: new Date().toISOString(),
-        assignedTo: {
-          id: '1',
-          name: 'Maria Santos',
-          email: 'maria@telecom.com',
-        },
+        createdAt: new Date(Date.now() - 86400000),
+        updatedAt: new Date(),
+        tags: ['internet', 'latência'],
+        slaStatus: 'within_sla',
         comments: [
           {
-            id: '1',
+            id: 1,
             content: 'Ticket recebido. Iniciando análise do problema.',
-            author: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria@telecom.com',
-            },
-            createdAt: new Date(Date.now() - 82800000).toISOString(),
             isInternal: false,
+            isEdited: false,
+            userId: 1,
+            createdAt: new Date(Date.now() - 82800000),
+            updatedAt: new Date(Date.now() - 82800000),
           },
           {
-            id: '2',
+            id: 2,
             content: 'Verificado histórico de conexão. Identificados picos de latência no período da manhã.',
-            author: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria@telecom.com',
-            },
-            createdAt: new Date(Date.now() - 79200000).toISOString(),
             isInternal: true,
+            isEdited: false,
+            userId: 1,
+            createdAt: new Date(Date.now() - 79200000),
+            updatedAt: new Date(Date.now() - 82800000),
           },
           {
-            id: '3',
+            id: 3,
             content: 'Agendada visita técnica para verificação da instalação.',
-            author: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria@telecom.com',
-            },
-            createdAt: new Date(Date.now() - 3600000).toISOString(),
             isInternal: false,
+            isEdited: false,
+            userId: 1,
+            createdAt: new Date(Date.now() - 3600000),
+            updatedAt: new Date(Date.now() - 82800000),
           },
         ],
         attachments: [
           {
-            id: '1',
-            name: 'teste-velocidade.pdf',
+            id: 1,
+            filename: 'teste-velocidade-2024-01.pdf',
+            originalName: 'teste-velocidade.pdf',
+            mimeType: 'application/pdf',
             url: '/attachments/teste-velocidade.pdf',
             size: 245760,
-            type: 'application/pdf',
-            uploadedAt: new Date(Date.now() - 79200000).toISOString(),
-            uploadedBy: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria@telecom.com',
-            },
+            uploadedBy: 1,
+            uploadedAt: new Date(Date.now() - 79200000),
+            isPublic: true,
           },
         ],
         history: [
           {
-            id: '1',
+            id: 1,
             action: 'created',
             description: 'Ticket criado',
-            performedBy: {
-              id: 'system',
-              name: 'Sistema',
-              email: 'system@telecom.com',
-            },
-            performedAt: new Date(Date.now() - 86400000).toISOString(),
+            createdAt: new Date(Date.now() - 86400000),
             oldValue: null,
             newValue: 'open',
+            userId: 0,
           },
           {
-            id: '2',
+            id: 2,
             action: 'assigned',
-            description: 'Ticket atribuído para Maria Santos',
-            performedBy: {
-              id: '2',
-              name: 'Admin',
-              email: 'admin@telecom.com',
-            },
-            performedAt: new Date(Date.now() - 82800000).toISOString(),
+            description: 'Ticket atribuído para equipe de suporte',
+            createdAt: new Date(Date.now() - 82800000),
             oldValue: null,
-            newValue: 'Maria Santos',
+            newValue: 'Suporte',
+            userId: 2,
           },
           {
-            id: '3',
+            id: 3,
             action: 'status_changed',
             description: 'Status alterado de Aberto para Em Andamento',
-            performedBy: {
-              id: '1',
-              name: 'Maria Santos',
-              email: 'maria@telecom.com',
-            },
-            performedAt: new Date(Date.now() - 79200000).toISOString(),
+            createdAt: new Date(Date.now() - 79200000),
             oldValue: 'open',
             newValue: 'in_progress',
+            userId: 1,
           },
         ],
       };
@@ -215,21 +198,20 @@ export function TicketDetailsPage() {
       await new Promise(resolve => setTimeout(resolve, 500));
 
       const comment: TicketComment = {
-        id: Date.now().toString(),
+        id: Date.now(),
         content: newComment,
-        author: {
-          id: '1',
-          name: 'Maria Santos',
-          email: 'maria@telecom.com',
-        },
-        createdAt: new Date().toISOString(),
         isInternal: false,
+        isEdited: false,
+        userId: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       setTicket(prev => prev ? {
         ...prev,
         comments: [...prev.comments, comment],
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),
+        
       } : null);
 
       setNewComment('');
@@ -250,39 +232,33 @@ export function TicketDetailsPage() {
       // Simulate API call - replace with actual API call
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      const historyEntry: TicketHistoryEntry = {
-        id: Date.now().toString(),
+      const historyEntry: TicketHistory = {
+        id: Date.now(),
         action: 'status_changed',
         description: `Status alterado de ${statusLabels[ticket.status]} para ${statusLabels[newStatus]}`,
-        performedBy: {
-          id: '1',
-          name: 'Maria Santos',
-          email: 'maria@telecom.com',
-        },
-        performedAt: new Date().toISOString(),
+        createdAt: new Date(),
         oldValue: ticket.status,
         newValue: newStatus,
+        userId: 1,
       };
 
       setTicket(prev => prev ? {
         ...prev,
         status: newStatus,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),
         history: [...prev.history, historyEntry],
       } : null);
 
       // Add comment if note provided
       if (statusUpdateNote.trim()) {
         const comment: TicketComment = {
-          id: (Date.now() + 1).toString(),
+          id: Date.now() + 1,
           content: statusUpdateNote,
-          author: {
-            id: '1',
-            name: 'Maria Santos',
-            email: 'maria@telecom.com',
-          },
-          createdAt: new Date().toISOString(),
           isInternal: false,
+          isEdited: false,
+          userId: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         };
 
         setTicket(prev => prev ? {
@@ -359,7 +335,7 @@ export function TicketDetailsPage() {
         
         <div className="ticket-details__actions">
           <Button
-            variant="outline"
+            variant="primary"
             onClick={() => setShowStatusModal(true)}
           >
             Alterar Status
@@ -371,7 +347,7 @@ export function TicketDetailsPage() {
             Adicionar Comentário
           </Button>
           <Button
-            variant="outline"
+            variant="primary"
             onClick={() => navigate(`/tickets/${ticket.id}/edit`)}
           >
             Editar
@@ -379,7 +355,7 @@ export function TicketDetailsPage() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs  activeTab={activeTab} onTabChange={setActiveTab} >
         <TabList>
           <Tab value="details">Detalhes</Tab>
           <Tab value="comments">Comentários ({ticket.comments.length})</Tab>
@@ -426,10 +402,10 @@ export function TicketDetailsPage() {
                           <span>{ticket.customerInfo.company}</span>
                         </div>
                       )}
-                      {ticket.customerInfo.address && (
+                      {ticket.customerInfo.department && (
                         <div className="ticket-details__info-item">
-                          <label>Endereço:</label>
-                          <span>{ticket.customerInfo.address}</span>
+                          <label>Departamento:</label>
+                          <span>{ticket.customerInfo.department}</span>
                         </div>
                       )}
                     </div>
@@ -452,7 +428,7 @@ export function TicketDetailsPage() {
                       </div>
                       <div className="ticket-details__info-item">
                         <label>Responsável:</label>
-                        <span>{ticket.assignedTo?.name || 'Não atribuído'}</span>
+                        <span>{ticket.assignee?.name || 'Não atribuído'}</span>
                       </div>
                       <div className="ticket-details__info-item">
                         <label>Criado em:</label>
@@ -485,7 +461,7 @@ export function TicketDetailsPage() {
                       >
                         <div className="ticket-details__comment-header">
                           <div className="ticket-details__comment-author">
-                            <strong>{comment.author.name}</strong>
+                            <strong>{comment.user?.name || `Usuário #${comment.userId ?? '-'}`}</strong>
                             {comment.isInternal && (
                               <Badge variant="info" size="sm">Interno</Badge>
                             )}
@@ -518,16 +494,16 @@ export function TicketDetailsPage() {
                       <div key={attachment.id} className="ticket-details__attachment">
                         <div className="ticket-details__attachment-info">
                           <div className="ticket-details__attachment-name">
-                            📎 {attachment.name}
+                            📎 {attachment.originalName}
                           </div>
                           <div className="ticket-details__attachment-meta">
                             {formatFileSize(attachment.size)} • 
-                            Enviado por {attachment.uploadedBy.name} em {' '}
+                            Enviado em {' '}
                             {new Date(attachment.uploadedAt).toLocaleString('pt-BR')}
                           </div>
                         </div>
                         <Button
-                          variant="outline"
+                          variant="primary"
                           size="sm"
                           onClick={() => window.open(attachment.url, '_blank')}
                         >
@@ -559,8 +535,8 @@ export function TicketDetailsPage() {
                           {entry.description}
                         </div>
                         <div className="ticket-details__history-meta">
-                          Por {entry.performedBy.name} em {' '}
-                          {new Date(entry.performedAt).toLocaleString('pt-BR')}
+                          Por {entry.user?.name || `Usuário #${entry.userId ?? '-'}`} em {' '}
+                          {new Date(entry.createdAt).toLocaleString('pt-BR')}
                         </div>
                       </div>
                     </div>
@@ -592,7 +568,7 @@ export function TicketDetailsPage() {
         </ModalBody>
         <ModalFooter>
           <Button
-            variant="outline"
+            variant="primary"
             onClick={() => setShowCommentModal(false)}
             disabled={commentLoading}
           >
@@ -646,7 +622,7 @@ export function TicketDetailsPage() {
         </ModalBody>
         <ModalFooter>
           <Button
-            variant="outline"
+            variant="primary"
             onClick={() => setShowStatusModal(false)}
             disabled={statusLoading}
           >

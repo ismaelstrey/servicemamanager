@@ -3,7 +3,7 @@ import React, { forwardRef } from 'react';
 export type DatePickerSize = 'sm' | 'md' | 'lg';
 export type DatePickerVariant = 'default' | 'filled' | 'outlined';
 
-interface DatePickerProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+export interface DatePickerProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'> {
   label?: string;
   error?: string;
   helperText?: string;
@@ -114,5 +114,3 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(({
 DatePicker.displayName = 'DatePicker';
 
 export default DatePicker;
-
-export type { DatePickerProps };

@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from 'react'
 import styled, { css } from 'styled-components'
 
 // Tipos para as props do Card
@@ -30,12 +30,12 @@ const StyledCard = styled.div<CardProps>`
       case 'outlined':
         return css`
           background-color: ${theme.colors.background.primary};
-          border: ${theme.borders.width.sm} solid ${theme.colors.border.primary};
+          border: ${theme.borders.width.thin} solid ${theme.colors.border.primary};
           
           ${interactive && css`
             &:hover {
               border-color: ${theme.colors.border.secondary};
-              box-shadow: ${theme.shadows.elevation.sm};
+              box-shadow: ${theme.shadows.md};
             }
             
             &:active {
@@ -46,17 +46,17 @@ const StyledCard = styled.div<CardProps>`
       case 'elevated':
         return css`
           background-color: ${theme.colors.background.primary};
-          box-shadow: ${theme.shadows.elevation.md};
+          box-shadow: ${theme.shadows.lg};
           border: none;
           
           ${interactive && css`
             &:hover {
-              box-shadow: ${theme.shadows.elevation.lg};
+              box-shadow: ${theme.shadows.xl};
               transform: translateY(-2px);
             }
             
             &:active {
-              box-shadow: ${theme.shadows.elevation.sm};
+              box-shadow: ${theme.shadows.sm};
               transform: translateY(0);
             }
           `}
@@ -69,7 +69,7 @@ const StyledCard = styled.div<CardProps>`
           ${interactive && css`
             &:hover {
               background-color: ${theme.colors.background.tertiary};
-              box-shadow: ${theme.shadows.elevation.sm};
+              box-shadow: ${theme.shadows.md};
             }
             
             &:active {
@@ -80,17 +80,17 @@ const StyledCard = styled.div<CardProps>`
       default: // default
         return css`
           background-color: ${theme.colors.background.primary};
-          box-shadow: ${theme.shadows.elevation.sm};
+          box-shadow: ${theme.shadows.sm};
           border: none;
           
           ${interactive && css`
             &:hover {
-              box-shadow: ${theme.shadows.elevation.md};
+              box-shadow: ${theme.shadows.md};
               transform: translateY(-1px);
             }
             
             &:active {
-              box-shadow: ${theme.shadows.elevation.xs};
+              box-shadow: ${theme.shadows.xs};
               transform: translateY(0);
             }
           `}
@@ -218,7 +218,7 @@ export const CardTitle = styled.h3`
 `
 
 export const CardSubtitle = styled.p`
-  font-size: ${({ theme }) => theme.typography.ui.sm.fontSize};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
   color: ${({ theme }) => theme.colors.text.secondary};
   margin: 0;
   line-height: ${({ theme }) => theme.typography.lineHeight.normal};

@@ -21,14 +21,14 @@ export const AuthContainer = styled.div<{ backgroundImage?: string }>`
 `;
 
 export const AuthCard = styled.div`
-  background: ${({ theme }) => theme.colors.background.paper};
+  background: ${({ theme }) => theme.colors.background.secondary};
   border-radius: ${({ theme }) => theme.borders.radius.lg};
   box-shadow: ${({ theme }) => theme.shadows.xl};
   padding: ${({ theme }) => theme.spacing.xl};
   width: 100%;
   max-width: 400px;
   backdrop-filter: blur(10px);
-  border: 1px solid ${({ theme }) => theme.colors.border.light};
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
   
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     padding: ${({ theme }) => theme.spacing.lg};
@@ -87,7 +87,7 @@ export const AuthFooter = styled.div`
   margin-top: ${({ theme }) => theme.spacing.xl};
   text-align: center;
   padding-top: ${({ theme }) => theme.spacing.lg};
-  border-top: 1px solid ${({ theme }) => theme.colors.border.light};
+  border-top: 1px solid ${({ theme }) => theme.colors.border.secondary};
 `;
 
 export const BackgroundPattern = styled.div`

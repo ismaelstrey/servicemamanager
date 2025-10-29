@@ -1,4 +1,5 @@
-import React, { forwardRef } from 'react'
+import type React from 'react'
+import { forwardRef } from 'react'
 import styled, { css } from 'styled-components'
 
 // Tipos para as props do Input
@@ -24,10 +25,10 @@ const InputContainer = styled.div<{ fullWidth?: boolean }>`
 
 // Label do input
 const InputLabel = styled.label<{ error?: boolean }>`
-  font-size: ${({ theme }) => theme.typography.ui.sm.fontSize};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
   font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
   color: ${({ theme, error }) =>
-    error ? theme.colors.semantic.danger.main : theme.colors.text.primary
+    error ? theme.colors.error.main : theme.colors.text.primary
   };
   line-height: ${({ theme }) => theme.typography.lineHeight.tight};
 `
@@ -49,41 +50,41 @@ const InputWrapper = styled.div<{
       case 'filled':
         return css`
           background-color: ${theme.colors.background.secondary};
-          border: ${theme.borders.width.sm} solid transparent;
+          border: ${theme.borders.width.thin} solid transparent;
           border-radius: ${theme.borders.radius.md};
           
           &:focus-within {
             background-color: ${theme.colors.background.primary};
-            border-color: ${error ? theme.colors.semantic.danger.main : theme.colors.primary.main};
-            box-shadow: ${error ? theme.shadows.semantic.danger : theme.shadows.focus.primary};
+            border-color: ${error ? theme.colors.error.main : theme.colors.primary.main};
+            box-shadow: ${error ? theme.shadows.focus.danger : theme.shadows.focus.primary};
           }
         `
       case 'flushed':
         return css`
           background-color: transparent;
           border: none;
-          border-bottom: ${theme.borders.width.md} solid ${error ? theme.colors.semantic.danger.main : theme.colors.border.primary
+          border-bottom: ${theme.borders.width.medium} solid ${error ? theme.colors.error.main : theme.colors.border.primary
           };
           border-radius: 0;
           
           &:focus-within {
-            border-bottom-color: ${error ? theme.colors.semantic.danger.main : theme.colors.primary.main};
+            border-bottom-color: ${error ? theme.colors.error.main : theme.colors.primary.main};
           }
         `
       default: // default
         return css`
           background-color: ${theme.colors.background.primary};
-          border: ${theme.borders.width.sm} solid ${error ? theme.colors.semantic.danger.main : theme.colors.border.primary
+          border: ${theme.borders.width.thin} solid ${error ? theme.colors.error.main : theme.colors.border.primary
           };
           border-radius: ${theme.borders.radius.md};
           
           &:focus-within {
-            border-color: ${error ? theme.colors.semantic.danger.main : theme.colors.primary.main};
-            box-shadow: ${error ? theme.shadows.semantic.danger : theme.shadows.focus.primary};
+            border-color: ${error ? theme.colors.error.main : theme.colors.primary.main};
+            box-shadow: ${error ? theme.shadows.focus.danger : theme.shadows.focus.primary};
           }
           
           &:hover:not(:focus-within) {
-            border-color: ${error ? theme.colors.semantic.danger.main : theme.colors.border.secondary};
+            border-color: ${error ? theme.colors.error.main : theme.colors.border.secondary};
           }
         `
     }
@@ -93,18 +94,15 @@ const InputWrapper = styled.div<{
     switch (size) {
       case 'sm':
         return css`
-          height: ${theme.spacing.component.input.sm.height};
-          padding: ${theme.spacing.component.input.sm.padding};
+          padding: ${theme.spacing.component.input.sm};
         `
       case 'lg':
         return css`
-          height: ${theme.spacing.component.input.lg.height};
-          padding: ${theme.spacing.component.input.lg.padding};
+          padding: ${theme.spacing.component.input.lg};
         `
       default: // md
         return css`
-          height: ${theme.spacing.component.input.md.height};
-          padding: ${theme.spacing.component.input.md.padding};
+          padding: ${theme.spacing.component.input.md};
         `
     }
   }}
@@ -129,19 +127,19 @@ const StyledInput = styled.input<{
     switch (size) {
       case 'sm':
         return css`
-          font-size: ${theme.typography.ui.sm.fontSize};
+          font-size: ${theme.typography.fontSize.sm};
           padding-left: ${hasLeftIcon ? theme.spacing[6] : '0'};
           padding-right: ${hasRightIcon ? theme.spacing[6] : '0'};
         `
       case 'lg':
         return css`
-          font-size: ${theme.typography.ui.lg.fontSize};
+          font-size: ${theme.typography.fontSize.lg};
           padding-left: ${hasLeftIcon ? theme.spacing[8] : '0'};
           padding-right: ${hasRightIcon ? theme.spacing[8] : '0'};
         `
       default: // md
         return css`
-          font-size: ${theme.typography.ui.base.fontSize};
+          font-size: ${theme.typography.fontSize.base};
           padding-left: ${hasLeftIcon ? theme.spacing[7] : '0'};
           padding-right: ${hasRightIcon ? theme.spacing[7] : '0'};
         `
@@ -185,9 +183,9 @@ const IconContainer = styled.div<{
 
 // Texto de ajuda/erro
 const HelperText = styled.div<{ error?: boolean }>`
-  font-size: ${({ theme }) => theme.typography.ui.xs.fontSize};
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
   color: ${({ theme, error }) =>
-    error ? theme.colors.semantic.danger.main : theme.colors.text.secondary
+    error ? theme.colors.error.main : theme.colors.text.secondary
   };
   line-height: ${({ theme }) => theme.typography.lineHeight.normal};
 `

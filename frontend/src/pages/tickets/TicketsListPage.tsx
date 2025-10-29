@@ -9,12 +9,14 @@ import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } f
 import { Pagination } from '../../components/ui/Pagination';
 import { Spinner } from '../../components/ui/Spinner';
 import { Alert } from '../../components/ui/Alert';
-import type { Ticket, TicketStatus, TicketPriority, TicketCategory } from '../../types/ticket';
+import type { Ticket, TicketStatus, TicketCategory } from '../../types/ticket';
+import type { Priority } from '../../types/common';
+import { UserRole } from '../../types/auth';
 
 interface TicketsFilters {
   search: string;
   status: TicketStatus | 'all';
-  priority: TicketPriority | 'all';
+  priority: Priority | 'all';
   category: TicketCategory | 'all';
   assignedTo: string | 'all';
   dateRange: 'all' | 'today' | 'week' | 'month';
@@ -24,13 +26,15 @@ const ITEMS_PER_PAGE = 20;
 
 const statusLabels: Record<TicketStatus, string> = {
   open: 'Aberto',
+  assigned: 'Atribuído',
   in_progress: 'Em Andamento',
-  waiting_customer: 'Aguardando Cliente',
+  pending: 'Pendente',
   resolved: 'Resolvido',
   closed: 'Fechado',
+  cancelled: 'Cancelado',
 };
 
-const priorityLabels: Record<TicketPriority, string> = {
+const priorityLabels: Record<Priority, string> = {
   low: 'Baixa',
   medium: 'Média',
   high: 'Alta',
@@ -38,25 +42,32 @@ const priorityLabels: Record<TicketPriority, string> = {
 };
 
 const categoryLabels: Record<TicketCategory, string> = {
-  technical: 'Técnico',
-  billing: 'Faturamento',
-  support: 'Suporte',
-  sales: 'Vendas',
+  hardware: 'Hardware',
+  software: 'Software',
+  network: 'Rede',
+  security: 'Segurança',
+  access: 'Acesso',
+  email: 'Email',
+  backup: 'Backup',
+  maintenance: 'Manutenção',
+  training: 'Treinamento',
   other: 'Outros',
 };
 
 const getStatusVariant = (status: TicketStatus): 'success' | 'warning' | 'danger' | 'info' | 'secondary' => {
   switch (status) {
     case 'open': return 'danger';
+    case 'assigned': return 'info';
     case 'in_progress': return 'warning';
-    case 'waiting_customer': return 'info';
+    case 'pending': return 'info';
     case 'resolved': return 'success';
     case 'closed': return 'secondary';
+    case 'cancelled': return 'secondary';
     default: return 'secondary';
   }
 };
 
-const getPriorityVariant = (priority: TicketPriority): 'success' | 'warning' | 'danger' | 'info' | 'secondary' => {
+const getPriorityVariant = (priority: Priority): 'success' | 'warning' | 'danger' | 'info' | 'secondary' => {
   switch (priority) {
     case 'low': return 'success';
     case 'medium': return 'info';
@@ -79,15 +90,13 @@ export function TicketsListPage() {
   const [filters, setFilters] = useState<TicketsFilters>({
     search: searchParams.get('search') || '',
     status: (searchParams.get('status') as TicketStatus) || 'all',
-    priority: (searchParams.get('priority') as TicketPriority) || 'all',
+    priority: (searchParams.get('priority') as Priority) || 'all',
     category: (searchParams.get('category') as TicketCategory) || 'all',
     assignedTo: searchParams.get('assignedTo') || 'all',
     dateRange: (searchParams.get('dateRange') as 'all' | 'today' | 'week' | 'month') || 'all',
   });
 
-  useEffect(() => {
-    loadTickets();
-  }, [loadTickets]);
+  // Efeito de carregamento movido para após a definição de loadTickets
 
   useEffect(() => {
     // Update URL params when filters change
@@ -113,26 +122,36 @@ export function TicketsListPage() {
 
       // Mock data - replace with actual API response
       const mockTickets: Ticket[] = Array.from({ length: 50 }, (_, i) => ({
-        id: `ticket-${i + 1}`,
+        id: i + 1,
+        providerId: 1,
         number: `TK-2024-${String(i + 1).padStart(3, '0')}`,
         title: `Ticket ${i + 1} - ${['Problema de conexão', 'Solicitação de upgrade', 'Suporte técnico', 'Dúvida sobre faturamento'][i % 4]}`,
         description: `Descrição detalhada do ticket ${i + 1}`,
-        status: (['open', 'in_progress', 'waiting_customer', 'resolved', 'closed'] as TicketStatus[])[i % 5],
-        priority: (['low', 'medium', 'high', 'urgent'] as TicketPriority[])[i % 4],
-        category: (['technical', 'billing', 'support', 'sales', 'other'] as TicketCategory[])[i % 5],
+        status: (['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed'] as TicketStatus[])[i % 6],
+        priority: (['low', 'medium', 'high', 'urgent'] as Priority[])[i % 4],
+        category: (['hardware', 'software', 'network', 'security', 'access', 'email', 'backup', 'maintenance', 'training', 'other'] as TicketCategory[])[i % 10],
         source: 'email',
         customerInfo: {
           name: `Cliente ${i + 1}`,
           email: `cliente${i + 1}@email.com`,
           phone: `(11) ${String(90000 + i).slice(0, 5)}-${String(1000 + i).slice(-4)}`,
         },
-        createdAt: new Date(Date.now() - (i * 86400000)).toISOString(),
-        updatedAt: new Date(Date.now() - (i * 3600000)).toISOString(),
-        assignedTo: i % 3 === 0 ? {
-          id: '1',
+        createdAt: new Date(Date.now() - (i * 86400000)),
+        updatedAt: new Date(Date.now() - (i * 3600000)),
+        assignedTo: i % 3 === 0 ? 1 : undefined,
+        assignee: i % 3 === 0 ? {
+          id: 1,
           name: 'Maria Santos',
           email: 'maria@telecom.com',
+          role: UserRole.USER,
+          status: 'active',
+          emailVerified: true,
+          loginAttempts: 0,
+          createdAt: new Date(Date.now() - (i * 900000)),
+          updatedAt: new Date(Date.now() - (i * 600000)),
         } : undefined,
+        tags: [],
+        slaStatus: 'within_sla',
         comments: [],
         attachments: [],
         history: [],
@@ -175,6 +194,10 @@ export function TicketsListPage() {
       setLoading(false);
     }
   }, [currentPage, filters]);
+
+  useEffect(() => {
+    loadTickets();
+  }, [loadTickets]);
 
   const handleFilterChange = (key: keyof TicketsFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -243,7 +266,7 @@ export function TicketsListPage() {
           <h3>Filtros</h3>
           {hasActiveFilters && (
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={handleClearFilters}
             >
@@ -348,8 +371,8 @@ export function TicketsListPage() {
                   </span>
                 </TableCell>
                 <TableCell>
-                  {ticket.assignedTo ? (
-                    <span className="tickets-list__assignee">{ticket.assignedTo.name}</span>
+                  {ticket.assignee ? (
+                    <span className="tickets-list__assignee">{ticket.assignee.name}</span>
                   ) : (
                     <span className="tickets-list__unassigned">Não atribuído</span>
                   )}

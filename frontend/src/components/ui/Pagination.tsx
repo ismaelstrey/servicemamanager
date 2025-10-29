@@ -2,7 +2,7 @@ import React from 'react';
 
 export type PaginationSize = 'sm' | 'md' | 'lg';
 
-interface PaginationProps {
+export interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -202,7 +202,6 @@ export const PaginationItem: React.FC<PaginationItemProps> = ({
   );
 };
 
-// Compound component pattern
-Pagination.Item = PaginationItem;
+
 
 export default Pagination;

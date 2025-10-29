@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ApiService, ApiResponse } from '../services/api';
+import { ApiService } from '../services/api';
+import type { ApiResponse } from '../services/api';
 
 // Interface para o estado do hook
 interface UseApiState<T> {

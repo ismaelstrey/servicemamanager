@@ -3,7 +3,7 @@ import React, { forwardRef } from 'react';
 export type SelectSize = 'sm' | 'md' | 'lg';
 export type SelectVariant = 'default' | 'filled' | 'outlined';
 
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   label?: string;
   error?: string;
   helperText?: string;
@@ -101,5 +101,3 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
 Select.displayName = 'Select';
 
 export default Select;
-
-export type { SelectProps };

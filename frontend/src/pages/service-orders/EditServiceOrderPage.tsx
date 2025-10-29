@@ -9,7 +9,8 @@ import {
   Alert,
   Spinner
 } from '../../components/ui';
-import { ServiceOrder, ServiceOrderStatus, ServiceOrderPriority, ServiceOrderType, ServiceOrderCategory } from '../../types/serviceOrder';
+import type { ServiceOrder, ServiceOrderStatus, ServiceOrderPriority, ServiceOrderType, ServiceOrderCategory } from '../../types/serviceOrder';
+import { UserRole } from '../../types/auth';
 import '../../styles/service-orders.css';
 
 interface ServiceOrderFormData {
@@ -70,10 +71,13 @@ const typeOptions = [
 ];
 
 const categoryOptions = [
-  { value: 'technical', label: 'Técnico' },
-  { value: 'commercial', label: 'Comercial' },
+  { value: 'hardware', label: 'Hardware' },
+  { value: 'software', label: 'Software' },
+  { value: 'network', label: 'Rede' },
+  { value: 'security', label: 'Segurança' },
+  { value: 'infrastructure', label: 'Infraestrutura' },
   { value: 'support', label: 'Suporte' },
-  { value: 'emergency', label: 'Emergência' }
+  { value: 'project', label: 'Projeto' }
 ];
 
 export function EditServiceOrderPage() {
@@ -91,7 +95,7 @@ export function EditServiceOrderPage() {
     status: 'pending',
     priority: 'medium',
     type: 'installation',
-    category: 'technical',
+    category: 'hardware',
     customerInfo: {
       name: '',
       email: '',
@@ -126,50 +130,57 @@ export function EditServiceOrderPage() {
       
       // Mock data - em uma aplicação real, isso viria da API
       const mockServiceOrder: ServiceOrder = {
-        id: serviceOrderId,
+        id: Number(serviceOrderId),
+        providerId: 1,
         number: `OS-2024-${serviceOrderId.padStart(3, '0')}`,
         title: 'Instalação de Servidor Dell PowerEdge',
         description: 'Instalação e configuração completa de servidor Dell PowerEdge R740 incluindo sistema operacional, configuração de RAID, instalação de aplicações básicas e testes de funcionamento.',
         status: 'in_progress',
         priority: 'high',
         type: 'installation',
-        category: 'technical',
+        category: 'hardware',
         customerInfo: {
           name: 'João Silva',
           email: 'joao.silva@empresa.com',
           phone: '(11) 99999-9999',
           company: 'Empresa ABC Ltda'
         },
-        assignedTo: {
-          id: '1',
+        assignedTo: 1,
+        assignee: {
+          id: 1,
           name: 'Maria Santos',
-          email: 'maria.santos@telecom.com'
-        },
+          email: 'maria.santos@telecom.com',
+          role: UserRole.USER,
+          status: 'active',
+          emailVerified: true,
+          loginAttempts: 0,
+          createdAt: new Date('2024-01-10T09:00:00Z'),
+          updatedAt: new Date('2024-01-10T09:00:00Z')
+        } as unknown as import('../../types/user').User,
         location: {
           address: 'Rua das Flores, 123',
           city: 'São Paulo',
           state: 'SP',
           zipCode: '01234-567',
-          coordinates: '-23.5505,-46.6333'
+          country: 'Brasil',
+          coordinates: {
+            latitude: -23.5505,
+            longitude: -46.6333
+          }
         },
         estimatedHours: 8,
         actualHours: 6,
-        estimatedCost: 2500.00,
-        actualCost: 2300.00,
-        dueDate: '2024-01-20T18:00:00Z',
-        scheduledDate: '2024-01-18T09:00:00Z',
-        completedDate: null,
-        createdAt: '2024-01-15T10:30:00Z',
-        updatedAt: '2024-01-16T14:20:00Z',
-        createdBy: {
-          id: '2',
-          name: 'Carlos Admin',
-          email: 'carlos@telecom.com'
-        },
+        dueDate: new Date('2024-01-20T18:00:00Z'),
+        scheduledDate: new Date('2024-01-18T09:00:00Z'),
+        completedAt: undefined,
+        createdAt: new Date('2024-01-15T10:30:00Z'),
+        updatedAt: new Date('2024-01-16T14:20:00Z'),
+        createdBy: 2,
         tasks: [],
         comments: [],
         attachments: [],
-        history: []
+        history: [],
+        tags: []
       };
 
       // Converter os dados para o formato do formulário
@@ -180,11 +191,26 @@ export function EditServiceOrderPage() {
         priority: mockServiceOrder.priority,
         type: mockServiceOrder.type,
         category: mockServiceOrder.category,
-        customerInfo: mockServiceOrder.customerInfo,
-        assignedTo: mockServiceOrder.assignedTo,
-        location: mockServiceOrder.location,
-        estimatedHours: mockServiceOrder.estimatedHours,
-        estimatedCost: mockServiceOrder.estimatedCost,
+        customerInfo: {
+          name: mockServiceOrder.customerInfo.name,
+          email: mockServiceOrder.customerInfo.email,
+          phone: mockServiceOrder.customerInfo.phone ?? '',
+          company: mockServiceOrder.customerInfo.company ?? ''
+        },
+        assignedTo: mockServiceOrder.assignee ? {
+          id: String(mockServiceOrder.assignee.id),
+          name: mockServiceOrder.assignee.name,
+          email: mockServiceOrder.assignee.email
+        } : undefined,
+        location: {
+          address: mockServiceOrder.location?.address ?? '',
+          city: mockServiceOrder.location?.city ?? '',
+          state: mockServiceOrder.location?.state ?? '',
+          zipCode: mockServiceOrder.location?.zipCode ?? '',
+          coordinates: mockServiceOrder.location?.coordinates ? `${mockServiceOrder.location.coordinates.latitude},${mockServiceOrder.location.coordinates.longitude}` : undefined
+        },
+        estimatedHours: mockServiceOrder.estimatedHours ?? 0,
+        estimatedCost: 0,
         dueDate: mockServiceOrder.dueDate ? new Date(mockServiceOrder.dueDate).toISOString().split('T')[0] : '',
         scheduledDate: mockServiceOrder.scheduledDate ? new Date(mockServiceOrder.scheduledDate).toISOString().split('T')[0] : '',
         notes: ''
@@ -200,17 +226,31 @@ export function EditServiceOrderPage() {
   const handleInputChange = (field: string, value: string | number) => {
     if (field.includes('.')) {
       const [parent, child] = field.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent as keyof ServiceOrderFormData],
-          [child]: value
+      setFormData(prev => {
+        if (parent === 'customerInfo') {
+          return {
+            ...prev,
+            customerInfo: {
+              ...prev.customerInfo,
+              [child]: value as string
+            }
+          };
         }
-      }));
+        if (parent === 'location') {
+          return {
+            ...prev,
+            location: {
+              ...prev.location,
+              [child]: value as string
+            }
+          };
+        }
+        return prev;
+      });
     } else {
       setFormData(prev => ({
         ...prev,
-        [field]: value
+        [field]: value as never
       }));
     }
   };

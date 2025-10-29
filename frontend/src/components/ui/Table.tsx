@@ -3,7 +3,7 @@ import React from 'react';
 export type TableVariant = 'default' | 'striped' | 'bordered';
 export type TableSize = 'sm' | 'md' | 'lg';
 
-interface TableProps {
+export interface TableProps {
   children: React.ReactNode;
   variant?: TableVariant;
   size?: TableSize;
@@ -217,12 +217,6 @@ export const TableCell: React.FC<TableCellProps> = ({
   );
 };
 
-// Compound component pattern
-Table.Header = TableHeader;
-Table.Body = TableBody;
-Table.Footer = TableFooter;
-Table.Row = TableRow;
-Table.HeaderCell = TableHeaderCell;
-Table.Cell = TableCell;
+
 
 export default Table;

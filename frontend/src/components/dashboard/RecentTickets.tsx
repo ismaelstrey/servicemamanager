@@ -5,7 +5,7 @@ import { Button } from '../ui/Button';
 import { Spinner } from '../ui/Spinner';
 import type { Ticket, TicketStatus } from '../../types/ticket';
 
-interface RecentTicketsProps {
+export interface RecentTicketsProps {
   tickets: Ticket[];
   loading?: boolean;
   onViewAll?: () => void;

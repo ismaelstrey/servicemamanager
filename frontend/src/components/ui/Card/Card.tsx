@@ -1,5 +1,5 @@
 import React from 'react';
-import { CardProps, CardHeaderProps, CardBodyProps, CardFooterProps } from './Card.types';
+import type { CardProps, CardHeaderProps, CardBodyProps, CardFooterProps } from './Card.types';
 import { StyledCard, CardHeader as StyledCardHeader, CardBody as StyledCardBody, CardFooter as StyledCardFooter } from './Card.styles';
 
 export const Card: React.FC<CardProps> = ({
