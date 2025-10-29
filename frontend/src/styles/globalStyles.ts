@@ -3,6 +3,31 @@ import type { AppTheme } from './theme'
 
 // Estilos globais: reset básico + tema
 export const GlobalStyle = createGlobalStyle<{ theme: AppTheme }>`
+  /* CSS Variables bridged from styled-components theme */
+  :root {
+    /* Core colors */
+    --color-background: ${({ theme }) => theme.colors.background.primary};
+    --color-surface: ${({ theme }) => theme.colors.surface};
+    --color-border: ${({ theme }) => theme.colors.border.primary};
+    --color-text-primary: ${({ theme }) => theme.colors.text.primary};
+    --color-text-secondary: ${({ theme }) => theme.colors.text.secondary};
+
+    /* Semantic palettes */
+    --color-primary: ${({ theme }) => theme.colors.primary.main};
+    --color-primary-50: ${({ theme }) => theme.colors.primary[50]};
+    --color-primary-200: ${({ theme }) => theme.colors.primary[200]};
+    --color-success: ${({ theme }) => theme.colors.success.main};
+    --color-warning: ${({ theme }) => theme.colors.warning.main};
+    --color-danger: ${({ theme }) => theme.colors.danger.main};
+    --color-info: ${({ theme }) => theme.colors.info.main};
+
+    /* Typography */
+    --font-mono: ${({ theme }) => theme.typography.fontFamily.mono};
+
+    /* Border radius */
+    --radius-md: ${({ theme }) => theme.borders.radius.md};
+    --radius-lg: ${({ theme }) => theme.borders.radius.lg};
+  }
   /* Reset CSS moderno */
   *, *::before, *::after {
     box-sizing: border-box;

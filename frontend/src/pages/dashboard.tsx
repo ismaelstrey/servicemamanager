@@ -16,6 +16,7 @@ import ServiceOrderService from '../services/serviceOrderService';
 import { ApiService, type PaginatedResponse } from '../services/api';
 import { decodeJwt } from '../utils/jwt';
 import ProviderService, { type ProviderListItem } from '../services/providerService';
+import '../styles/dashboard.css';
 
 interface DashboardStats {
   totalTickets: number;
