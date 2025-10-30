@@ -30,7 +30,7 @@ const app = (0, express_1.default)();
 // Usa porta fixa em desenvolvimento (ignora PORT), e respeita PORT em produção
 const port = process.env.NODE_ENV === 'production'
     ? Number(process.env.PORT) || 4002
-    : 4000;
+    : 4002;
 // Valida configuração de CORS
 (0, corsMiddleware_1.validateCorsConfig)();
 // Middlewares globais

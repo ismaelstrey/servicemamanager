@@ -24,15 +24,57 @@ export default function CreateProviderPage() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Máscara de CNPJ: 00.000.000/0000-00
+  const formatCNPJ = (raw: string) => {
+    const digits = raw.replace(/\D/g, '').slice(0, 14);
+    return digits
+      .replace(/^(\d{2})(\d)/, '$1.$2')
+      .replace(/^(\d{2}\.\d{3})(\d)/, '$1.$2')
+      .replace(/^(\d{2}\.\d{3}\.\d{3})(\d)/, '$1/$2')
+      .replace(/^(\d{2}\.\d{3}\.\d{3}\/\d{4})(\d)/, '$1-$2');
+  };
+
+  // Máscara de telefone BR: (00) 0000-0000 ou (00) 00000-0000
+  const formatPhoneBR = (raw: string) => {
+    const digits = raw.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 10) {
+      return digits
+        .replace(/^(\d{2})(\d)/, '($1) $2')
+        .replace(/^(\(\d{2}\) \d{4})(\d)/, '$1-$2');
+    }
+    return digits
+      .replace(/^(\d{2})(\d)/, '($1) $2')
+      .replace(/^(\(\d{2}\) \d{5})(\d{4}).*/, '$1-$2');
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    let nextValue = value;
+
+    if (name === 'cnpj') {
+      nextValue = formatCNPJ(value);
+    }
+    if (name === 'phone') {
+      nextValue = formatPhoneBR(value);
+    }
+
+    setForm((prev) => ({ ...prev, [name]: nextValue }));
+    // Ao editar um campo, limpamos o erro específico
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => {
+        const clone = { ...prev };
+        delete clone[name as keyof typeof prev];
+        return clone;
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
 
     // Campos mínimos obrigatórios pelo backend: name, cnpj, email
     if (!form.name || !form.cnpj || !form.email) {
@@ -63,6 +105,17 @@ export default function CreateProviderPage() {
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Erro ao criar provedor';
       setError(message);
+
+      const errorsArr = err?.response?.data?.errors;
+      if (Array.isArray(errorsArr)) {
+        const next: Record<string, string> = {};
+        for (const item of errorsArr) {
+          if (item?.field && item?.message) {
+            next[item.field] = item.message;
+          }
+        }
+        setFieldErrors(next);
+      }
       console.error('CreateProvider error:', err);
     } finally {
       setSubmitting(false);
@@ -95,6 +148,9 @@ export default function CreateProviderPage() {
               required
               style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
             />
+            {fieldErrors.name && (
+              <span style={{ color: 'crimson', fontSize: 12 }}>{fieldErrors.name}</span>
+            )}
           </label>
 
           <label style={{ display: 'grid', gap: 8 }}>
@@ -108,6 +164,9 @@ export default function CreateProviderPage() {
               required
               style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
             />
+            {fieldErrors.cnpj && (
+              <span style={{ color: 'crimson', fontSize: 12 }}>{fieldErrors.cnpj}</span>
+            )}
           </label>
 
           <label style={{ display: 'grid', gap: 8 }}>
@@ -121,6 +180,9 @@ export default function CreateProviderPage() {
               required
               style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
             />
+            {fieldErrors.email && (
+              <span style={{ color: 'crimson', fontSize: 12 }}>{fieldErrors.email}</span>
+            )}
           </label>
 
           <label style={{ display: 'grid', gap: 8 }}>
@@ -133,6 +195,9 @@ export default function CreateProviderPage() {
               placeholder="slug-do-workspace (ex: netfiber)"
               style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
             />
+            {fieldErrors.workspace && (
+              <span style={{ color: 'crimson', fontSize: 12 }}>{fieldErrors.workspace}</span>
+            )}
           </label>
 
           <label style={{ display: 'grid', gap: 8 }}>
@@ -145,6 +210,9 @@ export default function CreateProviderPage() {
               placeholder="(00) 00000-0000"
               style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
             />
+            {fieldErrors.phone && (
+              <span style={{ color: 'crimson', fontSize: 12 }}>{fieldErrors.phone}</span>
+            )}
           </label>
 
           <button

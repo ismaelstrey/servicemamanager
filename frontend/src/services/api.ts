@@ -13,10 +13,14 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-// Interceptor para adicionar token de autenticação
+// Interceptor para adicionar token de autenticação (admin vs cliente)
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const url = config.url ?? '';
+    const isClientEndpoint = url.startsWith('/client');
+
+    const tokenKey = isClientEndpoint ? 'clientToken' : 'token';
+    const token = localStorage.getItem(tokenKey);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -34,10 +38,21 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Token expirado ou inválido
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      const url = error.config?.url ?? '';
+      const isClientEndpoint = url.startsWith('/client');
+
+      if (isClientEndpoint) {
+        // Sessão do cliente expirada ou inválida
+        localStorage.removeItem('clientToken');
+        localStorage.removeItem('clientUser');
+        window.location.href = '/client/login';
+      } else {
+        // Sessão administrativa expirada ou inválida
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

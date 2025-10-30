@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 // Contextos
 import { AuthProvider } from './contexts/AuthContext'
+import { ClientAuthProvider } from './contexts/ClientAuthContext'
 import { useAuth } from './hooks/useAuth'
 import { theme } from './styles/theme.ts'
 
@@ -22,9 +23,13 @@ import SettingsPage from './pages/SettingsPage'
 import NotFoundPage from './pages/NotFoundPage'
 import TestPage from './pages/TestPage'
 import CreateProviderPage from './pages/providers/CreateProviderPage'
+import ClientLoginPage from './pages/client/LoginPage'
+import ClientDashboardPage from './pages/client/DashboardPage'
 
 // Layout
 import Layout from './components/layout/Layout'
+import ClientProtectedRoute from './components/auth/ClientProtectedRoute'
+import ClientPublicRoute from './components/auth/ClientPublicRoute'
 
 // Cliente React Query
 const queryClient = new QueryClient({
@@ -84,7 +89,8 @@ const App: React.FC = () => {
       <ThemeProvider theme={theme}>
         <GlobalStyle theme={darkTheme} />
         <AuthProvider>
-          <Routes>
+          <ClientAuthProvider>
+            <Routes>
             {/* Rotas públicas */}
             <Route
               path="/login"
@@ -100,6 +106,16 @@ const App: React.FC = () => {
                 <PublicRoute>
                   <RegisterPage />
                 </PublicRoute>
+              }
+            />
+
+            {/* Portal do Cliente - rotas públicas */}
+            <Route
+              path="/client/login"
+              element={
+                <ClientPublicRoute>
+                  <ClientLoginPage />
+                </ClientPublicRoute>
               }
             />
 
@@ -134,6 +150,17 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+            {/* Portal do Cliente - rotas protegidas */}
+            <Route
+              path="/client/dashboard"
+              element={
+                <ClientProtectedRoute>
+                  <Layout>
+                    <ClientDashboardPage />
+                  </Layout>
+                </ClientProtectedRoute>
+              }
+            />
             <Route
               path="/settings"
               element={
@@ -160,7 +187,8 @@ const App: React.FC = () => {
 
             {/* Página 404 */}
             <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+            </Routes>
+          </ClientAuthProvider>
         </AuthProvider>
 
         {/* DevTools apenas em desenvolvimento */}

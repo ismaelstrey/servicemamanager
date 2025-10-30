@@ -29,7 +29,8 @@ class DashboardController {
         }
         catch (error) {
             console.error('Erro no DashboardController.getDashboard:', error);
-            res.status(500).json({
+            const status = error?.status && Number.isInteger(error.status) ? error.status : 500;
+            res.status(status).json({
                 success: false,
                 message: error instanceof Error ? error.message : 'Erro interno do servidor'
             });
@@ -58,7 +59,8 @@ class DashboardController {
         }
         catch (error) {
             console.error('Erro no DashboardController.getEquipmentStats:', error);
-            res.status(500).json({
+            const status = error?.status && Number.isInteger(error.status) ? error.status : 500;
+            res.status(status).json({
                 success: false,
                 message: error instanceof Error ? error.message : 'Erro interno do servidor'
             });
@@ -87,7 +89,8 @@ class DashboardController {
         }
         catch (error) {
             console.error('Erro no DashboardController.getTicketStats:', error);
-            res.status(500).json({
+            const status = error?.status && Number.isInteger(error.status) ? error.status : 500;
+            res.status(status).json({
                 success: false,
                 message: error instanceof Error ? error.message : 'Erro interno do servidor'
             });
@@ -116,7 +119,8 @@ class DashboardController {
         }
         catch (error) {
             console.error('Erro no DashboardController.getPasswordStats:', error);
-            res.status(500).json({
+            const status = error?.status && Number.isInteger(error.status) ? error.status : 500;
+            res.status(status).json({
                 success: false,
                 message: error instanceof Error ? error.message : 'Erro interno do servidor'
             });

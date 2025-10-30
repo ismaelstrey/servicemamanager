@@ -587,6 +587,41 @@ class ProviderRepository {
         }
     }
     /**
+     * Criar vínculo do usuário com o provedor (ProviderUser)
+     */
+    async addProviderUser(providerId, userId, role = 'admin', permissions = []) {
+        try {
+            const up = await this.prisma.providerUser.create({
+                data: {
+                    providerId,
+                    userId,
+                    role,
+                    permissions,
+                    isActive: true,
+                    joinedAt: new Date()
+                },
+                include: {
+                    user: {
+                        select: { id: true, name: true, email: true, role: true }
+                    }
+                }
+            });
+            return {
+                id: up.id,
+                userId: up.userId,
+                providerId: up.providerId,
+                role: up.role,
+                permissions: up.permissions || [],
+                status: up.isActive ? 'active' : 'inactive',
+                user: up.user
+            };
+        }
+        catch (error) {
+            console.error('Erro no ProviderRepository.addProviderUser:', error);
+            throw new Error(`Erro ao criar vínculo usuário-provedor: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        }
+    }
+    /**
      * Mapear dados do Prisma para o tipo Provider
      */
     mapProviderFromPrisma(prismaProvider) {

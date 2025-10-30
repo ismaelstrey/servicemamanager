@@ -119,12 +119,14 @@ export class ProviderService {
         updatedBy: createdBy
       });
 
-      // Criar usuário administrador do provedor
-      const temporaryPassword = Math.random().toString(36).slice(-8);
+      // Vincular o criador como membro administrador ativo do provedor
+      await this.providerRepository.addProviderUser(provider.id, createdBy, 'admin', []);
+
+      // Placeholder de retorno para compatibilidade (nenhum usuário é criado aqui)
       const adminUser = {
-        id: 1, // Placeholder - seria criado pelo repositório
-        email: data.email,
-        temporaryPassword: temporaryPassword
+        id: createdBy,
+        email: '',
+        temporaryPassword: ''
       };
 
       return {
@@ -177,7 +179,11 @@ export class ProviderService {
       let allowed = false;
       if (user.role === 'super_admin' || user.role === 'admin') {
         allowed = true;
+      } else if (user?.providerId && user.providerId === provider.id) {
+        // Fallback: se o token já estiver vinculado ao provider, permitir
+        allowed = true;
       } else {
+        // Caso contrário, verificar vínculo via banco (owner ou membro ativo)
         allowed = await this.userHasAccess(user.id, provider.id);
       }
 

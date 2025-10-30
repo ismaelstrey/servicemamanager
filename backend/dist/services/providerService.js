@@ -94,12 +94,13 @@ class ProviderService {
                 createdBy,
                 updatedBy: createdBy
             });
-            // Criar usuário administrador do provedor
-            const temporaryPassword = Math.random().toString(36).slice(-8);
+            // Vincular o criador como membro administrador ativo do provedor
+            await this.providerRepository.addProviderUser(provider.id, createdBy, 'admin', []);
+            // Placeholder de retorno para compatibilidade (nenhum usuário é criado aqui)
             const adminUser = {
-                id: 1, // Placeholder - seria criado pelo repositório
-                email: data.email,
-                temporaryPassword: temporaryPassword
+                id: createdBy,
+                email: '',
+                temporaryPassword: ''
             };
             return {
                 provider,
@@ -140,8 +141,23 @@ class ProviderService {
                 return null;
             }
             // Verificar se o usuário tem acesso ao provedor
-            if (!this.userHasAccessToProvider(user, provider)) {
-                throw new Error('Acesso negado ao provedor');
+            // Papéis globais têm acesso amplo
+            let allowed = false;
+            if (user.role === 'super_admin' || user.role === 'admin') {
+                allowed = true;
+            }
+            else if (user?.providerId && user.providerId === provider.id) {
+                // Fallback: se o token já estiver vinculado ao provider, permitir
+                allowed = true;
+            }
+            else {
+                // Caso contrário, verificar vínculo via banco (owner ou membro ativo)
+                allowed = await this.userHasAccess(user.id, provider.id);
+            }
+            if (!allowed) {
+                const err = new Error('Acesso negado ao provedor');
+                err.status = 403;
+                throw err;
             }
             return provider;
         }
