@@ -11,6 +11,7 @@ export interface CardProps {
   hoverable?: boolean;
   clickable?: boolean;
   onClick?: () => void;
+  title?: string;
 }
 
 interface CardHeaderProps {
@@ -37,6 +38,7 @@ export const Card: React.FC<CardProps> = ({
   hoverable = false,
   clickable = false,
   onClick,
+  title,
 }) => {
   const baseClasses = 'card';
   const variantClasses = `card--${variant}`;
@@ -65,6 +67,7 @@ export const Card: React.FC<CardProps> = ({
       onClick={handleClick}
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
+      title={title}
       onKeyDown={clickable ? (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();

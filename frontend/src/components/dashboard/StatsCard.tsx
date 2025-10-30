@@ -16,6 +16,7 @@ export interface StatsCardProps {
   color?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
   loading?: boolean;
   onClick?: () => void;
+  tooltip?: string;
 }
 
 export const StatsCard: React.FC<StatsCardProps> = ({
@@ -27,6 +28,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   color = 'primary',
   loading = false,
   onClick,
+  tooltip,
 }) => {
   const getTrendColor = (isPositive: boolean) => {
     return isPositive ? 'success' : 'danger';
@@ -43,6 +45,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
       clickable={!!onClick}
       onClick={onClick}
       className="stats-card"
+      title={tooltip}
     >
       <CardBody>
         <div className="stats-card__header">

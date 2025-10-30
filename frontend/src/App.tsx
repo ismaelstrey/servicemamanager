@@ -23,6 +23,8 @@ import SettingsPage from './pages/SettingsPage'
 import NotFoundPage from './pages/NotFoundPage'
 import TestPage from './pages/TestPage'
 import CreateProviderPage from './pages/providers/CreateProviderPage'
+import ProvidersListPage from './pages/providers/ProvidersListPage'
+import ProviderDetailsPage from './pages/providers/ProviderDetailsPage'
 import ClientLoginPage from './pages/client/LoginPage'
 import ClientDashboardPage from './pages/client/DashboardPage'
 
@@ -130,6 +132,26 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/providers"
+              element={
+               <ProtectedRoute>
+                   <Layout>
+                     <ProvidersListPage />
+                   </Layout>
+                 </ProtectedRoute>
+               }
+             />
+            <Route
+              path="/providers/:id"
+              element={
+               <ProtectedRoute>
+                   <Layout>
+                     <ProviderDetailsPage />
+                   </Layout>
+                 </ProtectedRoute>
+               }
+             />
          <Route
             path="/providers/create"
             element={

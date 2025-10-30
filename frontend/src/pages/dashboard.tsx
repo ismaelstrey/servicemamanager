@@ -40,6 +40,7 @@ export function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [providers, setProviders] = useState<ProviderListItem[]>([]);
   const [selectedProviderId, setSelectedProviderId] = useState<number | 'global'>('global');
+  const [providersTotal, setProvidersTotal] = useState<number>(0);
 
   useEffect(() => {
     loadProvidersAndInit();
@@ -51,6 +52,16 @@ export function DashboardPage() {
       setError(null);
       const list = await ProviderService.listProviders({ limit: 50 });
       setProviders(list);
+
+      // Buscar total de provedores usando paginação (limit=1 só para obter o meta)
+      try {
+        const providersMetaRes = await ApiService.get<{ success: boolean; data: ProviderListItem[]; pagination: { total: number } }>(`/providers?page=1&limit=1`);
+        const total = (providersMetaRes as any)?.pagination?.total ?? list.length;
+        setProvidersTotal(Number(total) || 0);
+      } catch (metaErr) {
+        console.warn('Falha ao obter total de provedores, usando tamanho da lista:', metaErr);
+        setProvidersTotal(list.length);
+      }
 
       const saved = localStorage.getItem('selectedProviderId');
       let initialSelection: number | 'global' = 'global';
@@ -317,6 +328,16 @@ export function DashboardPage() {
               />
             </>
           )}
+
+          <StatsCard
+            title="Total de Provedores"
+            value={providersTotal}
+            subtitle="Registrados"
+            icon="🏢"
+            color="primary"
+            onClick={() => navigate('/providers')}
+            tooltip="Clique para ver provedores"
+          />
           
           <StatsCard
             title="Ordens de Serviço"

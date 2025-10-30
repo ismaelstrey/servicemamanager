@@ -42,6 +42,7 @@ interface TableCellProps {
   sortable?: boolean;
   onSort?: () => void;
   sortDirection?: 'asc' | 'desc' | null;
+  colSpan?: number;
 }
 
 interface TableHeaderCellProps extends TableCellProps {
@@ -198,6 +199,7 @@ export const TableCell: React.FC<TableCellProps> = ({
   className = '',
   align = 'left',
   width,
+  colSpan,
 }) => {
   const baseClasses = 'table__cell';
   const alignClasses = `table__cell--${align}`;
@@ -211,7 +213,8 @@ export const TableCell: React.FC<TableCellProps> = ({
   const style = width ? { width } : undefined;
 
   return (
-    <td className={classes} style={style}>
+    <td className={classes} style={style} colSpan={colSpan}
+    >
       {children}
     </td>
   );
