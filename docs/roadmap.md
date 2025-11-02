@@ -262,13 +262,13 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
 ### Fase 9 — Gestão de Tickets
 - [ ] **Sistema de Tickets Avançado**
   - [x] Lista com filtros avançados e busca
-  - [ ] Visualizações: lista, grid, kanban
-  - [ ] Formulário de criação com validação
-  - [ ] Página de detalhes com comentários
-  - [ ] Sistema de anexos drag-and-drop
-  - [ ] Labels e tags personalizáveis
-  - [ ] Histórico de alterações
-  - [ ] Notificações de status
+  - [x] Visualizações: lista, grid, kanban
+  - [x] Formulário de criação com validação
+  - [x] Página de detalhes com comentários
+  - [x] Sistema de anexos drag-and-drop
+  - [x] Labels e tags personalizáveis
+  - [x] Histórico de alterações
+  - [x] Notificações de status
 
 ### Fase 10 — Ordens de Serviço
 - [ ] **Sistema de OS Completo**
