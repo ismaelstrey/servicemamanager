@@ -13,6 +13,19 @@ const api: AxiosInstance = axios.create({
   },
 });
 
+// Controle de refresh token para evitar corrida e laços
+let isRefreshing = false;
+let refreshSubscribers: Array<(token: string) => void> = [];
+
+function subscribeTokenRefresh(cb: (token: string) => void) {
+  refreshSubscribers.push(cb);
+}
+
+function onRefreshed(newToken: string) {
+  refreshSubscribers.forEach((cb) => cb(newToken));
+  refreshSubscribers = [];
+}
+
 // Interceptor para adicionar token de autenticação (admin vs cliente)
 api.interceptors.request.use(
   (config) => {
@@ -36,24 +49,72 @@ api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
-  (error) => {
-    if (error.response?.status === 401) {
-      const url = error.config?.url ?? '';
-      const isClientEndpoint = url.startsWith('/client');
+  async (error) => {
+    const status = error.response?.status;
+    const originalRequest = error.config ?? {};
+    const url = originalRequest.url ?? '';
+    const isClientEndpoint = url.startsWith('/client');
 
-      if (isClientEndpoint) {
-        // Sessão do cliente expirada ou inválida
-        localStorage.removeItem('clientToken');
-        localStorage.removeItem('clientUser');
-        window.location.href = '/client/login';
-      } else {
-        // Sessão administrativa expirada ou inválida
+    // Apenas tenta refresh para endpoints admin; cliente mantém fallback por enquanto
+    if (status === 401 && !isClientEndpoint) {
+      const alreadyRetried = (originalRequest as any)._retry;
+      const storedRefreshToken = localStorage.getItem('refreshToken');
+      if (alreadyRetried || !storedRefreshToken) {
+        // Fluxo padrão: limpar sessão e redirecionar
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('refreshToken');
         window.location.href = '/login';
+        return Promise.reject(error);
       }
+
+      if (!isRefreshing) {
+        isRefreshing = true;
+        try {
+          // Usa axios direto para evitar interceptors da própria instância
+          const res = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken: storedRefreshToken }, {
+            headers: { 'Content-Type': 'application/json' },
+          });
+          const { token, refreshToken: newRefreshToken } = res.data ?? {};
+          if (!token) throw new Error('Refresh sem token');
+
+          // Atualiza armazenamento e headers default
+          localStorage.setItem('token', token);
+          if (newRefreshToken) localStorage.setItem('refreshToken', newRefreshToken);
+          api.defaults.headers.common.Authorization = `Bearer ${token}`;
+
+          isRefreshing = false;
+          onRefreshed(token);
+        } catch (refreshError) {
+          isRefreshing = false;
+          // Falhou: limpa sessão e redireciona
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        }
+      }
+
+      // Retenta a requisição original após o refresh
+      const retryOrigReq = new Promise((resolve) => {
+        subscribeTokenRefresh((newToken) => {
+          (originalRequest as any)._retry = true;
+          originalRequest.headers = originalRequest.headers || {};
+          (originalRequest.headers as any).Authorization = `Bearer ${newToken}`;
+          resolve(api.request(originalRequest));
+        });
+      });
+      return retryOrigReq;
     }
+
+    if (status === 401 && isClientEndpoint) {
+      // Fluxo cliente: ainda sem refresh automático
+      localStorage.removeItem('clientToken');
+      localStorage.removeItem('clientUser');
+      window.location.href = '/client/login';
+    }
+
     return Promise.reject(error);
   }
 );

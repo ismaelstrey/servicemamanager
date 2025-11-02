@@ -13,6 +13,8 @@ import { useAuth } from './hooks/useAuth'
 
 // Páginas
 import LoginPage from './pages/auth/LoginPage'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import RegisterPage from './pages/register'
 import DashboardPage from './pages/dashboard'
 import ProfilePage from './pages/ProfilePage'
@@ -104,6 +106,24 @@ const App: React.FC = () => {
               element={
                 <PublicRoute>
                   <RegisterPage />
+                </PublicRoute>
+              }
+            />
+
+            {/* Recuperação de senha */}
+            <Route
+              path="/forgot-password"
+              element={
+                <PublicRoute>
+                  <ForgotPasswordPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/reset-password"
+              element={
+                <PublicRoute>
+                  <ResetPasswordPage />
                 </PublicRoute>
               }
             />

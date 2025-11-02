@@ -241,12 +241,12 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
 - [ ] **Sistema de Auth Completo**
   - [x] `LoginPage` — página de login estilizada
   - [x] `RegisterPage` — página de registro
-  - [ ] `ForgotPasswordPage` — recuperação de senha
-  - [ ] `ResetPasswordPage` — redefinição de senha
+  - [x] `ForgotPasswordPage` — recuperação de senha
+  - [x] `ResetPasswordPage` — redefinição de senha
   - [x] `AuthContext` — contexto de autenticação
   - [x] `useAuth` — hook de autenticação
   - [x] `ProtectedRoute` — proteção de rotas
-  - [ ] Interceptor para refresh token automático
+  - [x] Interceptor para refresh token automático
 
 ### Fase 8 — Dashboard e Métricas
 - [ ] **Dashboard Profissional**
