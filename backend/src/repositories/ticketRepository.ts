@@ -255,7 +255,7 @@ export class TicketRepository {
     }
   }
 
-  async getKanbanByProvider(providerId: number): Promise<KanbanBoard> {
+  async getKanbanByProvider(providerId: number, limit?: number): Promise<KanbanBoard> {
     try {
       const items = await this.prisma.ticket.findMany({
         where: { providerId },
@@ -274,9 +274,44 @@ export class TicketRepository {
         if (!board[col]) continue;
         board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt });
       }
+      if (typeof limit === 'number' && limit > 0) {
+        for (const col of Object.keys(board) as TicketStatus[]) {
+          (board as any)[col] = (board as any)[col].slice(0, limit);
+        }
+      }
       return board;
     } catch (error) {
       console.error('Erro no TicketRepository.getKanbanByProvider:', error);
+      throw new Error(`Erro ao obter kanban: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
+  }
+
+  async getKanbanAll(limit?: number): Promise<KanbanBoard> {
+    try {
+      const items = await this.prisma.ticket.findMany({
+        select: { id: true, title: true, priority: true, status: true, updatedAt: true },
+        orderBy: { updatedAt: 'desc' }
+      });
+      const board = {
+        open: [],
+        in_progress: [],
+        waiting_client: [],
+        resolved: [],
+        closed: []
+      } as KanbanBoard;
+      for (const t of items as any[]) {
+        const col = t.status as TicketStatus;
+        if (!board[col]) continue;
+        board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt });
+      }
+      if (typeof limit === 'number' && limit > 0) {
+        for (const col of Object.keys(board) as TicketStatus[]) {
+          (board as any)[col] = (board as any)[col].slice(0, limit);
+        }
+      }
+      return board;
+    } catch (error) {
+      console.error('Erro no TicketRepository.getKanbanAll:', error);
       throw new Error(`Erro ao obter kanban: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
   }

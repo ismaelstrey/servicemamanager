@@ -46,15 +46,13 @@ const TicketsKanbanPage: React.FC = () => {
 
   useEffect(() => {
     const loadBoard = async () => {
-      if (!providerId) {
-        setError('Selecione um provedor (?provider=ID) para visualizar o Kanban.');
-        setLoading(false);
-        return;
-      }
       try {
         setLoading(true);
         setError(null);
-        const res = await ApiService.get<{ success: boolean; data: KanbanBoard }>(`/providers/${providerId}/tickets/kanban`);
+        const url = providerId
+          ? `/providers/${providerId}/tickets/kanban`
+          : `/tickets/kanban`;
+        const res = await ApiService.get<{ success: boolean; data: KanbanBoard }>(url);
         const data = res.data?.data || {};
         // Normaliza waiting_client -> pending para alinhar com o frontend
         if (data['waiting_client'] && !data['pending']) {
@@ -84,7 +82,11 @@ const TicketsKanbanPage: React.FC = () => {
       <div className="tickets-kanban__header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <div>
           <h1 style={{ margin: 0 }}>Kanban de Tickets</h1>
-          {providerId && <p style={{ margin: 0, color: 'var(--color-text-secondary)' }}>Provider #{providerId}</p>}
+          {providerId ? (
+            <p style={{ margin: 0, color: 'var(--color-text-secondary)' }}>Provider #{providerId}</p>
+          ) : (
+            <p style={{ margin: 0, color: 'var(--color-text-secondary)' }}>Todos os provedores</p>
+          )}
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <Button variant="secondary" onClick={() => navigate('/tickets')}>Voltar para Lista</Button>

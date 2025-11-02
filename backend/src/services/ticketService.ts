@@ -179,9 +179,14 @@ export class TicketService {
     await this.assertAccess(user, providerId);
     return this.repository.getStatsByProvider(providerId);
   }
-  async getKanban(providerId: number, user: AuthUser) {
+  async getKanban(providerId: number, user: AuthUser, limit?: number) {
     await this.assertAccess(user, providerId);
-    return this.repository.getKanbanByProvider(providerId);
+    return this.repository.getKanbanByProvider(providerId, limit);
+  }
+  async getKanbanAll(user: AuthUser, limit?: number) {
+    // Dependendo da política de acesso, poderia filtrar por providers acessíveis ao usuário.
+    // Por ora, retornamos todos os tickets disponíveis.
+    return this.repository.getKanbanAll(limit);
   }
   // New: list change history for a ticket
   async getHistory(id: number, user: AuthUser, page?: number, limit?: number) {

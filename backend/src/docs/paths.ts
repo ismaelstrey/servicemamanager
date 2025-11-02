@@ -299,6 +299,59 @@
 
 /**
  * @swagger
+ * /api/tickets/kanban:
+ *   get:
+ *     summary: Kanban de tickets (global)
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: providerId
+ *         required: false
+ *         schema:
+ *           type: integer
+ *         description: Filtra o Kanban por um provider específico
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Limite de itens por coluna
+ *     responses:
+ *       200:
+ *         description: Board de Kanban retornado
+ */
+
+/**
+ * @swagger
+ * /api/providers/{providerId}/tickets/kanban:
+ *   get:
+ *     summary: Kanban de tickets por provider
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Limite de itens por coluna
+ *     responses:
+ *       200:
+ *         description: Board de Kanban retornado
+ */
+
+/**
+ * @swagger
  * /api/providers/{providerId}/tickets/stats:
  *   get:
  *     summary: Estatísticas de tickets

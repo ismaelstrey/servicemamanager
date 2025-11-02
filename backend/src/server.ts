@@ -49,6 +49,8 @@ app.use('/api/client/auth', customerAuthRoutes);
 app.use('/api/providers', providerRoutes);
 app.use('/api/providers', equipmentRoutes);
 app.use('/api/providers', ticketRoutes);
+// Também expõe rotas de tickets sem prefixo de provider (ex.: /api/tickets/kanban)
+app.use('/api', ticketRoutes);
 app.use('/api/providers', passwordVaultRoutes);
 app.use('/api/providers', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);

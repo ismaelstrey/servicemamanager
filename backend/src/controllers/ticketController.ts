@@ -227,7 +227,35 @@ export class TicketController {
         res.status(400).json({ success: false, message: 'providerId inválido' });
         return;
       }
-      const board = await this.ticketService.getKanban(providerId, req.user!);
+      const limit = req.query.limit ? parseInt(String(req.query.limit)) : undefined;
+      const board = await this.ticketService.getKanban(providerId, req.user!, limit);
+      res.json({ success: true, data: board, message: 'Kanban obtido com sucesso' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao obter Kanban';
+      const status = (error as any)?.status || 500;
+      res.status(status).json({ success: false, message });
+    }
+  }
+
+  /**
+   * Kanban global (todos os tickets acessíveis ao usuário)
+   * GET /api/tickets/kanban
+   */
+  async kanbanAll(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { providerId } = req.query as { providerId?: string };
+      const limit = req.query.limit ? parseInt(String(req.query.limit)) : undefined;
+      if (providerId) {
+        const id = parseInt(providerId);
+        if (isNaN(id)) {
+          res.status(400).json({ success: false, message: 'providerId inválido' });
+          return;
+        }
+        const board = await this.ticketService.getKanban(id, req.user!, limit);
+        res.json({ success: true, data: board, message: 'Kanban obtido com sucesso' });
+        return;
+      }
+      const board = await this.ticketService.getKanbanAll(req.user!, limit);
       res.json({ success: true, data: board, message: 'Kanban obtido com sucesso' });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao obter Kanban';
