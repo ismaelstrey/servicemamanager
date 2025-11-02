@@ -117,9 +117,71 @@ const TicketsKanbanPage: React.FC = () => {
         columnOrder={columnOrder}
         statusLabels={statusLabels}
         onItemClick={(id) => navigate(`/tickets/${id}`)}
-        onDragEnd={(itemId, from, to) => {
-          // No futuro: chamar API para atualizar status e recarregar
-          console.log('DragEnd:', { itemId, from, to });
+        onDragEnd={async (itemId, from, to) => {
+          try {
+            // Mapeia colunas da UI para status do backend
+            const mapToBackend = (s: string): string => {
+              if (s === 'pending') return 'waiting_client';
+              return s; // open, in_progress, waiting_client, resolved, closed
+            };
+
+            const fromBackend = mapToBackend(from);
+            const toBackend = mapToBackend(to);
+
+            // Ignora se status não mudou efetivamente
+            if (fromBackend === toBackend) return;
+
+            // Otimista: mover no board imediatamente
+            setBoard((prev) => {
+              const next = { ...prev } as any;
+              const fromArr = [...(next[from] || [])];
+              const toArr = [...(next[to] || [])];
+              const idx = fromArr.findIndex((i: any) => i.id === itemId);
+              if (idx >= 0) {
+                const item = { ...fromArr[idx], updatedAt: new Date().toISOString() };
+                fromArr.splice(idx, 1);
+                toArr.unshift(item);
+                next[from] = fromArr;
+                next[to] = toArr;
+              }
+              return next;
+            });
+
+            // Chamada à API para atualizar status
+            const res = await ApiService.put(`/tickets/${itemId}/status`, { status: toBackend });
+            if (!res?.success) {
+              throw new Error(res?.message || 'Falha ao atualizar status');
+            }
+
+            // Opcional: recarregar tablero para sincronizar com backend
+            // Comentado para evitar excesso de chamadas; manter otimista
+            // const url = providerId ? `/providers/${providerId}/tickets/kanban` : `/tickets/kanban`;
+            // const fresh = await ApiService.get<KanbanBoard>(url);
+            // setBoard({ ...fresh.data });
+          } catch (e: any) {
+            console.error('Erro ao atualizar status do ticket:', e);
+            const msg = e?.response?.data?.message || e?.message || 'Erro ao atualizar status do ticket';
+            setError(msg);
+            // Recarregar o board para desfazer otimista e refletir estado real
+            try {
+              const url = providerId ? `/providers/${providerId}/tickets/kanban` : `/tickets/kanban`;
+              const fresh = await ApiService.get<KanbanBoard>(url);
+              // Normalizar conforme carregamento inicial
+              const normalized: KanbanBoard = { ...fresh.data };
+              const completed: KanbanBoard = {} as KanbanBoard;
+              for (const col of columnOrder) {
+                completed[col] = (normalized[col] || []).map((item: any) => ({
+                  id: item.id,
+                  title: item.title ?? `Ticket #${item.id}`,
+                  priority: (item.priority as any) ?? 'medium',
+                  updatedAt: item.updatedAt ?? new Date().toISOString(),
+                }));
+              }
+              setBoard(completed);
+            } catch (reloadErr) {
+              console.error('Falha ao recarregar Kanban após erro:', reloadErr);
+            }
+          }
         }}
       />
     </div>
