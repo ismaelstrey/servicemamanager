@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import  { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Card, CardHeader, CardBody,
@@ -58,6 +58,9 @@ export function TicketDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('details');
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [newTag, setNewTag] = useState('');
   
   // Comment form state
   const [showCommentModal, setShowCommentModal] = useState(false);
@@ -269,11 +272,63 @@ export function TicketDetailsPage() {
 
       setStatusUpdateNote('');
       setShowStatusModal(false);
+      setSuccessMessage(`Status alterado para ${statusLabels[newStatus]}`);
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error('Error updating status:', err);
     } finally {
       setStatusLoading(false);
     }
+  };
+
+  const addAttachments = (files: FileList) => {
+    if (!ticket) return;
+    const newAttachments = Array.from(files).map((file, idx) => ({
+      id: Date.now() + idx,
+      filename: file.name,
+      originalName: file.name,
+      mimeType: file.type || 'application/octet-stream',
+      url: URL.createObjectURL(file),
+      size: file.size,
+      uploadedBy: 1,
+      uploadedAt: new Date(),
+      isPublic: true,
+    }));
+    setTicket(prev => prev ? { ...prev, attachments: [...prev.attachments, ...newAttachments] } : null);
+    setSuccessMessage(`${newAttachments.length} anexo(s) adicionados`);
+    setTimeout(() => setSuccessMessage(null), 3000);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      addAttachments(e.dataTransfer.files);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      addAttachments(e.target.files);
+      e.target.value = '';
+    }
+  };
+
+  const addTag = () => {
+    const tag = newTag.trim();
+    if (!tag || !ticket) return;
+    if (ticket.tags.includes(tag)) {
+      setNewTag('');
+      return;
+    }
+    setTicket(prev => prev ? { ...prev, tags: [...prev.tags, tag] } : null);
+    setNewTag('');
+    setSuccessMessage(`Tag "${tag}" adicionada`);
+    setTimeout(() => setSuccessMessage(null), 2000);
+  };
+
+  const removeTag = (tag: string) => {
+    if (!ticket) return;
+    setTicket(prev => prev ? { ...prev, tags: prev.tags.filter(t => t !== tag) } : null);
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -307,6 +362,13 @@ export function TicketDetailsPage() {
 
   return (
     <div className="ticket-details">
+      {successMessage && (
+        <div style={{ marginBottom: '1rem' }}>
+          <Alert variant="success" title="Sucesso">
+            {successMessage}
+          </Alert>
+        </div>
+      )}
       <div className="ticket-details__header">
         <div className="ticket-details__breadcrumb">
           <Button
@@ -438,6 +500,32 @@ export function TicketDetailsPage() {
                         <label>Atualizado em:</label>
                         <span>{new Date(ticket.updatedAt).toLocaleString('pt-BR')}</span>
                       </div>
+                      <div className="ticket-details__info-item">
+                        <label>Tags:</label>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          {ticket.tags.length === 0 && (
+                            <span style={{ color: 'var(--color-text-secondary)' }}>Sem tags</span>
+                          )}
+                          {ticket.tags.map((tag) => (
+                            <div key={tag} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <Badge variant="secondary">{tag}</Badge>
+                              <Button size="lg" variant="secondary" onClick={() => removeTag(tag)}>×</Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="ticket-details__info-item">
+                        <label>Adicionar Tag:</label>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <input
+                            className="ticket-details__input"
+                            placeholder="Nova tag"
+                            value={newTag}
+                            onChange={(e) => setNewTag(e.target.value)}
+                          />
+                          <Button size="sm" variant="secondary" onClick={addTag}>Adicionar</Button>
+                        </div>
+                      </div>
                     </div>
                   </CardBody>
                 </Card>
@@ -485,6 +573,22 @@ export function TicketDetailsPage() {
             <Card>
               <CardBody>
                 <div className="ticket-details__attachments">
+                  <div
+                    className="ticket-details__dropzone"
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleDrop}
+                    style={{
+                      padding: '1rem',
+                      border: '2px dashed var(--color-border)',
+                      borderRadius: '12px',
+                      background: 'var(--color-surface)',
+                      textAlign: 'center'
+                    }}
+                  >
+                    <p style={{ marginBottom: '0.5rem' }}>Arraste e solte arquivos aqui</p>
+                    <Button size="sm" variant="secondary" onClick={() => fileInputRef.current?.click()}>Selecionar Arquivos</Button>
+                    <input type="file" multiple ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileInputChange} />
+                  </div>
                   {ticket.attachments.length === 0 ? (
                     <div className="ticket-details__empty">
                       <p>Nenhum anexo ainda.</p>

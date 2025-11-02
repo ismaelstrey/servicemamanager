@@ -86,6 +86,7 @@ export function TicketsListPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   
   const [filters, setFilters] = useState<TicketsFilters>({
     search: searchParams.get('search') || '',
@@ -245,6 +246,11 @@ export function TicketsListPage() {
         </div>
         
         <div className="tickets-list__actions">
+          <div style={{ display: 'inline-flex', gap: '0.5rem', marginRight: '0.5rem' }}>
+            <Button variant={viewMode === 'list' ? 'primary' : 'secondary'} size="sm" onClick={() => setViewMode('list')}>Lista</Button>
+            <Button variant={viewMode === 'grid' ? 'primary' : 'secondary'} size="sm" onClick={() => setViewMode('grid')}>Grade</Button>
+            <Button variant="secondary" size="sm" onClick={() => navigate('/tickets/kanban')}>Kanban</Button>
+          </div>
           <Button
             variant="primary"
             onClick={() => navigate('/tickets/new')}
@@ -314,6 +320,7 @@ export function TicketsListPage() {
         </CardBody>
       </Card>
 
+      {viewMode === 'list' && (
       <Card className="tickets-list__table">
         <Table hoverable className="table--sticky-header">
           <TableHeader>
@@ -391,7 +398,6 @@ export function TicketsListPage() {
             ))}
           </TableBody>
         </Table>
-        
         {tickets.length === 0 && !loading && (
           <div className="tickets-list__empty">
             <div className="tickets-list__empty-icon">🎫</div>
@@ -412,6 +418,41 @@ export function TicketsListPage() {
           </div>
         )}
       </Card>
+      )}
+
+      {viewMode === 'grid' && (
+        <Card>
+          <CardBody>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+              {tickets.map(ticket => (
+                <div key={ticket.id} style={{ border: '1px solid var(--color-border)', borderRadius: '12px', padding: '1rem', background: 'var(--color-surface)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <code className="tickets-list__number">{ticket.number}</code>
+                    <Badge variant={getPriorityVariant(ticket.priority)}>{priorityLabels[ticket.priority]}</Badge>
+                  </div>
+                  <div style={{ marginTop: '0.5rem', fontWeight: 600 }}>{ticket.title}</div>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>{ticket.customerInfo.name} • {ticket.customerInfo.email}</div>
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <Badge variant={getStatusVariant(ticket.status)}>{statusLabels[ticket.status]}</Badge>
+                  </div>
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Criado: {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}</div>
+                  <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+                    <Button size="sm" variant="secondary" onClick={() => navigate(`/tickets/${ticket.id}`)}>Abrir</Button>
+                    <Button size="sm" variant="secondary" onClick={() => navigate(`/tickets/${ticket.id}/edit`)}>Editar</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {tickets.length === 0 && !loading && (
+              <div className="tickets-list__empty">
+                <div className="tickets-list__empty-icon">🎫</div>
+                <h3>Nenhum ticket encontrado</h3>
+                <p>{hasActiveFilters ? 'Tente ajustar os filtros.' : 'Ainda não há tickets.'}</p>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      )}
 
       {totalPages > 1 && (
         <div className="tickets-list__pagination">

@@ -17,6 +17,10 @@ import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import RegisterPage from './pages/register'
 import DashboardPage from './pages/dashboard'
+import { TicketsListPage } from './pages/tickets/TicketsListPage'
+import CreateTicketPage from './pages/tickets/CreateTicketPage'
+import { TicketDetailsPage } from './pages/tickets/TicketDetailsPage'
+import TicketsKanbanPage from './pages/tickets/TicketsKanbanPage'
 import ProfilePage from './pages/ProfilePage'
 import SettingsPage from './pages/SettingsPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -206,6 +210,47 @@ const App: React.FC = () => {
                 <ProtectedRoute>
                   <Layout>
                     <SettingsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Tickets */}
+            <Route
+              path="/tickets"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <TicketsListPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tickets/new"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CreateTicketPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tickets/kanban"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <TicketsKanbanPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tickets/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <TicketDetailsPage />
                   </Layout>
                 </ProtectedRoute>
               }
