@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { StatsCard, RecentTickets, RecentServiceOrders, QuickActions, createQuickActions } from '../components/dashboard';
-import { Spinner, Alert, Select } from '../components/ui';
+import { Spinner, Alert, Select, Button, ChartContainer, Toast } from '../components/ui';
 import type { Ticket } from '../types/ticket';
 import type { ServiceOrder } from '../types/serviceOrder';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,8 @@ import { ApiService, type PaginatedResponse } from '../services/api';
 import { decodeJwt } from '../utils/jwt';
 import ProviderService, { type ProviderListItem } from '../services/providerService';
 import '../styles/dashboard.css';
+import ServiceOrderStatusChart from '../components/dashboard/charts/ServiceOrderStatusChart';
+import Timeline from '../components/dashboard/Timeline';
 
 interface DashboardStats {
   totalTickets: number;
@@ -35,6 +37,10 @@ export function DashboardPage() {
   const [providers, setProviders] = useState<ProviderListItem[]>([]);
   const [selectedProviderId, setSelectedProviderId] = useState<number | 'global'>('global');
   const [providersTotal, setProvidersTotal] = useState<number>(0);
+  const [recentActivities, setRecentActivities] = useState<Array<{ type: string; id: number; title: string; description?: string; createdAt: string | Date }>>([]);
+  const [period, setPeriod] = useState<'7d' | '30d' | '3m' | '12m'>('30d');
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string>('');
 
   useEffect(() => {
     loadProvidersAndInit();
@@ -128,6 +134,7 @@ export function DashboardPage() {
         setStats(newStats);
         setRecentTickets([]);
         setRecentServiceOrders(mappedServiceOrders);
+        setRecentActivities([]);
       } else {
         const providerId = effectiveMode as number;
         const [dashboardData, serviceOrderStats, ticketsRes, serviceOrdersRes] = await Promise.all([
@@ -193,6 +200,7 @@ export function DashboardPage() {
       setStats(newStats);
       setRecentTickets(mappedTickets);
       setRecentServiceOrders(mappedServiceOrders);
+      setRecentActivities(dashboardData.recentActivities ?? []);
     }
     } catch (err) {
       setError('Erro ao carregar dados do dashboard');
@@ -217,6 +225,63 @@ export function DashboardPage() {
     onViewSettings: () => navigate('/settings'),
     onViewHelp: () => navigate('/help'),
   });
+
+  // Polling simples para notificações de novas atividades (somente modo provedor)
+  useEffect(() => {
+    if (selectedProviderId === 'global') return;
+    const providerId = selectedProviderId as number;
+    const id = window.setInterval(async () => {
+      try {
+        const data = await DashboardService.getDashboard(providerId);
+        if ((data.recentActivities?.length || 0) > (recentActivities?.length || 0)) {
+          setToastMsg('Nova atividade registrada no provedor');
+          setToastOpen(true);
+          setRecentActivities(data.recentActivities);
+        }
+      } catch (e) {
+        // silencioso
+      }
+    }, 15000);
+    return () => window.clearInterval(id);
+  }, [selectedProviderId, recentActivities]);
+
+  const exportCsv = () => {
+    try {
+      const lines: string[] = [];
+      lines.push('Secao,Campo,Valor');
+      if (stats) {
+        lines.push(`Resumo,totalTickets,${stats.totalTickets}`);
+        lines.push(`Resumo,openTickets,${stats.openTickets}`);
+        lines.push(`Resumo,totalServiceOrders,${stats.totalServiceOrders}`);
+        lines.push(`Resumo,pendingServiceOrders,${stats.pendingServiceOrders}`);
+        lines.push(`Resumo,completedThisMonth,${stats.completedThisMonth}`);
+        lines.push(`Resumo,revenue,${stats.revenue}`);
+        lines.push(`Resumo,customerSatisfaction,${stats.customerSatisfaction}`);
+        lines.push(`Resumo,averageResolutionTime,${stats.averageResolutionTime}`);
+      }
+      lines.push('');
+      lines.push('TicketsRecentes,id,title,status,priority,createdAt');
+      recentTickets.forEach(t => {
+        lines.push(`${t.id},"${t.title}",${t.status},${t.priority},${new Date(t.createdAt).toISOString()}`);
+      });
+      lines.push('');
+      lines.push('OSRecentes,id,title,status,priority,createdAt');
+      recentServiceOrders.forEach(so => {
+        lines.push(`${so.id},"${so.title}",${so.status},${so.priority},${new Date(so.createdAt).toISOString()}`);
+      });
+
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dashboard-relatorio-${period}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setToastMsg('Falha ao exportar CSV');
+      setToastOpen(true);
+    }
+  };
 
   const handleTicketClick = (ticket: Ticket) => {
     navigate(`/tickets/${ticket.id}`);
@@ -255,7 +320,7 @@ export function DashboardPage() {
         <p className="dashboard__subtitle">
           Aqui está um resumo das suas atividades recentes
         </p>
-        <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
+        <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ minWidth: 240 }}>
             <Select
               label="Contexto"
@@ -269,6 +334,22 @@ export function DashboardPage() {
               ))}
             </Select>
           </div>
+          <div style={{ minWidth: 200 }}>
+            <Select
+              label="Período"
+              size="sm"
+              value={period}
+              onChange={(e) => setPeriod((e.target as HTMLSelectElement).value as any)}
+            >
+              <option value="7d">7 dias</option>
+              <option value="30d">30 dias</option>
+              <option value="3m">3 meses</option>
+              <option value="12m">12 meses</option>
+            </Select>
+          </div>
+          <Button variant="secondary" onClick={() => exportCsv()}>
+            Exportar Relatório (CSV)
+          </Button>
           {providers.length === 0 && (
             <button
               onClick={() => navigate('/providers/create')}
@@ -412,6 +493,16 @@ export function DashboardPage() {
 
       <div className="dashboard__content">
         <div className="dashboard__main">
+          {stats && (
+            <ChartContainer title={`Status de OS (${period})`} style={{ marginBottom: 16 }}>
+              <ServiceOrderStatusChart stats={{
+                pending: (stats as any).pendingServiceOrders ?? 0,
+                inProgress: (stats as any).inProgress ?? ((stats as any).totalServiceOrders - (stats as any).pendingServiceOrders - (stats as any).completedThisMonth),
+                completed: (stats as any).completedThisMonth ?? 0,
+                cancelled: (stats as any).cancelled ?? 0,
+              }} />
+            </ChartContainer>
+          )}
           {selectedProviderId !== 'global' && (
             <RecentTickets
               tickets={recentTickets}
@@ -425,12 +516,34 @@ export function DashboardPage() {
             onViewAll={() => navigate('/service-orders')}
             onServiceOrderClick={handleServiceOrderClick}
           />
+
+          {selectedProviderId !== 'global' && (
+            <ChartContainer title="Atividades Recentes" style={{ marginTop: 16 }}>
+              <Timeline items={recentActivities.map((a) => ({
+                type: a.type,
+                id: a.id,
+                title: a.title,
+                description: a.description,
+                createdAt: a.createdAt,
+              }))} onItemClick={(it) => {
+                if (it.type === 'ticket') navigate(`/tickets/${it.id}`);
+              }} />
+            </ChartContainer>
+          )}
         </div>
 
         <div className="dashboard__sidebar">
           <QuickActions actions={quickActions} />
         </div>
       </div>
+
+      <Toast
+        open={toastOpen}
+        onClose={() => setToastOpen(false)}
+        title="Notificação"
+        description={toastMsg}
+        variant="info"
+      />
     </div>
   );
 }

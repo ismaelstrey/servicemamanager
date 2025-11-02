@@ -249,15 +249,15 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
   - [x] Interceptor para refresh token automático
 
 ### Fase 8 — Dashboard e Métricas
-- [ ] **Dashboard Profissional**
-  - [ ] Cards de métricas com animações
-  - [ ] Gráficos integrados (Chart.js/Recharts)
-  - [ ] Widgets de resumo personalizáveis
-  - [ ] Timeline de atividades recentes
-  - [ ] Quick actions panel
-  - [ ] Filtros de período
-  - [ ] Exportação de relatórios
-  - [ ] Notificações em tempo real
+- [x] **Dashboard Profissional**
+  - [x] Cards de métricas com animações
+  - [x] Gráficos integrados (Chart.js/Recharts)
+  - [x] Widgets de resumo personalizáveis
+  - [x] Timeline de atividades recentes
+  - [x] Quick actions panel
+  - [x] Filtros de período
+  - [x] Exportação de relatórios
+  - [x] Notificações em tempo real
 
 ### Fase 9 — Gestão de Tickets
 - [ ] **Sistema de Tickets Avançado**

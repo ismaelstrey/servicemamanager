@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Card, Badge, CardBody } from '../ui';
 
 export interface StatsCardProps {
@@ -28,6 +28,33 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   onClick,
   tooltip,
 }) => {
+  const isNumeric = useMemo(() => typeof value === 'number', [value]);
+  const [displayValue, setDisplayValue] = useState<string | number>(value);
+  const prevValueRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!isNumeric || loading) {
+      setDisplayValue(value);
+      return;
+    }
+
+    const target = Number(value);
+    const start = prevValueRef.current ?? 0;
+    prevValueRef.current = target;
+
+    const duration = 600; // ms
+    const startTime = performance.now();
+
+    const step = (now: number) => {
+      const t = Math.min((now - startTime) / duration, 1);
+      const current = Math.round(start + (target - start) * t);
+      setDisplayValue(current);
+      if (t < 1) requestAnimationFrame(step);
+    };
+
+    requestAnimationFrame(step);
+  }, [value, isNumeric, loading]);
+
   const getTrendColor = (isPositive: boolean) => {
     return isPositive ? 'success' : 'danger';
   };
@@ -70,7 +97,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
             ) : (
               <>
                 <span className={`stats-card__value stats-card__value--${color}`}>
-                  {value}
+                  {displayValue}
                 </span>
                 {trend && (
                   <Badge
