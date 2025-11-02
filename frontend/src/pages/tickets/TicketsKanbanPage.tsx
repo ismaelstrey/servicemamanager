@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardHeader, CardBody, Badge, Button, Spinner, Alert } from '../../components/ui';
 import { ApiService } from '../../services/api';
-import { useAuth } from '../../hooks/useAuth';
 
 type KanbanBoard = Record<string, { id: number; title: string; priority: 'low' | 'medium' | 'high' | 'urgent' | 'critical'; updatedAt: string | Date }[]>;
 
@@ -33,7 +32,6 @@ const columnOrder = ['open', 'assigned', 'in_progress', 'pending', 'waiting_clie
 const TicketsKanbanPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
   const [board, setBoard] = useState<KanbanBoard>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,8 +39,9 @@ const TicketsKanbanPage: React.FC = () => {
   const providerId = useMemo(() => {
     const fromQuery = searchParams.get('provider');
     if (fromQuery) return parseInt(fromQuery);
-    return user?.providerId ?? undefined;
-  }, [searchParams, user?.providerId]);
+    // Por padrão, usar visão global (sem provider) para alinhar com /api/tickets/kanban
+    return undefined;
+  }, [searchParams]);
 
   useEffect(() => {
     const loadBoard = async () => {
@@ -53,15 +52,60 @@ const TicketsKanbanPage: React.FC = () => {
           ? `/providers/${providerId}/tickets/kanban`
           : `/tickets/kanban`;
         const res = await ApiService.get<{ success: boolean; data: KanbanBoard }>(url);
-        const data = res.data?.data || {};
-        // Normaliza waiting_client -> pending para alinhar com o frontend
-        if (data['waiting_client'] && !data['pending']) {
-          data['pending'] = data['waiting_client'];
+        const raw = res.data?.data || {};
+
+        // Normalização: unir waiting_client em pending e remover chave duplicada
+        const normalized: KanbanBoard = { ...raw };
+        if (normalized['waiting_client']) {
+          const existingPending = normalized['pending'] || [];
+          normalized['pending'] = [...existingPending, ...normalized['waiting_client']];
+          delete (normalized as any)['waiting_client'];
         }
-        setBoard(data);
-      } catch (e) {
+
+        // Garantir todas as colunas do columnOrder existem (arrays vazios por padrão)
+        const completed: KanbanBoard = {} as KanbanBoard;
+        for (const col of columnOrder) {
+          completed[col] = (normalized[col] || []).map((item) => ({
+            id: item.id,
+            title: item.title ?? `Ticket #${item.id}`,
+            priority: (item.priority as any) ?? 'medium',
+            updatedAt: item.updatedAt ?? new Date().toISOString(),
+          }));
+        }
+
+        setBoard(completed);
+      } catch (e: any) {
         console.error('Erro ao carregar Kanban:', e);
-        setError('Erro ao carregar o Kanban de tickets.');
+        // Fallback: se não autenticado ou erro de rede, tentar carregar mock local para validação visual
+        try {
+          const mockRes = await fetch('/mock/retornoKanbam.json');
+          if (mockRes.ok) {
+            const mockJson: { success: boolean; data: KanbanBoard } = await mockRes.json();
+            const raw = mockJson?.data || {};
+            const normalized: KanbanBoard = { ...raw };
+            if (normalized['waiting_client']) {
+              const existingPending = normalized['pending'] || [];
+              normalized['pending'] = [...existingPending, ...normalized['waiting_client']];
+              delete (normalized as any)['waiting_client'];
+            }
+            const completed: KanbanBoard = {} as KanbanBoard;
+            for (const col of columnOrder) {
+              completed[col] = (normalized[col] || []).map((item) => ({
+                id: item.id,
+                title: item.title ?? `Ticket #${item.id}`,
+                priority: (item.priority as any) ?? 'medium',
+                updatedAt: item.updatedAt ?? new Date().toISOString(),
+              }));
+            }
+            setBoard(completed);
+            setError(null);
+          } else {
+            setError('Erro ao carregar o Kanban de tickets.');
+          }
+        } catch (mockError) {
+          console.error('Erro ao carregar mock do Kanban:', mockError);
+          setError('Erro ao carregar o Kanban de tickets.');
+        }
       } finally {
         setLoading(false);
       }

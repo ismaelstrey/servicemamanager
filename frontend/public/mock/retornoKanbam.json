@@ -1,0 +1,25 @@
+{
+  "success": true,
+  "data": {
+    "open": [
+      { "id": 101, "title": "Link instável em filial A", "priority": "high", "updatedAt": "2025-10-28T10:15:00Z" },
+      { "id": 102, "title": "Solicitação de troca de roteador", "priority": "medium", "updatedAt": "2025-10-29T08:00:00Z" }
+    ],
+    "assigned": [
+      { "id": 103, "title": "Queda intermitente de conexão", "priority": "urgent", "updatedAt": "2025-10-30T11:30:00Z" }
+    ],
+    "in_progress": [
+      { "id": 104, "title": "Atualização de firmware", "priority": "medium", "updatedAt": "2025-10-31T14:45:00Z" }
+    ],
+    "pending": [
+      { "id": 105, "title": "Aguardando avaliação do cliente", "priority": "low", "updatedAt": "2025-10-25T09:20:00Z" }
+    ],
+    "waiting_client": [
+      { "id": 106, "title": "Solicitar mais detalhes do incidente", "priority": "medium", "updatedAt": "2025-10-26T12:10:00Z" }
+    ],
+    "resolved": [
+      { "id": 107, "title": "Problema de DNS corrigido", "priority": "critical", "updatedAt": "2025-10-27T16:00:00Z" }
+    ],
+    "closed": []
+  }
+}

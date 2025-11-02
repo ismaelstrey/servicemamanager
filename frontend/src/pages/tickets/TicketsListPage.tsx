@@ -12,6 +12,8 @@ import {
 import type { Ticket, TicketStatus, TicketCategory } from '../../types/ticket';
 import type { Priority } from '../../types/common';
 import { UserRole } from '../../types/auth';
+import { TicketService } from '../../services/ticketService';
+import { useAuth } from '../../hooks/useAuth';
 
 interface TicketsFilters {
   search: string;
@@ -113,88 +115,49 @@ export function TicketsListPage() {
     setSearchParams(params);
   }, [filters, currentPage, setSearchParams]);
 
+  const { user } = useAuth();
+  const providerId = user?.providerId;
+  const isGlobalView = providerId == null || user?.role === UserRole.ADMIN ;
+
   const loadTickets = React.useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Simulate API call - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // Mock data - replace with actual API response
-      const mockTickets: Ticket[] = Array.from({ length: 50 }, (_, i) => ({
-        id: i + 1,
-        providerId: 1,
-        number: `TK-2024-${String(i + 1).padStart(3, '0')}`,
-        title: `Ticket ${i + 1} - ${['Problema de conexão', 'Solicitação de upgrade', 'Suporte técnico', 'Dúvida sobre faturamento'][i % 4]}`,
-        description: `Descrição detalhada do ticket ${i + 1}`,
-        status: (['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed'] as TicketStatus[])[i % 6],
-        priority: (['low', 'medium', 'high', 'urgent'] as Priority[])[i % 4],
-        category: (['hardware', 'software', 'network', 'security', 'access', 'email', 'backup', 'maintenance', 'training', 'other'] as TicketCategory[])[i % 10],
-        source: 'email',
-        customerInfo: {
-          name: `Cliente ${i + 1}`,
-          email: `cliente${i + 1}@email.com`,
-          phone: `(11) ${String(90000 + i).slice(0, 5)}-${String(1000 + i).slice(-4)}`,
-        },
-        createdAt: new Date(Date.now() - (i * 86400000)),
-        updatedAt: new Date(Date.now() - (i * 3600000)),
-        assignedTo: i % 3 === 0 ? 1 : undefined,
-        assignee: i % 3 === 0 ? {
-          id: 1,
-          name: 'Maria Santos',
-          email: 'maria@telecom.com',
-          role: UserRole.USER,
-          status: 'active',
-          emailVerified: true,
-          loginAttempts: 0,
-          createdAt: new Date(Date.now() - (i * 900000)),
-          updatedAt: new Date(Date.now() - (i * 600000)),
-        } : undefined,
-        tags: [],
-        slaStatus: 'within_sla',
-        comments: [],
-        attachments: [],
-        history: [],
-      }));
-
-      // Apply filters
-      let filteredTickets = mockTickets;
+      // Converter filtros para o formato esperado pela API
+      const apiFilters: any = {};
       
       if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        filteredTickets = filteredTickets.filter(ticket =>
-          ticket.title.toLowerCase().includes(searchLower) ||
-          ticket.number.toLowerCase().includes(searchLower) ||
-          ticket.customerInfo.name.toLowerCase().includes(searchLower)
-        );
+        apiFilters.search = filters.search;
       }
       
       if (filters.status !== 'all') {
-        filteredTickets = filteredTickets.filter(ticket => ticket.status === filters.status);
+        apiFilters.status = filters.status;
       }
       
       if (filters.priority !== 'all') {
-        filteredTickets = filteredTickets.filter(ticket => ticket.priority === filters.priority);
+        apiFilters.priority = filters.priority;
       }
       
       if (filters.category !== 'all') {
-        filteredTickets = filteredTickets.filter(ticket => ticket.category === filters.category);
+        apiFilters.category = filters.category;
       }
 
-      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-      const endIndex = startIndex + ITEMS_PER_PAGE;
-      const paginatedTickets = filteredTickets.slice(startIndex, endIndex);
+      // Buscar tickets do backend: global se não houver providerId ou perfil admin
+      const useGlobal = providerId == null || user?.role === UserRole.ADMIN ;
+      const response = useGlobal
+        ? await TicketService.getTicketsAll(apiFilters, currentPage, ITEMS_PER_PAGE)
+        : await TicketService.getTickets(providerId!, apiFilters, currentPage, ITEMS_PER_PAGE);
 
-      setTickets(paginatedTickets);
-      setTotalItems(filteredTickets.length);
+      setTickets(response.data || []);
+      setTotalItems(response.pagination?.total ?? 0);
     } catch (err) {
       setError('Erro ao carregar tickets');
       console.error('Tickets loading error:', err);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, filters]);
+  }, [currentPage, filters, providerId]);
 
   useEffect(() => {
     loadTickets();
@@ -239,7 +202,12 @@ export function TicketsListPage() {
     <div className="tickets-list">
       <div className="tickets-list__header">
         <div className="tickets-list__title-section">
-          <h1 className="tickets-list__title">Tickets</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <h1 className="tickets-list__title">Tickets</h1>
+            <Badge variant={isGlobalView ? 'info' : 'secondary'}>
+              {isGlobalView ? 'Visão Global' : 'Visão por Provedor'}
+            </Badge>
+          </div>
           <p className="tickets-list__subtitle">
             {totalItems} ticket{totalItems !== 1 ? 's' : ''} encontrado{totalItems !== 1 ? 's' : ''}
           </p>
@@ -344,7 +312,7 @@ export function TicketsListPage() {
                 className="tickets-list__row"
               >
                 <TableCell>
-                  <code className="tickets-list__number">{ticket.number}</code>
+                  <code className="tickets-list__number">{ticket.number ?? ticket.id}</code>
                 </TableCell>
                 <TableCell>
                   <div className="tickets-list__title-cell">
@@ -353,8 +321,8 @@ export function TicketsListPage() {
                 </TableCell>
                 <TableCell>
                   <div className="tickets-list__customer">
-                    <span className="tickets-list__customer-name">{ticket.customerInfo.name}</span>
-                    <span className="tickets-list__customer-email">{ticket.customerInfo.email}</span>
+                    <span className="tickets-list__customer-name">{ticket.customerInfo?.name ?? '—'}</span>
+                    <span className="tickets-list__customer-email">{ticket.customerInfo?.email ?? ''}</span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -369,11 +337,11 @@ export function TicketsListPage() {
                 </TableCell>
                 <TableCell>
                   <span className="tickets-list__category">
-                    {categoryLabels[ticket.category]}
+                    {categoryLabels[ticket.category] ?? '—'}
                   </span>
                 </TableCell>
                 <TableCell>
-                  {ticket.assignee ? (
+                  {ticket.assignee?.name ? (
                     <span className="tickets-list__assignee">{ticket.assignee.name}</span>
                   ) : (
                     <span className="tickets-list__unassigned">Não atribuído</span>
@@ -427,13 +395,13 @@ export function TicketsListPage() {
               {tickets.map(ticket => (
                 <div key={ticket.id} style={{ border: '1px solid var(--color-border)', borderRadius: '12px', padding: '1rem', background: 'var(--color-surface)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <code className="tickets-list__number">{ticket.number}</code>
-                    <Badge variant={getPriorityVariant(ticket.priority)}>{priorityLabels[ticket.priority]}</Badge>
+                    <code className="tickets-list__number">{ticket.number ?? ticket.id}</code>
+                    <Badge variant={getPriorityVariant(ticket.priority)}>{priorityLabels[ticket.priority] ?? '—'}</Badge>
                   </div>
                   <div style={{ marginTop: '0.5rem', fontWeight: 600 }}>{ticket.title}</div>
-                  <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>{ticket.customerInfo.name} • {ticket.customerInfo.email}</div>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>{ticket.customerInfo?.name ?? '—'} • {ticket.customerInfo?.email ?? ''}</div>
                   <div style={{ marginTop: '0.5rem' }}>
-                    <Badge variant={getStatusVariant(ticket.status)}>{statusLabels[ticket.status]}</Badge>
+                    <Badge variant={getStatusVariant(ticket.status)}>{statusLabels[ticket.status] ?? String(ticket.status)}</Badge>
                   </div>
                   <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Criado: {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}</div>
                   <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>

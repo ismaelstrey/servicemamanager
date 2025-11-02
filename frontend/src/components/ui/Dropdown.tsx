@@ -43,7 +43,7 @@ export const Dropdown: DropdownComponent = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -97,22 +97,39 @@ export const Dropdown: DropdownComponent = ({
 
   // Se trigger não for fornecido, usa o primeiro filho como trigger e o restante como itens
   const childArray = React.Children.toArray(children);
-  const triggerNode = trigger ?? (childArray.length > 0 ? childArray[0] : null);
-  const menuChildren = trigger ? children : childArray.slice(1);
+  const defaultTrigger = (
+    <span aria-label="Abrir menu" title="Abrir menu">⋮</span>
+  );
+  let triggerNode = trigger ?? (childArray.length > 0 ? childArray[0] : null);
+  let menuChildren: React.ReactNode = trigger ? children : childArray.slice(1);
+
+  // Evita usar DropdownItem como trigger; usa trigger padrão e mantém todos os children como itens
+  if (!trigger && React.isValidElement(triggerNode) && triggerNode.type === DropdownItem) {
+    triggerNode = defaultTrigger;
+    menuChildren = childArray;
+  }
 
   return (
     <div ref={dropdownRef} className={classes}>
-      <button
+      <div
         ref={triggerRef}
         className="dropdown__trigger"
         onClick={handleTriggerClick}
-        disabled={disabled}
+        onKeyDown={(e) => {
+          if (disabled) return;
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleTriggerClick();
+          }
+        }}
         aria-expanded={isOpen}
         aria-haspopup="true"
-        type="button"
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled || undefined}
       >
-        {triggerNode}
-      </button>
+        {triggerNode ?? defaultTrigger}
+      </div>
       {isOpen && (
         <div className="dropdown__menu" onClick={handleItemClick}>
           {menuChildren}

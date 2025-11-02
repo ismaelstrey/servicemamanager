@@ -35,6 +35,16 @@ export class TicketService {
     return this.repository.listByProvider(providerId, query);
   }
 
+  async listAll(query: ListTicketsQuery, user: AuthUser): Promise<{ tickets: TicketRecord[]; pagination: PaginationMeta; }> {
+    // Somente administradores podem listar globalmente sem provider
+    if (user.role !== 'super_admin' && user.role !== 'admin') {
+      const err: any = new Error('Acesso negado: requer perfil admin/super_admin');
+      err.status = 403;
+      throw err;
+    }
+    return this.repository.listAll(query);
+  }
+
   async create(providerId: number, data: CreateTicketData, user: AuthUser): Promise<TicketRecord> {
     await this.assertAccess(user, providerId);
     return this.repository.create(providerId, data);

@@ -61,6 +61,46 @@ export class TicketController {
   }
 
   /**
+   * Listar tickets globalmente (sem provider)
+   * GET /api/tickets
+   */
+  async listAll(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const paginationParams = calculatePagination({
+        page: req.query.page ? parseInt(req.query.page as string) : undefined,
+        limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+        maxLimit: 100,
+        defaultLimit: 10
+      });
+
+      const startDateStr = (req.query.startDate as string) || undefined;
+      const endDateStr = (req.query.endDate as string) || undefined;
+
+      const query: ListTicketsQuery = {
+        page: paginationParams.page,
+        limit: paginationParams.limit,
+        search: (req.query.search as string) || undefined,
+        status: (req.query.status as TicketStatus) || undefined,
+        priority: (req.query.priority as any) || undefined,
+        startDate: startDateStr ? new Date(startDateStr) : undefined,
+        endDate: endDateStr ? new Date(endDateStr) : undefined
+      };
+
+      const result = await this.ticketService.listAll(query, req.user!);
+      res.json({
+        success: true,
+        data: result.tickets,
+        pagination: result.pagination,
+        message: 'Tickets listados com sucesso'
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao listar tickets';
+      const status = (error as any)?.status || 500;
+      res.status(status).json({ success: false, message });
+    }
+  }
+
+  /**
    * Criar ticket para um provedor
    * POST /api/providers/:providerId/tickets
    */

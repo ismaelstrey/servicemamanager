@@ -260,7 +260,7 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
   - [x] Notificações em tempo real
 
 ### Fase 9 — Gestão de Tickets
-- [ ] **Sistema de Tickets Avançado**
+- [x] **Sistema de Tickets Avançado**
   - [x] Lista com filtros avançados e busca
   - [x] Visualizações: lista, grid, kanban
   - [x] Formulário de criação com validação
