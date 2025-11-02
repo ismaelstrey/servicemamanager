@@ -24,6 +24,8 @@ import ProvidersListPage from './pages/providers/ProvidersListPage'
 import ProviderDetailsPage from './pages/providers/ProviderDetailsPage'
 import ClientLoginPage from './pages/client/LoginPage'
 import ClientDashboardPage from './pages/client/DashboardPage'
+import TemplateShowcase from './pages/templates/TemplateShowcase'
+import ResponsiveLayoutShowcase from './pages/layout/ResponsiveLayoutShowcase'
 
 // Layout
 import { Layout } from './components/layout'
@@ -194,6 +196,27 @@ const App: React.FC = () => {
                 <ProtectedRoute>
                   <Layout>
                     <TestPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/templates"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <TemplateShowcase />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/layout"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ResponsiveLayoutShowcase />
                   </Layout>
                 </ProtectedRoute>
               }

@@ -221,21 +221,21 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
   - [x] `Timeline` — linha do tempo de eventos
 
 ### Fase 6 — Templates e Layouts
-- [ ] **Templates de Página**
+- [x] **Templates de Página**
   - [x] `AuthTemplate` — template para páginas de autenticação
-  - [ ] `DashboardTemplate` — template do dashboard
-  - [ ] `ListTemplate` — template para listas (tickets, OS)
-  - [ ] `DetailTemplate` — template para detalhes
-  - [ ] `FormTemplate` — template para formulários
-  - [ ] `ErrorTemplate` — template para páginas de erro
-  - [ ] `EmptyStateTemplate` — template para estados vazios
+  - [x] `DashboardTemplate` — template do dashboard
+  - [x] `ListTemplate` — template para listas (tickets, OS)
+  - [x] `DetailTemplate` — template para detalhes
+  - [x] `FormTemplate` — template para formulários
+  - [x] `ErrorTemplate` — template para páginas de erro
+  - [x] `EmptyStateTemplate` — template para estados vazios
 
-- [ ] **Sistema de Layout Responsivo**
-  - [ ] Grid system com styled-components
-  - [ ] Container responsivo
-  - [ ] Flexbox utilities
-  - [ ] Spacing utilities
-  - [ ] Visibility utilities (hide/show por breakpoint)
+- [x] **Sistema de Layout Responsivo**
+  - [x] Grid system com styled-components
+  - [x] Container responsivo
+  - [x] Flexbox utilities
+  - [x] Spacing utilities
+  - [x] Visibility utilities (hide/show por breakpoint)
 
 ### Fase 7 — Páginas de Autenticação
 - [ ] **Sistema de Auth Completo**
