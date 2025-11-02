@@ -108,14 +108,13 @@ const TicketsKanbanPage: React.FC = () => {
         </div>
       </div>
 
-      {error && (
-        <Alert variant="danger" title="Erro">{error}</Alert>
-      )}
+      {/* Erro sutil será mostrado dentro do próprio KanbanBoard */}
 
       <KanbanBoard
         board={board}
         columnOrder={columnOrder}
         statusLabels={statusLabels}
+        errorMessage={error || undefined}
         onItemClick={(id) => navigate(`/tickets/${id}`)}
         onDragEnd={async (itemId, from, to) => {
           try {

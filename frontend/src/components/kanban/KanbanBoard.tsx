@@ -13,6 +13,8 @@ export interface KanbanBoardProps {
   onItemClick?: (itemId: number) => void;
   onDragStart?: (itemId: number, fromStatus: string) => void;
   onDragEnd?: (itemId: number, fromStatus: string, toStatus: string) => void;
+  errorMessage?: string;
+  onError?: (message: string) => void;
   className?: string;
 }
 
@@ -35,6 +37,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   onItemClick,
   onDragStart,
   onDragEnd,
+  errorMessage,
+  onError,
   className,
 }) => {
   const [draggingItemId, setDraggingItemId] = React.useState<number | null>(null);
@@ -72,7 +76,28 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     return meta;
   };
   return (
-    <div className={className || 'kanban-board'} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+    <div className={className || 'kanban-board'}>
+      {errorMessage && (
+        <div
+          role="alert"
+          aria-live="polite"
+          style={{
+            marginBottom: '0.75rem',
+            padding: '0.5rem 0.75rem',
+            borderRadius: '8px',
+            background: 'rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: '#ef4444',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          <span style={{ fontWeight: 600 }}>Erro</span>
+          <span style={{ opacity: 0.9 }}>{errorMessage}</span>
+        </div>
+      )}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
       {columnOrder.filter(col => board[col] && board[col].length >= 0).map((col, idx) => (
         <div
           key={col}
@@ -102,6 +127,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             setDraggingItemId(null);
             if (!isNaN(itemId) && fromStatus) {
               onDragEnd && onDragEnd(itemId, fromStatus, col);
+            } else {
+              onError && onError('Não foi possível identificar o item arrastado ou a coluna de origem.');
             }
           }}
         >
@@ -205,6 +232,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         </Card>
         </div>
       ))}
+      </div>
     </div>
   );
 };
