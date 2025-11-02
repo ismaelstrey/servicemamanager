@@ -203,22 +203,22 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
   - [x] `Toast` — notificações temporárias
 
 ### Fase 5 — Componentes de Layout (Organisms)
-- [ ] **Estruturas Complexas**
-  - [ ] `Header` — cabeçalho com navegação e perfil
-  - [ ] `Sidebar` — menu lateral responsivo
-  - [ ] `Navigation` — componentes de navegação
-  - [ ] `Footer` — rodapé estruturado
-  - [ ] `DataTable` — tabelas com sorting, filtering, paginação
-  - [ ] `DataGrid` — grid de dados avançado
-  - [ ] `FormSection` — seções de formulário
-  - [ ] `StatsCard` — cartões de estatísticas
-  - [ ] `ChartContainer` — containers para gráficos
-  - [ ] `FilterPanel` — painel de filtros
-  - [ ] `SearchResults` — resultados de busca
-  - [ ] `CommentThread` — thread de comentários
-  - [ ] `FileUpload` — upload de arquivos
-  - [ ] `Calendar` — componente de calendário
-  - [ ] `Timeline` — linha do tempo de eventos
+- [x] **Estruturas Complexas**
+  - [x] `Header` — cabeçalho com navegação e perfil
+  - [x] `Sidebar` — menu lateral responsivo
+  - [x] `Navigation` — componentes de navegação
+  - [x] `Footer` — rodapé estruturado
+  - [x] `DataTable` — tabelas com sorting, filtering, paginação
+  - [x] `DataGrid` — grid de dados avançado
+  - [x] `FormSection` — seções de formulário
+  - [x] `StatsCard` — cartões de estatísticas
+  - [x] `ChartContainer` — containers para gráficos
+  - [x] `FilterPanel` — painel de filtros
+  - [x] `SearchResults` — resultados de busca
+  - [x] `CommentThread` — thread de comentários
+  - [x] `FileUpload` — upload de arquivos
+  - [x] `Calendar` — componente de calendário
+  - [x] `Timeline` — linha do tempo de eventos
 
 ### Fase 6 — Templates e Layouts
 - [ ] **Templates de Página**

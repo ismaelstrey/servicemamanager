@@ -155,7 +155,7 @@ const ProvidersListPage: React.FC = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  providers.map((p, idx) => (
+                  providers.map((p) => (
                     <TableRow key={p.id} onClick={() => navigate(`/providers/${p.id}`)}>
                       <TableCell>{p.name}</TableCell>
                       <TableCell>{p.workspace}</TableCell>

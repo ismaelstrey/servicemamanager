@@ -31,7 +31,7 @@ const Circle = styled.span<{ size: RadioSize; checked?: boolean }>`
   background: ${({ theme }) => theme.colors.surface};
   transition: all ${({ theme }) => theme.animations.transition.fast};
 
-  ${({ size, theme }) => {
+  ${({ size }) => {
     switch (size) {
       case 'sm':
         return css`width: 16px; height: 16px;`;

@@ -96,3 +96,25 @@ export type { ProgressBarProps } from './ProgressBar';
 
 export { default as Toast } from './Toast';
 export type { ToastProps, ToastVariant } from './Toast';
+
+// Layout and navigation components
+export { default as Header } from './Header';
+export { default as Sidebar } from './Sidebar';
+export { default as Navigation } from './Navigation';
+export { default as Footer } from './Footer';
+
+// Data and visualization components
+export { default as DataTable } from './DataTable';
+export { default as DataGrid } from './DataGrid';
+export { default as ChartContainer } from './ChartContainer';
+
+// Forms and filters
+export { default as FormSection } from './FormSection';
+export { default as FilterPanel } from './FilterPanel';
+export { default as SearchResults } from './SearchResults';
+
+// Collaboration and timeline
+export { default as CommentThread } from './CommentThread';
+export { default as FileUpload } from './FileUpload';
+export { default as Calendar } from './Calendar';
+export { default as Timeline } from './Timeline';

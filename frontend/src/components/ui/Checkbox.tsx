@@ -31,7 +31,7 @@ const Box = styled.span<{ size: CheckboxSize; checked?: boolean; hasError?: bool
   background: ${({ theme }) => theme.colors.surface};
   transition: all ${({ theme }) => theme.animations.transition.fast};
 
-  ${({ size, theme }) => {
+  ${({ size }) => {
     switch (size) {
       case 'sm':
         return css`width: 16px; height: 16px;`;

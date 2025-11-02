@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Card, CardHeader, CardBody,
+  Card, CardBody,
   Button, Input, Select, Badge,
   Dropdown, DropdownItem,
   Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell,
