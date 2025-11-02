@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import {  Button, Spinner, Alert } from '../../components/ui';
+import {  Button, Spinner } from '../../components/ui';
 import KanbanBoard from '../../components/kanban/KanbanBoard';
 import { ApiService } from '../../services/api';
 
