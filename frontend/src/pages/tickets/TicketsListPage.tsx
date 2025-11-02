@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Card, CardHeader, CardBody } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { Badge } from '../../components/ui/Badge';
-import { Dropdown, DropdownItem } from '../../components/ui/Dropdown';
-import { Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell } from '../../components/ui/Table';
-import { Pagination } from '../../components/ui/Pagination';
-import { Spinner } from '../../components/ui/Spinner';
-import { Alert } from '../../components/ui/Alert';
+import {
+  Card, CardHeader, CardBody,
+  Button, Input, Select, Badge,
+  Dropdown, DropdownItem,
+  Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell,
+  Pagination,
+  Spinner,
+  Alert
+} from '../../components/ui';
 import type { Ticket, TicketStatus, TicketCategory } from '../../types/ticket';
 import type { Priority } from '../../types/common';
 import { UserRole } from '../../types/auth';
@@ -262,76 +262,71 @@ export function TicketsListPage() {
       )}
 
       <Card className="tickets-list__filters">
-        <CardHeader>
-          <h3>Filtros</h3>
-          {hasActiveFilters && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleClearFilters}
-            >
-              Limpar Filtros
-            </Button>
-          )}
-        </CardHeader>
         <CardBody>
-          <div className="tickets-list__filters-grid">
-            <Input
-              placeholder="Buscar por título, número ou cliente..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              leftIcon="🔍"
-            />
-            
-            <select
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="tickets-list__select"
-            >
-              <option value="all">Todos os Status</option>
-              {Object.entries(statusLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
-            
-            <select
-              value={filters.priority}
-              onChange={(e) => handleFilterChange('priority', e.target.value)}
-              className="tickets-list__select"
-            >
-              <option value="all">Todas as Prioridades</option>
-              {Object.entries(priorityLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
-            
-            <select
-              value={filters.category}
-              onChange={(e) => handleFilterChange('category', e.target.value)}
-              className="tickets-list__select"
-            >
-              <option value="all">Todas as Categorias</option>
-              {Object.entries(categoryLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
+          <div className="table-toolbar">
+            <div className="table-toolbar__filters">
+              <Input
+                placeholder="Buscar por título, número ou cliente..."
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                leftIcon="🔍"
+              />
+              <Select
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+              >
+                <option value="all">Todos os Status</option>
+                {Object.entries(statusLabels).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </Select>
+              <Select
+                value={filters.priority}
+                onChange={(e) => handleFilterChange('priority', e.target.value)}
+              >
+                <option value="all">Todas as Prioridades</option>
+                {Object.entries(priorityLabels).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </Select>
+              <Select
+                value={filters.category}
+                onChange={(e) => handleFilterChange('category', e.target.value)}
+              >
+                <option value="all">Todas as Categorias</option>
+                {Object.entries(categoryLabels).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </Select>
+            </div>
+            <div className="table-toolbar__actions">
+              {hasActiveFilters && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleClearFilters}
+                >
+                  Limpar Filtros
+                </Button>
+              )}
+            </div>
           </div>
         </CardBody>
       </Card>
 
       <Card className="tickets-list__table">
-        <Table hoverable>
+        <Table hoverable className="table--sticky-header">
           <TableHeader>
             <TableRow>
-              <TableHeaderCell>Número</TableHeaderCell>
-              <TableHeaderCell>Título</TableHeaderCell>
-              <TableHeaderCell>Cliente</TableHeaderCell>
-              <TableHeaderCell>Status</TableHeaderCell>
-              <TableHeaderCell>Prioridade</TableHeaderCell>
-              <TableHeaderCell>Categoria</TableHeaderCell>
-              <TableHeaderCell>Responsável</TableHeaderCell>
-              <TableHeaderCell>Criado em</TableHeaderCell>
-              <TableHeaderCell>Ações</TableHeaderCell>
+              <TableHeaderCell scope="col">Número</TableHeaderCell>
+              <TableHeaderCell scope="col">Título</TableHeaderCell>
+              <TableHeaderCell scope="col">Cliente</TableHeaderCell>
+              <TableHeaderCell scope="col">Status</TableHeaderCell>
+              <TableHeaderCell scope="col">Prioridade</TableHeaderCell>
+              <TableHeaderCell scope="col">Categoria</TableHeaderCell>
+              <TableHeaderCell scope="col">Responsável</TableHeaderCell>
+              <TableHeaderCell scope="col">Criado em</TableHeaderCell>
+              <TableHeaderCell scope="col">Ações</TableHeaderCell>
             </TableRow>
           </TableHeader>
           <TableBody>

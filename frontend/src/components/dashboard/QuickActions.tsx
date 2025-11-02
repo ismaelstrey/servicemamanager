@@ -1,6 +1,5 @@
 import React from 'react';
-import Card, { CardHeader, CardBody } from '../ui/Card';
-import { Button } from '../ui/Button';
+import { Card, CardHeader, CardBody, Button } from '../ui';
 import type { QuickAction } from '../../utils/quickActions';
 
 export interface QuickActionsProps {

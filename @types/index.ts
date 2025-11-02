@@ -13,6 +13,9 @@ export * from './provider.types';
 export * from './equipment.types';
 export * from './ticket.types';
 export * from './passwordVault.types';
+// Tipos utilitários
+export * from './ui.types';
+export * from './form.types';
 
 // Tipos de integração
 export * from './zabbix.types';

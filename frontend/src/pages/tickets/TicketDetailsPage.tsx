@@ -1,12 +1,12 @@
 import  { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardBody, CardHeader } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from '../../components/ui/Tabs';
-import { Spinner } from '../../components/ui/Spinner';
-import { Alert } from '../../components/ui/Alert';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from '../../components/ui/Modal';
+import { 
+  Card, CardHeader, CardBody,
+  Button, Badge,
+  Tabs, Tab, TabList, TabPanels, TabPanel,
+  Spinner, Alert,
+  Modal, ModalHeader, ModalBody, ModalFooter
+} from '../../components/ui';
 import type { Ticket, TicketStatus, TicketComment, TicketHistory } from '../../types/ticket';
 import type { Priority } from '../../types/common';
 

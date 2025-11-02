@@ -1,8 +1,5 @@
 import React from 'react';
-import Card, { CardHeader, CardBody } from '../ui/Card';
-import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
-import { Spinner } from '../ui/Spinner';
+import { Card, CardHeader, CardBody, Badge, Button, Spinner } from '../ui';
 import type { Ticket, TicketStatus } from '../../types/ticket';
 
 export interface RecentTicketsProps {

@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
+import { ThemeToggle } from '../ui'
 
 const LayoutContainer = styled.div`
   min-height: 100vh;
@@ -26,6 +27,12 @@ const Title = styled.h1`
   margin: 0;
 `
 
+const HeaderContent = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`
+
 interface LayoutProps {
   children: React.ReactNode
   title?: string
@@ -35,7 +42,10 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'TelecomAI' }) => {
   return (
     <LayoutContainer>
       <Header>
-        <Title>{title}</Title>
+        <HeaderContent>
+          <Title>{title}</Title>
+          <ThemeToggle />
+        </HeaderContent>
       </Header>
       <Main>
         {children}

@@ -1,13 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import StatsCard from '../components/dashboard/StatsCard';
-import RecentTickets from '../components/dashboard/RecentTickets';
-import RecentServiceOrders from '../components/dashboard/RecentServiceOrders';
-import QuickActions from '../components/dashboard/QuickActions';
-import { createQuickActions } from '../utils/quickActions';
-import { Spinner } from '../components/ui/Spinner';
-import { Alert } from '../components/ui/Alert';
-import { Select } from '../components/ui/Select';
+import { StatsCard, RecentTickets, RecentServiceOrders, QuickActions, createQuickActions } from '../components/dashboard';
+import { Spinner, Alert, Select } from '../components/ui';
 import type { Ticket } from '../types/ticket';
 import type { ServiceOrder } from '../types/serviceOrder';
 import { useNavigate } from 'react-router-dom';

@@ -286,67 +286,70 @@ const ServiceOrdersListPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="service-orders-filters">
-        <Input
-          placeholder="Buscar por título, cliente ou descrição..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          leftIcon="🔍"
-        />
-        
-        <Dropdown>
-          <Button variant="outline">
-            {statusOptions.find(opt => opt.value === statusFilter)?.label}
-          </Button>
-          {statusOptions.map(option => (
-            <DropdownItem
-              key={option.value}
-              onClick={() => setStatusFilter(option.value)}
-            >
-              {option.label}
-            </DropdownItem>
-          ))}
-        </Dropdown>
+      <div className="table-toolbar">
+        <div className="table-toolbar__filters">
+          <Input
+            placeholder="Buscar por título, cliente ou descrição..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            leftIcon="🔍"
+          />
+          
+          <Dropdown>
+            <Button variant="outline">
+              {statusOptions.find(opt => opt.value === statusFilter)?.label}
+            </Button>
+            {statusOptions.map(option => (
+              <DropdownItem
+                key={option.value}
+                onClick={() => setStatusFilter(option.value)}
+              >
+                {option.label}
+              </DropdownItem>
+            ))}
+          </Dropdown>
 
-        <Dropdown>
-          <Button variant="outline">
-            {priorityOptions.find(opt => opt.value === priorityFilter)?.label}
-          </Button>
-          {priorityOptions.map(option => (
-            <DropdownItem
-              key={option.value}
-              onClick={() => setPriorityFilter(option.value)}
-            >
-              {option.label}
-            </DropdownItem>
-          ))}
-        </Dropdown>
+          <Dropdown>
+            <Button variant="outline">
+              {priorityOptions.find(opt => opt.value === priorityFilter)?.label}
+            </Button>
+            {priorityOptions.map(option => (
+              <DropdownItem
+                key={option.value}
+                onClick={() => setPriorityFilter(option.value)}
+              >
+                {option.label}
+              </DropdownItem>
+            ))}
+          </Dropdown>
 
-        <Dropdown>
-          <Button variant="outline">
-            {categoryOptions.find(opt => opt.value === categoryFilter)?.label}
+          <Dropdown>
+            <Button variant="outline">
+              {categoryOptions.find(opt => opt.value === categoryFilter)?.label}
+            </Button>
+            {categoryOptions.map(option => (
+              <DropdownItem
+                key={option.value}
+                onClick={() => setCategoryFilter(option.value)}
+              >
+                {option.label}
+              </DropdownItem>
+            ))}
+          </Dropdown>
+        </div>
+        <div className="table-toolbar__actions">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSearchTerm('');
+              setStatusFilter('all');
+              setPriorityFilter('all');
+              setCategoryFilter('all');
+            }}
+          >
+            Limpar Filtros
           </Button>
-          {categoryOptions.map(option => (
-            <DropdownItem
-              key={option.value}
-              onClick={() => setCategoryFilter(option.value)}
-            >
-              {option.label}
-            </DropdownItem>
-          ))}
-        </Dropdown>
-
-        <Button
-          variant="outline"
-          onClick={() => {
-            setSearchTerm('');
-            setStatusFilter('all');
-            setPriorityFilter('all');
-            setCategoryFilter('all');
-          }}
-        >
-          Limpar Filtros
-        </Button>
+        </div>
       </div>
 
       <Card className="service-orders-table-container">
@@ -356,19 +359,19 @@ const ServiceOrdersListPage: React.FC = () => {
             <p>Carregando ordens de serviço...</p>
           </div>
         ) : (
-          <Table>
+          <Table className="table--sticky-header">
             <TableHeader>
               <TableRow>
-                <TableHeaderCell>ID</TableHeaderCell>
-                <TableHeaderCell>Título</TableHeaderCell>
-                <TableHeaderCell>Cliente</TableHeaderCell>
-                <TableHeaderCell>Status</TableHeaderCell>
-                <TableHeaderCell>Prioridade</TableHeaderCell>
-                <TableHeaderCell>Categoria</TableHeaderCell>
-                <TableHeaderCell>Responsável</TableHeaderCell>
-                <TableHeaderCell>Valor</TableHeaderCell>
-                <TableHeaderCell>Prazo</TableHeaderCell>
-                <TableHeaderCell>Ações</TableHeaderCell>
+                <TableHeaderCell scope="col">ID</TableHeaderCell>
+                <TableHeaderCell scope="col">Título</TableHeaderCell>
+                <TableHeaderCell scope="col">Cliente</TableHeaderCell>
+                <TableHeaderCell scope="col">Status</TableHeaderCell>
+                <TableHeaderCell scope="col">Prioridade</TableHeaderCell>
+                <TableHeaderCell scope="col">Categoria</TableHeaderCell>
+                <TableHeaderCell scope="col">Responsável</TableHeaderCell>
+                <TableHeaderCell scope="col">Valor</TableHeaderCell>
+                <TableHeaderCell scope="col">Prazo</TableHeaderCell>
+                <TableHeaderCell scope="col">Ações</TableHeaderCell>
               </TableRow>
             </TableHeader>
             <TableBody>

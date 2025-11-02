@@ -136,6 +136,20 @@ export const typography = {
       lineHeight: '1.25',
       letterSpacing: '0.025em',
     },
+    // Texto padrão em UI (parágrafos, descrições leves)
+    body: {
+      fontSize: '0.875rem',  // 14px
+      fontWeight: '400',
+      lineHeight: '1.4',
+      letterSpacing: 'normal',
+    },
+    // Subtítulo/UI heading leve para cards, toasts etc.
+    subtitle: {
+      fontSize: '0.875rem',  // 14px
+      fontWeight: '600',
+      lineHeight: '1.25',
+      letterSpacing: 'normal',
+    },
     label: {
       fontSize: '0.875rem',  // 14px
       fontWeight: '500',

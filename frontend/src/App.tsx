@@ -1,6 +1,5 @@
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { ThemeProvider } from 'styled-components'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
@@ -8,11 +7,9 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthProvider } from './contexts/AuthContext'
 import { ClientAuthProvider } from './contexts/ClientAuthContext'
 import { useAuth } from './hooks/useAuth'
-import { theme } from './styles/theme.ts'
 
 // Estilos
-import { GlobalStyle } from './styles/globalStyles'
-import { darkTheme } from './styles/theme'
+// Tema é gerenciado via ThemeModeProvider em main.tsx
 
 // Páginas
 import LoginPage from './pages/auth/LoginPage'
@@ -29,7 +26,7 @@ import ClientLoginPage from './pages/client/LoginPage'
 import ClientDashboardPage from './pages/client/DashboardPage'
 
 // Layout
-import Layout from './components/layout/Layout'
+import { Layout } from './components/layout'
 import ClientProtectedRoute from './components/auth/ClientProtectedRoute'
 import ClientPublicRoute from './components/auth/ClientPublicRoute'
 
@@ -88,10 +85,8 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <GlobalStyle theme={darkTheme} />
-        <AuthProvider>
-          <ClientAuthProvider>
+      <AuthProvider>
+        <ClientAuthProvider>
             <Routes>
             {/* Rotas públicas */}
             <Route
@@ -210,14 +205,13 @@ const App: React.FC = () => {
             {/* Página 404 */}
             <Route path="*" element={<NotFoundPage />} />
             </Routes>
-          </ClientAuthProvider>
-        </AuthProvider>
+        </ClientAuthProvider>
+      </AuthProvider>
 
-        {/* DevTools apenas em desenvolvimento */}
-        {process.env.NODE_ENV === 'development' && (
-          <ReactQueryDevtools initialIsOpen={false} />
-        )}
-      </ThemeProvider>
+      {/* DevTools apenas em desenvolvimento */}
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
     </QueryClientProvider>
   )
 }

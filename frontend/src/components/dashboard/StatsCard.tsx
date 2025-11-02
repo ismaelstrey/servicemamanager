@@ -1,7 +1,5 @@
 import React from 'react';
-import { Card } from '../ui/Card';
-import { Badge } from '../ui/Badge';
-import { CardBody } from '../ui/Card';
+import { Card, Badge, CardBody } from '../ui';
 
 export interface StatsCardProps {
   title: string;

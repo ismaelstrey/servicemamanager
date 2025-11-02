@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { PageHeader } from '../../components/layout/PageHeader';
-import { TicketForm } from '../../components/composite/TicketForm';
-import type { CreateTicketFormValues, PriorityOption, EquipmentOption } from '../../components/composite/TicketForm';
+import { PageHeader } from '../../components/layout';
+import { TicketForm } from '../../components/composite';
+import type { CreateTicketFormValues, PriorityOption, EquipmentOption } from '../../components/composite';
 import { Card, Spinner, Button } from '../../components/ui';
 
 const PageWrapper = styled.div`

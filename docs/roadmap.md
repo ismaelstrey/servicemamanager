@@ -119,88 +119,88 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
 
 ### Fase 1 — Design System e Fundamentos
 - [ ] **Design System Base**
-  - [ ] `src/styles/theme/` — sistema de temas com tokens de design
-  - [ ] `src/styles/tokens/` — tokens de cores, tipografia, espaçamentos, shadows
-  - [ ] `src/styles/breakpoints/` — sistema de breakpoints responsivos
-  - [ ] `src/styles/animations/` — animações e transições padronizadas
-  - [ ] `src/styles/mixins/` — mixins reutilizáveis para styled-components
-  - [ ] `src/styles/globalStyles.ts` — estilos globais com styled-components
+  - [x] `src/styles/theme/` — sistema de temas com tokens de design
+  - [x] `src/styles/tokens/` — tokens de cores, tipografia, espaçamentos, shadows
+  - [x] `src/styles/breakpoints/` — sistema de breakpoints responsivos
+  - [x] `src/styles/animations/` — animações e transições padronizadas
+  - [x] `src/styles/mixins/` — mixins reutilizáveis para styled-components
+  - [x] `src/styles/globalStyles.ts` — estilos globais com styled-components
 
 - [ ] **Estrutura de Pastas Profissional**
-  - [ ] `src/components/ui/` — componentes de interface básicos (atoms)
-  - [ ] `src/components/composite/` — componentes compostos (molecules)
-  - [ ] `src/components/layout/` — componentes de layout (organisms)
-  - [ ] `src/components/forms/` — componentes de formulário especializados
-  - [ ] `src/templates/` — templates de página (templates)
-  - [ ] `src/pages/` — páginas da aplicação (pages)
-  - [ ] `src/hooks/` — custom hooks reutilizáveis
-  - [ ] `src/services/` — comunicação com API
-  - [ ] `src/types/` — interfaces TypeScript
-  - [ ] `src/utils/` — funções utilitárias
-  - [ ] `src/contexts/` — contextos React (Auth, Theme)
+  - [x] `src/components/ui/` — componentes de interface básicos (atoms)
+  - [x] `src/components/composite/` — componentes compostos (molecules)
+  - [x] `src/components/layout/` — componentes de layout (organisms)
+  - [x] `src/components/forms/` — componentes de formulário especializados
+  - [x] `src/components/templates/` — templates de página (templates)
+  - [x] `src/pages/` — páginas da aplicação (pages)
+  - [x] `src/hooks/` — custom hooks reutilizáveis
+  - [x] `src/services/` — comunicação com API
+  - [x] `src/types/` — interfaces TypeScript
+  - [x] `src/utils/` — funções utilitárias
+  - [x] `src/contexts/` — contextos React (Auth, Theme)
 
 - [ ] **Configuração Base**
-  - [ ] ThemeProvider configurado com styled-components
+  - [x] ThemeProvider configurado com styled-components
   - [ ] Sistema de temas (light/dark) com Context API
-  - [ ] Configurar axios interceptors para autenticação
+  - [x] Configurar axios interceptors para autenticação
   - [ ] Implementar hook `useApi` para requisições
-  - [ ] Configurar roteamento protegido
-  - [ ] Sistema de breakpoints responsivos
+  - [x] Configurar roteamento protegido
+  - [x] Sistema de breakpoints responsivos
 
 ### Fase 2 — Design Tokens e Tipagem
 - [ ] **Design Tokens**
-  - [ ] Paleta de cores primárias, secundárias e neutras
-  - [ ] Sistema tipográfico (font-family, sizes, weights, line-heights)
-  - [ ] Espaçamentos padronizados (4px, 8px, 16px, 24px, 32px, etc.)
-  - [ ] Bordas e raios (border-radius, border-width)
-  - [ ] Sombras e elevações (box-shadow levels)
-  - [ ] Z-index scale padronizado
-  - [ ] Durações de animação padronizadas
+  - [x] Paleta de cores primárias, secundárias e neutras
+  - [x] Sistema tipográfico (font-family, sizes, weights, line-heights)
+  - [x] Espaçamentos padronizados (4px, 8px, 16px, 24px, 32px, etc.)
+  - [x] Bordas e raios (border-radius, border-width)
+  - [x] Sombras e elevações (box-shadow levels)
+  - [x] Z-index scale padronizado
+  - [x] Durações de animação padronizadas
 
 - [ ] **Tipos TypeScript Avançados**
-  - [ ] `ThemeType` — tipagem completa do tema
-  - [ ] `ComponentVariants` — variantes de componentes
-  - [ ] `ResponsiveProps` — props responsivas
-  - [ ] `StyledProps` — props para styled-components
-  - [ ] `User`, `Ticket`, `ServiceOrder` — entidades de domínio
-  - [ ] `ApiResponse`, `PaginationMeta` — tipos de API
-  - [ ] `FormValidation` — tipos para validação de formulários
+  - [x] `ThemeType` — tipagem completa do tema
+  - [x] `ComponentVariants` — variantes de componentes
+  - [x] `ResponsiveProps` — props responsivas
+  - [x] `StyledProps` — props para styled-components
+  - [x] `User`, `Ticket`, `ServiceOrder` — entidades de domínio
+  - [x] `ApiResponse`, `PaginationMeta` — tipos de API
+  - [x] `FormValidation` — tipos para validação de formulários
 
 ### Fase 3 — Componentes UI Base (Atoms)
 - [ ] **Componentes Fundamentais**
-  - [ ] `Button` — com variantes (primary, secondary, outline, ghost, danger)
-  - [ ] `Input` — com estados (default, focus, error, disabled, success)
-  - [ ] `TextArea` — área de texto estilizada
-  - [ ] `Select` — dropdown customizado
-  - [ ] `Checkbox` — checkbox estilizado
-  - [ ] `Radio` — radio button customizado
-  - [ ] `Switch` — toggle switch
-  - [ ] `Label` — labels padronizados
-  - [ ] `Text` — componente de texto com variantes tipográficas
-  - [ ] `Heading` — títulos com hierarquia (h1-h6)
-  - [ ] `Icon` — sistema de ícones SVG
-  - [ ] `Avatar` — avatares de usuário
-  - [ ] `Badge` — badges de status e notificação
-  - [ ] `Divider` — separadores visuais
-  - [ ] `Spinner` — indicadores de carregamento
+  - [x] `Button` — com variantes (primary, secondary, outline, ghost, danger)
+  - [x] `Input` — com estados (default, focus, error, disabled, success)
+  - [x] `TextArea` — área de texto estilizada
+  - [x] `Select` — dropdown customizado
+  - [x] `Checkbox` — checkbox estilizado
+  - [x] `Radio` — radio button customizado
+  - [x] `Switch` — toggle switch
+  - [x] `Label` — labels padronizados
+  - [x] `Text` — componente de texto com variantes tipográficas
+  - [x] `Heading` — títulos com hierarquia (h1-h6)
+  - [x] `Icon` — sistema de ícones SVG
+  - [x] `Avatar` — avatares de usuário
+  - [x] `Badge` — badges de status e notificação
+  - [x] `Divider` — separadores visuais
+  - [x] `Spinner` — indicadores de carregamento
 
 ### Fase 4 — Componentes Compostos (Molecules)
 - [ ] **Componentes Intermediários**
-  - [ ] `InputGroup` — input com label, helper text e validação
-  - [ ] `SearchBox` — caixa de busca com ícone
-  - [ ] `ButtonGroup` — grupo de botões
-  - [ ] `Card` — cartões com header, body, footer
-  - [ ] `Modal` — modais responsivos e acessíveis
-  - [ ] `Tooltip` — tooltips posicionáveis
-  - [ ] `Popover` — popovers customizáveis
-  - [ ] `Dropdown` — menus dropdown
-  - [ ] `Tabs` — sistema de abas
-  - [ ] `Accordion` — acordeões expansíveis
-  - [ ] `Breadcrumb` — navegação breadcrumb
-  - [ ] `Pagination` — paginação estilizada
-  - [ ] `ProgressBar` — barras de progresso
-  - [ ] `Alert` — alertas e notificações
-  - [ ] `Toast` — notificações temporárias
+  - [x] `InputGroup` — input com label, helper text e validação
+  - [x] `SearchBox` — caixa de busca com ícone
+  - [x] `ButtonGroup` — grupo de botões
+  - [x] `Card` — cartões com header, body, footer
+  - [x] `Modal` — modais responsivos e acessíveis
+  - [x] `Tooltip` — tooltips posicionáveis
+  - [x] `Popover` — popovers customizáveis
+  - [x] `Dropdown` — menus dropdown
+  - [x] `Tabs` — sistema de abas
+  - [x] `Accordion` — acordeões expansíveis
+  - [x] `Breadcrumb` — navegação breadcrumb
+  - [x] `Pagination` — paginação estilizada
+  - [x] `ProgressBar` — barras de progresso
+  - [x] `Alert` — alertas e notificações
+  - [x] `Toast` — notificações temporárias
 
 ### Fase 5 — Componentes de Layout (Organisms)
 - [ ] **Estruturas Complexas**
@@ -222,7 +222,7 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
 
 ### Fase 6 — Templates e Layouts
 - [ ] **Templates de Página**
-  - [ ] `AuthTemplate` — template para páginas de autenticação
+  - [x] `AuthTemplate` — template para páginas de autenticação
   - [ ] `DashboardTemplate` — template do dashboard
   - [ ] `ListTemplate` — template para listas (tickets, OS)
   - [ ] `DetailTemplate` — template para detalhes
@@ -239,13 +239,13 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
 
 ### Fase 7 — Páginas de Autenticação
 - [ ] **Sistema de Auth Completo**
-  - [ ] `LoginPage` — página de login estilizada
-  - [ ] `RegisterPage` — página de registro
+  - [x] `LoginPage` — página de login estilizada
+  - [x] `RegisterPage` — página de registro
   - [ ] `ForgotPasswordPage` — recuperação de senha
   - [ ] `ResetPasswordPage` — redefinição de senha
-  - [ ] `AuthContext` — contexto de autenticação
-  - [ ] `useAuth` — hook de autenticação
-  - [ ] `ProtectedRoute` — proteção de rotas
+  - [x] `AuthContext` — contexto de autenticação
+  - [x] `useAuth` — hook de autenticação
+  - [x] `ProtectedRoute` — proteção de rotas
   - [ ] Interceptor para refresh token automático
 
 ### Fase 8 — Dashboard e Métricas
@@ -261,7 +261,7 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
 
 ### Fase 9 — Gestão de Tickets
 - [ ] **Sistema de Tickets Avançado**
-  - [ ] Lista com filtros avançados e busca
+  - [x] Lista com filtros avançados e busca
   - [ ] Visualizações: lista, grid, kanban
   - [ ] Formulário de criação com validação
   - [ ] Página de detalhes com comentários
@@ -1046,3 +1046,69 @@ export const AllVariants: Story = {
 ```
 
 Este roadmap atualizado fornece uma base sólida para construir um sistema de design profissional e escalável usando styled-components, com foco em reutilização, customização e manutenibilidade.
+
+---
+
+## Continuação — Refinamentos de Frontend (Nov/2025)
+
+### Fase 14 — Polimento de Tabelas e Formulários
+- Sticky Header para Tabelas
+  - Adicionar `className="table--sticky-header"` nas tabelas que exigem cabeçalho fixo
+  - Garantir `z-index` adequado (use `zIndex.table.header` ou `10`)
+  - Aplicar `backdrop-filter` sutil para modernidade e separação visual
+- Toolbar de Filtros
+  - Introduzir container `.table-toolbar` com layout flex responsivo
+  - Agrupar busca e filtros em `.table-toolbar__filters`
+  - Padronizar espaçamentos e raios: `gap: 12px`, `border-radius: 12px`
+- Inputs e Selects (versão class-based)
+  - Estilos globais para `.input`, `.select` e wrappers (`.input-group`, `.select-wrapper`, `.select-container`)
+  - Focus ring consistente (`border-color: primary` + `box-shadow` suave)
+  - Variantes: `default`, `filled`, `outlined`, estados de `error` e `disabled`
+- Contraste e Acessibilidade
+  - Texto escuro em linhas alternadas e no hover para manter legibilidade
+  - Seguir WCAG 2.1 AA (contraste mínimo 4.5:1)
+
+### Fase 15 — Botões e Interações
+- Variantes adicionais de Button (class-based)
+  - `accent` e `outline` adicionadas a `ui.css` com hover coerente
+  - Base, tamanhos (`sm`, `md`, `lg`) e `fullWidth`
+- Estados
+  - Loading e Disabled consistentes entre UI e atoms
+  - Ícones alinhados via `.btn__icon` e conteúdo via `.btn__content`
+
+### Entregas Realizadas
+- Tabelas com `sticky header` em Providers List
+- Toolbar moderna para filtros (busca, status, plano, ação)
+- Correções de contraste para linhas listradas, hover e seleção
+- Botões `accent` e `outline` integrados ao sistema de cores
+
+### Próximos Passos
+- Generalizar `sticky header` como prop do componente `Table` (`stickyHeader?: boolean`)
+- Adotar ícones de ordenação modernos (SVG) e estados de `sortable`
+- Unificar estilos de toolbar nas páginas de `Tickets` e `ServiceOrders`
+- Criar componente `DataTable` (organism) com sorting, filtering e paginação integrados
+- Storybook: stories para `Table` com `striped`, `hoverable`, `bordered`, `stickyHeader`
+- Testes de acessibilidade (foco, roles, cabeçalhos `scope="col"`)
+
+### Critérios de Aceite
+- Cabeçalho da tabela permanece visível ao rolar e não sobrepõe conteúdo
+- Foco visível em Inputs/Selects com realce padronizado
+- Contraste do texto nas linhas listradas/hover/selecionadas atende WCAG AA
+- Toolbar se adapta a telas menores e mantém ação principal acessível
+
+### Guia Rápido de Implementação
+- Sticky Header
+  - Use: `<Table className="table--sticky-header" ...>`
+  - Verifique containers com `overflow` para que o sticky funcione
+- Toolbar
+  - Use os wrappers `.table-toolbar` e `.table-toolbar__filters`
+  - Combine com `Input`/`Select` class-based para compatibilidade imediata
+- Inputs/Selects
+  - Classes: `.input`, `.select`, variantes `--filled`, `--outlined`, `--error`, `--disabled`
+  - Ícone do select via `.select-icon` posicionado por CSS
+
+### Observações de Tema
+- Migrar gradualmente hardcodes em `ui.css` para CSS variables do tema (`globalStyles.ts`)
+- Garantir coerência entre `styled-components` (atoms) e classes globais (ui)
+
+Atualização: Novembro 2025

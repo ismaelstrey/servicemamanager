@@ -10,11 +10,11 @@ export type ColorScale = {
 };
 
 export type BackgroundColors = {
-  primary: string; secondary: string; tertiary: string; overlay: string;
+  primary: string; secondary: string; tertiary: string; overlay: string; muted?: string;
 };
 
 export type TextColors = {
-  primary: string; secondary: string; tertiary: string; inverse: string; disabled: string;
+  primary: string; secondary: string; tertiary: string; inverse: string; disabled: string; muted?: string;
 };
 
 export type BorderColors = {
@@ -209,6 +209,8 @@ export const colors = {
     secondary: '#121826',
     tertiary: '#1e293b',
     overlay: 'rgba(0, 0, 0, 0.8)',
+    // Fundo sutil para elementos (compatibilidade com componentes que usam background.muted)
+    muted: '#1e293b',
   },
 
   // Cores de texto
@@ -218,6 +220,8 @@ export const colors = {
     tertiary: '#6b7280',
     inverse: '#1f2937',
     disabled: '#4b5563',
+    // Tom de texto suavizado (compatibilidade com text.muted)
+    muted: '#9ca3af',
   },
 
   // Cores de borda
@@ -260,6 +264,7 @@ export const lightColors = {
     secondary: '#f8fafc',
     tertiary: '#f1f5f9',
     overlay: 'rgba(0, 0, 0, 0.5)',
+    muted: '#f3f4f6',
   },
   text: {
     primary: '#1f2937',
@@ -267,6 +272,7 @@ export const lightColors = {
     tertiary: '#6b7280',
     inverse: '#ffffff',
     disabled: '#9ca3af',
+    muted: '#4b5563',
   },
   border: {
     primary: '#e5e7eb',
