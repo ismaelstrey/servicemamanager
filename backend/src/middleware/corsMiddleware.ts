@@ -20,6 +20,7 @@ const getAllowedOrigins = (): string[] => {
         process.env.STAGING_ADMIN_URL || 'https://staging-admin.telecomai.com',
         'http://localhost:3000', // Para testes locais contra staging
         'http://localhost:5173', // Vite dev server
+        'http://localhost:5174', // Vite dev server (porta alternativa)
       ].filter(Boolean);
     
     case 'development':
@@ -29,11 +30,13 @@ const getAllowedOrigins = (): string[] => {
         'http://localhost:3000',
         'http://localhost:3001',
         'http://localhost:5173', // Vite
+        'http://localhost:5174', // Vite (porta alternativa)
         'http://localhost:8080', // Vue CLI
         'http://localhost:4000',
         'http://localhost:4002',
         'http://127.0.0.1:3000',
         'http://127.0.0.1:5173',
+        'http://127.0.0.1:5174',
         'http://127.0.0.1:6379',
         'http://127.0.0.1:4000',
         'http://127.0.0.1:4002',

@@ -27,7 +27,8 @@ const getPriorityVariant = (p: string): 'success' | 'info' | 'warning' | 'danger
   }
 };
 
-const columnOrder = ['open', 'assigned', 'in_progress', 'pending', 'waiting_client', 'resolved', 'closed'];
+// Ordem das colunas no board; inclui "cancelled" para refletir o backend
+const columnOrder = ['open', 'assigned', 'in_progress', 'pending', 'waiting_client', 'resolved', 'closed', 'cancelled'];
 
 const TicketsKanbanPage: React.FC = () => {
   const navigate = useNavigate();
@@ -51,16 +52,13 @@ const TicketsKanbanPage: React.FC = () => {
         const url = providerId
           ? `/providers/${providerId}/tickets/kanban`
           : `/tickets/kanban`;
-        const res = await ApiService.get<{ success: boolean; data: KanbanBoard }>(url);
-        const raw = res.data?.data || {};
+        const res = await ApiService.get<KanbanBoard>(url);
 
-        // Normalização: unir waiting_client em pending e remover chave duplicada
+        console.log('response:', res);
+        const raw = res.data || {};
+        console.log('raw:', raw);
+        // Normalização: manter as chaves por status como vierem da API
         const normalized: KanbanBoard = { ...raw };
-        if (normalized['waiting_client']) {
-          const existingPending = normalized['pending'] || [];
-          normalized['pending'] = [...existingPending, ...normalized['waiting_client']];
-          delete (normalized as any)['waiting_client'];
-        }
 
         // Garantir todas as colunas do columnOrder existem (arrays vazios por padrão)
         const completed: KanbanBoard = {} as KanbanBoard;
@@ -76,34 +74,12 @@ const TicketsKanbanPage: React.FC = () => {
         setBoard(completed);
       } catch (e: any) {
         console.error('Erro ao carregar Kanban:', e);
-        // Fallback: se não autenticado ou erro de rede, tentar carregar mock local para validação visual
-        try {
-          const mockRes = await fetch('/mock/retornoKanbam.json');
-          if (mockRes.ok) {
-            const mockJson: { success: boolean; data: KanbanBoard } = await mockRes.json();
-            const raw = mockJson?.data || {};
-            const normalized: KanbanBoard = { ...raw };
-            if (normalized['waiting_client']) {
-              const existingPending = normalized['pending'] || [];
-              normalized['pending'] = [...existingPending, ...normalized['waiting_client']];
-              delete (normalized as any)['waiting_client'];
-            }
-            const completed: KanbanBoard = {} as KanbanBoard;
-            for (const col of columnOrder) {
-              completed[col] = (normalized[col] || []).map((item) => ({
-                id: item.id,
-                title: item.title ?? `Ticket #${item.id}`,
-                priority: (item.priority as any) ?? 'medium',
-                updatedAt: item.updatedAt ?? new Date().toISOString(),
-              }));
-            }
-            setBoard(completed);
-            setError(null);
-          } else {
-            setError('Erro ao carregar o Kanban de tickets.');
-          }
-        } catch (mockError) {
-          console.error('Erro ao carregar mock do Kanban:', mockError);
+        const status = e?.response?.status;
+        if (status === 401) {
+          setError('Não autenticado. Faça login para acessar o Kanban.');
+        } else if (status === 403) {
+          setError('Acesso negado. Você não possui permissão para ver este Kanban.');
+        } else {
           setError('Erro ao carregar o Kanban de tickets.');
         }
       } finally {
@@ -120,6 +96,8 @@ const TicketsKanbanPage: React.FC = () => {
       </div>
     );
   }
+
+  console.log('Board:', board);
 
   return (
     <div className="tickets-kanban">
