@@ -94,8 +94,8 @@ const ProvidersListPage: React.FC = () => {
       </div>
 
       <Card variant="elevated">
-        <div style={{ padding: 16, display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 12, alignItems: 'end' }}>
-          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: 12, flex: 1 }}>
+        <div className="table-toolbar">
+          <form onSubmit={handleSearchSubmit} className="table-toolbar__filters">
             <Input
               placeholder="Buscar por nome ou workspace"
               value={search}
@@ -135,7 +135,7 @@ const ProvidersListPage: React.FC = () => {
           </div>
         ) : (
           <div>
-            <Table variant="striped" hoverable responsive>
+            <Table variant="striped" hoverable responsive className="table--sticky-header">
               <TableHeader>
                 <TableRow>
                   <TableHeaderCell scope="col">Nome</TableHeaderCell>
