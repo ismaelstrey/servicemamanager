@@ -160,8 +160,15 @@ const TicketsKanbanPage: React.FC = () => {
             // setBoard({ ...fresh.data });
           } catch (e: any) {
             console.error('Erro ao atualizar status do ticket:', e);
-            const msg = e?.response?.data?.message || e?.message || 'Erro ao atualizar status do ticket';
-            setError(msg);
+            const api = e?.response?.data;
+            const apiMessage = (api && typeof api === 'object' && api.message) ? api.message : undefined;
+            const apiErrors = (api && typeof api === 'object' && Array.isArray(api.errors)) ? api.errors : [];
+            const details = apiErrors
+              .map((err: any) => err?.message || `${err?.field ?? ''} ${err?.code ? '(' + err.code + ')' : ''}`.trim())
+              .filter(Boolean)
+              .join('; ');
+            const finalMsg = [apiMessage || 'Erro ao atualizar status do ticket', details].filter(Boolean).join(': ');
+            setError(finalMsg);
             // Recarregar o board para desfazer otimista e refletir estado real
             try {
               const url = providerId ? `/providers/${providerId}/tickets/kanban` : `/tickets/kanban`;
