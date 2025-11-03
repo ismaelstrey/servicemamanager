@@ -137,28 +137,42 @@ export class ServiceOrderService {
     return response.data;
   }
 
-  // Obter estatísticas das ordens de serviço
+  // Obter estatísticas das ordens de serviço (compatível com backend atual)
   static async getServiceOrderStats(): Promise<{
     total: number;
-    pending: number;
-    inProgress: number;
-    completed: number;
-    cancelled: number;
+    byStatus: Record<string, number>;
     byPriority: Record<string, number>;
-    byType: Record<string, number>;
-    byCategory: Record<string, number>;
+    averageCompletionTime?: number;
+    totalRevenue?: number;
+    pendingRevenue?: number;
+    // Campos legados para compatibilidade com chamadas existentes
+    pending?: number;
+    inProgress?: number;
+    completed?: number;
+    cancelled?: number;
   }> {
     const response = await ApiService.get<{
       total: number;
-      pending: number;
-      inProgress: number;
-      completed: number;
-      cancelled: number;
+      byStatus: Record<string, number>;
       byPriority: Record<string, number>;
-      byType: Record<string, number>;
-      byCategory: Record<string, number>;
+      averageCompletionTime?: number;
+      totalRevenue?: number;
+      pendingRevenue?: number;
     }>(`${this.BASE_URL}/stats`);
-    return response.data;
+    const data = response.data as any;
+    // Preencher campos legados para compatibilidade com o dashboard
+    return {
+      total: data.total ?? 0,
+      byStatus: data.byStatus ?? {},
+      byPriority: data.byPriority ?? {},
+      averageCompletionTime: data.averageCompletionTime ?? 0,
+      totalRevenue: data.totalRevenue ?? 0,
+      pendingRevenue: data.pendingRevenue ?? 0,
+      pending: data.byStatus?.pending ?? 0,
+      inProgress: data.byStatus?.in_progress ?? 0,
+      completed: data.byStatus?.completed ?? 0,
+      cancelled: data.byStatus?.cancelled ?? 0,
+    };
   }
 
   // Obter opções para filtros (categorias, tipos, etc.)

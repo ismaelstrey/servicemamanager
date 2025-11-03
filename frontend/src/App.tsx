@@ -22,6 +22,11 @@ import CreateTicketPage from './pages/tickets/CreateTicketPage'
 import { TicketDetailsPage } from './pages/tickets/TicketDetailsPage'
 import TicketsKanbanPage from './pages/tickets/TicketsKanbanPage'
 import ServiceOrdersKanbanPage from './pages/service-orders/ServiceOrdersKanbanPage'
+import ServiceOrdersListPage from './pages/service-orders/ServiceOrdersListPage'
+import ServiceOrderDetailsPage from './pages/service-orders/ServiceOrderDetailsPage'
+import CreateServiceOrderPage from './pages/service-orders/CreateServiceOrderPage'
+import ServiceOrdersCalendarPage from './pages/service-orders/ServiceOrdersCalendarPage'
+import ServiceOrdersSlaReportsPage from './pages/service-orders/ServiceOrdersReportsPage'
 import ProfilePage from './pages/ProfilePage'
 import SettingsPage from './pages/SettingsPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -258,11 +263,61 @@ const App: React.FC = () => {
             />
             {/* Service Orders */}
             <Route
+              path="/service-orders"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ServiceOrdersListPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/service-orders/kanban"
               element={
                 <ProtectedRoute>
                   <Layout>
                     <ServiceOrdersKanbanPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/service-orders/create"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CreateServiceOrderPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/service-orders/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ServiceOrderDetailsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/service-orders/calendar"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ServiceOrdersCalendarPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/service-orders/reports"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ServiceOrdersSlaReportsPage />
                   </Layout>
                 </ProtectedRoute>
               }

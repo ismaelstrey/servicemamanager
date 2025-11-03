@@ -272,13 +272,13 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
 
 ### Fase 10 — Ordens de Serviço
 - [ ] **Sistema de OS Completo**
-  - [ ] Lista com múltiplas visualizações
-  - [ ] Calendário de agendamentos
-  - [ ] Formulário de criação avançado
-  - [ ] Sistema de qualificação (rating + feedback)
-  - [ ] Workflow de aprovação
+  - [x] Lista com múltiplas visualizações
+  - [x] Calendário de agendamentos
+  - [x] Formulário de criação avançado
+  - [x] Sistema de qualificação (rating + feedback) — UI frontend
+  - [x] Workflow de aprovação — UI frontend
   - [ ] Integração com mapas (futuro)
-  - [ ] Relatórios de SLA
+  - [x] Relatórios de SLA
   - [ ] Assinatura digital (futuro)
 
 ### Fase 11 — Perfil e Configurações

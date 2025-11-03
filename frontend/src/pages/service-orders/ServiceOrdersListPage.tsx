@@ -43,6 +43,8 @@ const ServiceOrdersListPage: React.FC = () => {
   const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Alternância de visualização (lista ou grade)
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -286,6 +288,33 @@ const ServiceOrdersListPage: React.FC = () => {
         </Button>
       </div>
 
+      <div className="service-orders-header-actions" style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <div className="view-toggle" style={{ display: 'flex', gap: '0.5rem' }}>
+          <Button
+            variant={viewMode === 'list' ? 'primary' : 'outline'}
+            onClick={() => setViewMode('list')}
+          >
+            Lista
+          </Button>
+          <Button
+            variant={viewMode === 'grid' ? 'primary' : 'outline'}
+            onClick={() => setViewMode('grid')}
+          >
+            Grade
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/service-orders/kanban')}
+          >
+            Kanban
+          </Button>
+        </div>
+        <div className="quick-nav" style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+          <Button variant="outline" onClick={() => navigate('/service-orders/calendar')}>Calendário</Button>
+          <Button variant="outline" onClick={() => navigate('/service-orders/reports')}>Relatórios</Button>
+        </div>
+      </div>
+
       <div className="table-toolbar">
         <div className="table-toolbar__filters">
           <Input
@@ -358,7 +387,7 @@ const ServiceOrdersListPage: React.FC = () => {
             <Spinner />
             <p>Carregando ordens de serviço...</p>
           </div>
-        ) : (
+        ) : viewMode === 'list' ? (
           <Table className="table--sticky-header">
             <TableHeader>
               <TableRow>
@@ -428,6 +457,31 @@ const ServiceOrdersListPage: React.FC = () => {
               ))}
             </TableBody>
           </Table>
+        ) : (
+          <div className="service-orders-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+            {paginatedServiceOrders.map(order => (
+              <Card key={order.id} className="service-order-card" onClick={() => handleServiceOrderClick(order.id)}>
+                <div className="service-order-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ margin: 0 }}>{order.title}</h3>
+                  <Badge variant={getStatusVariant(order.status)}>{getStatusLabel(order.status)}</Badge>
+                </div>
+                <div className="service-order-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <div><strong>Cliente:</strong> {order.clientName}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className={`priority-dot ${order.priority}`}></span>
+                    <Badge variant={getPriorityColor(order.priority)} size="sm">{getPriorityLabel(order.priority)}</Badge>
+                  </div>
+                  <div><strong>Categoria:</strong> {order.category}</div>
+                  <div><strong>Responsável:</strong> {order.assignedTo || 'Não atribuído'}</div>
+                  <div><strong>Prazo:</strong> {order.dueDate ? formatDate(order.dueDate) : 'Sem prazo'}</div>
+                  <div><strong>Valor:</strong> {formatCurrency(order.cost)}</div>
+                </div>
+                <div className="service-order-card-actions" style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
+                  <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); navigate(`/service-orders/${order.id}`); }}>Ver</Button>
+                </div>
+              </Card>
+            ))}
+          </div>
         )}
 
         {!isLoading && paginatedServiceOrders.length === 0 && (
