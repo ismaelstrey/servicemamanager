@@ -21,6 +21,7 @@ import { TicketsListPage } from './pages/tickets/TicketsListPage'
 import CreateTicketPage from './pages/tickets/CreateTicketPage'
 import { TicketDetailsPage } from './pages/tickets/TicketDetailsPage'
 import TicketsKanbanPage from './pages/tickets/TicketsKanbanPage'
+import ServiceOrdersKanbanPage from './pages/service-orders/ServiceOrdersKanbanPage'
 import ProfilePage from './pages/ProfilePage'
 import SettingsPage from './pages/SettingsPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -251,6 +252,17 @@ const App: React.FC = () => {
                 <ProtectedRoute>
                   <Layout>
                     <TicketDetailsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Service Orders */}
+            <Route
+              path="/service-orders/kanban"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ServiceOrdersKanbanPage />
                   </Layout>
                 </ProtectedRoute>
               }

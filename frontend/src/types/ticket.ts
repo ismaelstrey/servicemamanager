@@ -41,12 +41,10 @@ export interface Ticket extends AuditFields {
 // Status do ticket
 export type TicketStatus = 
   | 'open'        // Aberto
-  | 'assigned'    // Atribuído
   | 'in_progress' // Em andamento
-  | 'pending'     // Pendente (aguardando cliente)
+  | 'waiting_client' // Aguardando cliente
   | 'resolved'    // Resolvido
-  | 'closed'      // Fechado
-  | 'cancelled';  // Cancelado
+  | 'closed';      // Fechado
 
 // Categoria do ticket
 export type TicketCategory =

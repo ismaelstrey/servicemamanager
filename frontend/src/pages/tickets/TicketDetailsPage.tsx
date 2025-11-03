@@ -1,23 +1,25 @@
 import  { useState, useEffect, useRef } from 'react';
+import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Card, CardHeader, CardBody,
   Button, Badge,
   Tabs, Tab, TabList, TabPanels, TabPanel,
   Spinner, Alert,
-  Modal, ModalHeader, ModalBody, ModalFooter
+  Modal, ModalHeader, ModalBody, ModalFooter,
+  Toast
 } from '../../components/ui';
+import { ApiService } from '../../services/api';
+import TicketService from '../../services/ticketService';
 import type { Ticket, TicketStatus, TicketComment, TicketHistory } from '../../types/ticket';
 import type { Priority } from '../../types/common';
 
 const statusLabels: Record<TicketStatus, string> = {
   open: 'Aberto',
   in_progress: 'Em Andamento',
-  pending: 'Aguardando Cliente',
+  waiting_client: 'Aguardando Cliente',
   resolved: 'Resolvido',
   closed: 'Fechado',
-  assigned: 'Atribuído',
-  cancelled: 'Cancelado',
 };
 
 const priorityLabels: Record<Priority, string> = {
@@ -31,11 +33,9 @@ const getStatusVariant = (status: TicketStatus): 'success' | 'warning' | 'danger
   switch (status) {
     case 'open': return 'danger';
     case 'in_progress': return 'warning';
-    case 'pending': return 'info';
+    case 'waiting_client': return 'info';
     case 'resolved': return 'success';
     case 'closed': return 'secondary';
-    case 'assigned': return 'info';
-    case 'cancelled': return 'secondary';
     default: return 'secondary';
   }
 };
@@ -49,6 +49,99 @@ const getPriorityVariant = (priority: Priority): 'success' | 'warning' | 'danger
     default: return 'secondary';
   }
 };
+
+// Styled-components wrappers para facilitar manutenção/customização
+const TicketDetailsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacing.lg};
+`;
+
+const Header = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: ${({ theme }) => theme.spacing.md};
+  align-items: center;
+`;
+
+const Breadcrumb = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const TitleSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const BadgesRow = styled.div`
+  display: inline-flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const TicketNumber = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const Actions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const Content = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: ${({ theme }) => theme.spacing.lg};
+`;
+
+const InfoItemRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.xs} 0;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border.primary};
+  &:last-child { border-bottom: none; }
+  label { color: ${({ theme }) => theme.colors.text.secondary}; }
+`;
+
+const TagsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const TagChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const InputRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  align-items: center;
+`;
+
+const StyledInput = styled.input`
+  width: 100%;
+  padding: ${({ theme }) => theme.spacing.sm};
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  border-radius: ${({ theme }) => theme.borders.radius.sm};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
 
 export function TicketDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -72,6 +165,9 @@ export function TicketDetailsPage() {
   const [newStatus, setNewStatus] = useState<TicketStatus>('open');
   const [statusUpdateNote, setStatusUpdateNote] = useState('');
   const [statusLoading, setStatusLoading] = useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+  const [toastVariant, setToastVariant] = useState<'info' | 'success' | 'warning' | 'error'>('info');
 
   useEffect(() => {
     if (id) {
@@ -83,106 +179,26 @@ export function TicketDetailsPage() {
     try {
       setLoading(true);
       setError(null);
-
-      // Simulate API call - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // Mock data - replace with actual API response
-      const mockTicket: Ticket = {
-        id: Number(ticketId),
-        providerId: 1,
-        number: 'TK-2024-001',
-        title: 'Problema na conexão de internet',
-        description: 'Cliente relatando instabilidade na conexão de internet. A conexão fica intermitente durante o dia, principalmente no período da manhã. Cliente já reiniciou o modem várias vezes mas o problema persiste.',
-        status: 'in_progress',
-        priority: 'high',
-        category: 'network',
-        source: 'phone',
-        customerInfo: {
-          name: 'João Silva',
-          email: 'joao@email.com',
-          phone: '(11) 99999-9999',
-          company: 'Empresa ABC',
-          department: 'Suporte',
+      // Buscar dados reais da API
+      const data = await TicketService.getTicketById(Number(ticketId));
+      // Normalizar campos para evitar quebras no layout
+      const normalized: Ticket = {
+        ...data,
+        number: (data as any).number ?? String(data.id),
+        customerInfo: (data as any).customerInfo ?? {
+          name: (data as any).customerName ?? '',
+          email: (data as any).customerEmail ?? '',
+          phone: (data as any).customerPhone ?? '',
+          company: (data as any).customerCompany ?? undefined,
+          department: (data as any).customerDepartment ?? undefined,
         },
-        createdAt: new Date(Date.now() - 86400000),
-        updatedAt: new Date(),
-        tags: ['internet', 'latência'],
-        slaStatus: 'within_sla',
-        comments: [
-          {
-            id: 1,
-            content: 'Ticket recebido. Iniciando análise do problema.',
-            isInternal: false,
-            isEdited: false,
-            userId: 1,
-            createdAt: new Date(Date.now() - 82800000),
-            updatedAt: new Date(Date.now() - 82800000),
-          },
-          {
-            id: 2,
-            content: 'Verificado histórico de conexão. Identificados picos de latência no período da manhã.',
-            isInternal: true,
-            isEdited: false,
-            userId: 1,
-            createdAt: new Date(Date.now() - 79200000),
-            updatedAt: new Date(Date.now() - 82800000),
-          },
-          {
-            id: 3,
-            content: 'Agendada visita técnica para verificação da instalação.',
-            isInternal: false,
-            isEdited: false,
-            userId: 1,
-            createdAt: new Date(Date.now() - 3600000),
-            updatedAt: new Date(Date.now() - 82800000),
-          },
-        ],
-        attachments: [
-          {
-            id: 1,
-            filename: 'teste-velocidade-2024-01.pdf',
-            originalName: 'teste-velocidade.pdf',
-            mimeType: 'application/pdf',
-            url: '/attachments/teste-velocidade.pdf',
-            size: 245760,
-            uploadedBy: 1,
-            uploadedAt: new Date(Date.now() - 79200000),
-            isPublic: true,
-          },
-        ],
-        history: [
-          {
-            id: 1,
-            action: 'created',
-            description: 'Ticket criado',
-            createdAt: new Date(Date.now() - 86400000),
-            oldValue: null,
-            newValue: 'open',
-            userId: 0,
-          },
-          {
-            id: 2,
-            action: 'assigned',
-            description: 'Ticket atribuído para equipe de suporte',
-            createdAt: new Date(Date.now() - 82800000),
-            oldValue: null,
-            newValue: 'Suporte',
-            userId: 2,
-          },
-          {
-            id: 3,
-            action: 'status_changed',
-            description: 'Status alterado de Aberto para Em Andamento',
-            createdAt: new Date(Date.now() - 79200000),
-            oldValue: 'open',
-            newValue: 'in_progress',
-            userId: 1,
-          },
-        ],
-      };
+        comments: (data as any).comments ?? [],
+        attachments: (data as any).attachments ?? [],
+        history: (data as any).history ?? [],
+        tags: (data as any).tags ?? [],
+      } as Ticket;
 
-      setTicket(mockTicket);
+      setTicket(normalized);
     } catch (err) {
       setError('Erro ao carregar ticket');
       console.error('Ticket loading error:', err);
@@ -197,7 +213,7 @@ export function TicketDetailsPage() {
     try {
       setCommentLoading(true);
 
-      // Simulate API call - replace with actual API call
+      // Simulate API call for adding comment - replace with actual API call
       await new Promise(resolve => setTimeout(resolve, 500));
 
       const comment: TicketComment = {
@@ -232,8 +248,15 @@ export function TicketDetailsPage() {
     try {
       setStatusLoading(true);
 
-      // Simulate API call - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Make API call to update ticket status
+      const res = await ApiService.put(`/tickets/${ticket.id}/status`, { 
+        status: newStatus,
+        note: statusUpdateNote.trim() || undefined
+      });
+
+      if (!res?.success) {
+        throw new Error(res?.message || 'Falha ao atualizar status');
+      }
 
       const historyEntry: TicketHistory = {
         id: Date.now(),
@@ -272,10 +295,20 @@ export function TicketDetailsPage() {
 
       setStatusUpdateNote('');
       setShowStatusModal(false);
-      setSuccessMessage(`Status alterado para ${statusLabels[newStatus]}`);
+      const msg = res?.message || `Status alterado para ${statusLabels[newStatus]}`;
+      setSuccessMessage(msg);
+      setToastMsg(msg);
+      setToastVariant('success');
+      setToastOpen(true);
       setTimeout(() => setSuccessMessage(null), 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error updating status:', err);
+      const api = err?.response?.data;
+      const finalMsg = (api && typeof api === 'object' && api.message) ? api.message : 'Erro ao atualizar status do ticket';
+      setError(finalMsg);
+      setToastMsg(finalMsg);
+      setToastVariant('error');
+      setToastOpen(true);
     } finally {
       setStatusLoading(false);
     }
@@ -341,27 +374,27 @@ export function TicketDetailsPage() {
 
   if (loading) {
     return (
-      <div className="ticket-details ticket-details--loading">
+      <TicketDetailsWrapper>
         <Spinner size="lg" centered label="Carregando ticket..." />
-      </div>
+      </TicketDetailsWrapper>
     );
   }
 
   if (error || !ticket) {
     return (
-      <div className="ticket-details ticket-details--error">
+      <TicketDetailsWrapper>
         <Alert variant="danger" title="Erro">
           {error || 'Ticket não encontrado'}
         </Alert>
         <Button onClick={() => navigate('/tickets')}>
           Voltar para Lista
         </Button>
-      </div>
+      </TicketDetailsWrapper>
     );
   }
 
   return (
-    <div className="ticket-details">
+    <TicketDetailsWrapper>
       {successMessage && (
         <div style={{ marginBottom: '1rem' }}>
           <Alert variant="success" title="Sucesso">
@@ -369,8 +402,8 @@ export function TicketDetailsPage() {
           </Alert>
         </div>
       )}
-      <div className="ticket-details__header">
-        <div className="ticket-details__breadcrumb">
+      <Header>
+        <Breadcrumb>
           <Button
             variant="ghost"
             onClick={() => navigate('/tickets')}
@@ -378,24 +411,24 @@ export function TicketDetailsPage() {
           >
             Voltar
           </Button>
-        </div>
+        </Breadcrumb>
         
-        <div className="ticket-details__title-section">
-          <div className="ticket-details__title-row">
-            <h1 className="ticket-details__title">{ticket.title}</h1>
-            <div className="ticket-details__badges">
+        <TitleSection>
+          <TitleRow>
+            <h1>{ticket.title}</h1>
+            <BadgesRow>
               <Badge variant={getStatusVariant(ticket.status)}>
                 {statusLabels[ticket.status]}
               </Badge>
               <Badge variant={getPriorityVariant(ticket.priority)}>
                 {priorityLabels[ticket.priority]}
               </Badge>
-            </div>
-          </div>
-          <p className="ticket-details__number">{ticket.number}</p>
-        </div>
+            </BadgesRow>
+          </TitleRow>
+          <TicketNumber>{ticket.number}</TicketNumber>
+        </TitleSection>
         
-        <div className="ticket-details__actions">
+        <Actions>
           <Button
             variant="primary"
             onClick={() => setShowStatusModal(true)}
@@ -414,8 +447,8 @@ export function TicketDetailsPage() {
           >
             Editar
           </Button>
-        </div>
-      </div>
+        </Actions>
+      </Header>
 
       <Tabs  activeTab={activeTab} onTabChange={setActiveTab} >
         <TabList>
@@ -427,48 +460,48 @@ export function TicketDetailsPage() {
 
         <TabPanels>
           <TabPanel value="details">
-            <div className="ticket-details__content">
-              <div className="ticket-details__main">
+            <Content>
+              <div>
                 <Card>
                   <CardHeader>
                     <h3>Descrição</h3>
                   </CardHeader>
                   <CardBody>
-                    <p className="ticket-details__description">{ticket.description}</p>
+                    <p>{ticket.description}</p>
                   </CardBody>
                 </Card>
               </div>
 
-              <div className="ticket-details__sidebar">
+              <div>
                 <Card>
                   <CardHeader>
                     <h3>Informações do Cliente</h3>
                   </CardHeader>
                   <CardBody>
-                    <div className="ticket-details__customer-info">
-                      <div className="ticket-details__info-item">
+                    <div>
+                      <InfoItemRow>
                         <label>Nome:</label>
-                        <span>{ticket.customerInfo.name}</span>
-                      </div>
-                      <div className="ticket-details__info-item">
+                        <span>{ticket.customerInfo.name || '—'}</span>
+                      </InfoItemRow>
+                      <InfoItemRow>
                         <label>Email:</label>
-                        <span>{ticket.customerInfo.email}</span>
-                      </div>
-                      <div className="ticket-details__info-item">
+                        <span>{ticket.customerInfo.email || '—'}</span>
+                      </InfoItemRow>
+                      <InfoItemRow>
                         <label>Telefone:</label>
-                        <span>{ticket.customerInfo.phone}</span>
-                      </div>
+                        <span>{ticket.customerInfo.phone || '—'}</span>
+                      </InfoItemRow>
                       {ticket.customerInfo.company && (
-                        <div className="ticket-details__info-item">
+                        <InfoItemRow>
                           <label>Empresa:</label>
                           <span>{ticket.customerInfo.company}</span>
-                        </div>
+                        </InfoItemRow>
                       )}
                       {ticket.customerInfo.department && (
-                        <div className="ticket-details__info-item">
+                        <InfoItemRow>
                           <label>Departamento:</label>
                           <span>{ticket.customerInfo.department}</span>
-                        </div>
+                        </InfoItemRow>
                       )}
                     </div>
                   </CardBody>
@@ -479,58 +512,57 @@ export function TicketDetailsPage() {
                     <h3>Detalhes do Ticket</h3>
                   </CardHeader>
                   <CardBody>
-                    <div className="ticket-details__ticket-info">
-                      <div className="ticket-details__info-item">
+                    <div>
+                      <InfoItemRow>
                         <label>Categoria:</label>
                         <span>{ticket.category}</span>
-                      </div>
-                      <div className="ticket-details__info-item">
+                      </InfoItemRow>
+                      <InfoItemRow>
                         <label>Origem:</label>
                         <span>{ticket.source}</span>
-                      </div>
-                      <div className="ticket-details__info-item">
+                      </InfoItemRow>
+                      <InfoItemRow>
                         <label>Responsável:</label>
                         <span>{ticket.assignee?.name || 'Não atribuído'}</span>
-                      </div>
-                      <div className="ticket-details__info-item">
+                      </InfoItemRow>
+                      <InfoItemRow>
                         <label>Criado em:</label>
                         <span>{new Date(ticket.createdAt).toLocaleString('pt-BR')}</span>
-                      </div>
-                      <div className="ticket-details__info-item">
+                      </InfoItemRow>
+                      <InfoItemRow>
                         <label>Atualizado em:</label>
                         <span>{new Date(ticket.updatedAt).toLocaleString('pt-BR')}</span>
-                      </div>
-                      <div className="ticket-details__info-item">
+                      </InfoItemRow>
+                      <InfoItemRow>
                         <label>Tags:</label>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <TagsRow>
                           {ticket.tags.length === 0 && (
                             <span style={{ color: 'var(--color-text-secondary)' }}>Sem tags</span>
                           )}
                           {ticket.tags.map((tag) => (
-                            <div key={tag} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <TagChip key={tag}>
                               <Badge variant="secondary">{tag}</Badge>
                               <Button size="lg" variant="secondary" onClick={() => removeTag(tag)}>×</Button>
-                            </div>
+                            </TagChip>
                           ))}
-                        </div>
-                      </div>
-                      <div className="ticket-details__info-item">
+                        </TagsRow>
+                      </InfoItemRow>
+                      <InfoItemRow>
                         <label>Adicionar Tag:</label>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                          <input
-                            className="ticket-details__input"
+                        <InputRow>
+                          <StyledInput
                             placeholder="Nova tag"
                             value={newTag}
                             onChange={(e) => setNewTag(e.target.value)}
                           />
                           <Button size="sm" variant="secondary" onClick={addTag}>Adicionar</Button>
-                        </div>
-                      </div>
+                        </InputRow>
+                      </InfoItemRow>
                     </div>
                   </CardBody>
                 </Card>
               </div>
-            </div>
+            </Content>
           </TabPanel>
 
           <TabPanel value="comments">
@@ -649,8 +681,16 @@ export function TicketDetailsPage() {
               </CardBody>
             </Card>
           </TabPanel>
-        </TabPanels>
+      </TabPanels>
       </Tabs>
+
+      <Toast
+        open={toastOpen}
+        onClose={() => setToastOpen(false)}
+        title={toastVariant === 'success' ? 'Sucesso' : 'Erro'}
+        description={toastMsg}
+        variant={toastVariant}
+      />
 
       {/* Comment Modal */}
       <Modal
@@ -742,6 +782,6 @@ export function TicketDetailsPage() {
           </Button>
         </ModalFooter>
       </Modal>
-    </div>
+    </TicketDetailsWrapper>
   );
 }

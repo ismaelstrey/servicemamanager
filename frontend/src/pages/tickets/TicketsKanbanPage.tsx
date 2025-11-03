@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import {  Button, Spinner } from '../../components/ui';
+import {  Button, Spinner, Toast } from '../../components/ui';
 import KanbanBoard from '../../components/kanban/KanbanBoard';
 import { ApiService } from '../../services/api';
 
@@ -8,19 +8,16 @@ type KanbanBoard = Record<string, { id: number; title: string; priority: 'low' |
 
 const statusLabels: Record<string, string> = {
   open: 'Aberto',
-  assigned: 'Atribuído',
   in_progress: 'Em Andamento',
-  pending: 'Pendente',
   waiting_client: 'Aguardando Cliente',
   resolved: 'Resolvido',
   closed: 'Fechado',
-  cancelled: 'Cancelado',
 };
 
 
 
-// Ordem das colunas no board; inclui "cancelled" para refletir o backend
-const columnOrder = ['open', 'assigned', 'in_progress', 'pending', 'waiting_client', 'resolved', 'closed', 'cancelled'];
+// Ordem das colunas no board (somente statuses válidos do backend)
+const columnOrder = ['open', 'in_progress', 'waiting_client', 'resolved', 'closed'];
 
 const TicketsKanbanPage: React.FC = () => {
   const navigate = useNavigate();
@@ -28,6 +25,9 @@ const TicketsKanbanPage: React.FC = () => {
   const [board, setBoard] = useState<KanbanBoard>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+  const [toastVariant, setToastVariant] = useState<'info' | 'success' | 'warning' | 'error'>('info');
 
   const providerId = useMemo(() => {
     const fromQuery = searchParams.get('provider');
@@ -118,14 +118,9 @@ const TicketsKanbanPage: React.FC = () => {
         onItemClick={(id) => navigate(`/tickets/${id}`)}
         onDragEnd={async (itemId, from, to) => {
           try {
-            // Mapeia colunas da UI para status do backend
-            const mapToBackend = (s: string): string => {
-              if (s === 'pending') return 'waiting_client';
-              return s; // open, in_progress, waiting_client, resolved, closed
-            };
-
-            const fromBackend = mapToBackend(from);
-            const toBackend = mapToBackend(to);
+            // Como usamos apenas statuses válidos, não há necessidade de mapeamento
+            const fromBackend = from;
+            const toBackend = to;
 
             // Ignora se status não mudou efetivamente
             if (fromBackend === toBackend) return;
@@ -152,6 +147,10 @@ const TicketsKanbanPage: React.FC = () => {
               throw new Error(res?.message || 'Falha ao atualizar status');
             }
 
+            setToastMsg(res?.message || 'Status do ticket atualizado com sucesso');
+            setToastVariant('success');
+            setToastOpen(true);
+
             // Opcional: recarregar tablero para sincronizar com backend
             // Comentado para evitar excesso de chamadas; manter otimista
             // const url = providerId ? `/providers/${providerId}/tickets/kanban` : `/tickets/kanban`;
@@ -168,6 +167,9 @@ const TicketsKanbanPage: React.FC = () => {
               .join('; ');
             const finalMsg = [apiMessage || 'Erro ao atualizar status do ticket', details].filter(Boolean).join(': ');
             setError(finalMsg);
+            setToastMsg(finalMsg);
+            setToastVariant('error');
+            setToastOpen(true);
             // Recarregar o board para desfazer otimista e refletir estado real
             try {
               const url = providerId ? `/providers/${providerId}/tickets/kanban` : `/tickets/kanban`;
@@ -189,6 +191,13 @@ const TicketsKanbanPage: React.FC = () => {
             }
           }
         }}
+      />
+      <Toast
+        open={toastOpen}
+        onClose={() => setToastOpen(false)}
+        title={toastVariant === 'success' ? 'Sucesso' : 'Erro'}
+        description={toastMsg}
+        variant={toastVariant}
       />
     </div>
   );

@@ -5,7 +5,7 @@ export interface ServiceOrder {
   id: string;
   title: string;
   description: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'pending' | 'in_progress' | 'waiting_parts' | 'waiting_client' | 'completed' | 'cancelled';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   type: 'installation' | 'maintenance' | 'repair' | 'inspection';
   category: string;
@@ -42,7 +42,7 @@ export interface CreateServiceOrderData {
 }
 
 export interface UpdateServiceOrderData extends Partial<CreateServiceOrderData> {
-  status?: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  status?: 'pending' | 'in_progress' | 'waiting_parts' | 'waiting_client' | 'completed' | 'cancelled';
 }
 
 // Interface para filtros de busca
@@ -119,7 +119,7 @@ export class ServiceOrderService {
   // Atualizar status da ordem de serviço
   static async updateServiceOrderStatus(
     id: string, 
-    status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+    status: 'pending' | 'in_progress' | 'waiting_parts' | 'waiting_client' | 'completed' | 'cancelled'
   ): Promise<ServiceOrder> {
     const response = await ApiService.patch<ServiceOrder>(`${this.BASE_URL}/${id}/status`, { status });
     return response.data;

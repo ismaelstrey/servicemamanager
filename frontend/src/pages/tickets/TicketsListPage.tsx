@@ -28,12 +28,10 @@ const ITEMS_PER_PAGE = 20;
 
 const statusLabels: Record<TicketStatus, string> = {
   open: 'Aberto',
-  assigned: 'Atribuído',
   in_progress: 'Em Andamento',
-  pending: 'Pendente',
+  waiting_client: 'Aguardando Cliente',
   resolved: 'Resolvido',
   closed: 'Fechado',
-  cancelled: 'Cancelado',
 };
 
 const priorityLabels: Record<Priority, string> = {
@@ -59,12 +57,10 @@ const categoryLabels: Record<TicketCategory, string> = {
 const getStatusVariant = (status: TicketStatus): 'success' | 'warning' | 'danger' | 'info' | 'secondary' => {
   switch (status) {
     case 'open': return 'danger';
-    case 'assigned': return 'info';
     case 'in_progress': return 'warning';
-    case 'pending': return 'info';
+    case 'waiting_client': return 'info';
     case 'resolved': return 'success';
     case 'closed': return 'secondary';
-    case 'cancelled': return 'secondary';
     default: return 'secondary';
   }
 };
