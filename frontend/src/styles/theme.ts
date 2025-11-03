@@ -13,18 +13,32 @@ import {
   type DesignTokens,
 } from './tokens';
 
-// Tema base (escuro)
-export const createTheme = (mode: 'light' | 'dark' = 'dark'): DesignTokens & { mode: string } => ({
-  mode,
-  colors: mode === 'dark' ? darkColors : lightColors,
-  typography,
-  spacing,
-  shadows,
-  animations,
-  borders,
-  zIndex,
-  breakpoints,
-});
+// Determina o modo efetivo quando "system" é selecionado
+function resolveEffectiveMode(mode: ThemeMode): 'light' | 'dark' {
+  if (mode === 'system') {
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'dark';
+  }
+  return mode;
+}
+
+// Tema base (suporta light/dark e system via resolução do modo efetivo)
+export const createTheme = (mode: ThemeMode = 'dark'): DesignTokens & { mode: string } => {
+  const effective = resolveEffectiveMode(mode);
+  return {
+    mode: effective,
+    colors: effective === 'dark' ? darkColors : lightColors,
+    typography,
+    spacing,
+    shadows,
+    animations,
+    borders,
+    zIndex,
+    breakpoints,
+  };
+};
 
 // Temas pré-definidos
 export const darkTheme = createTheme('dark');
@@ -35,4 +49,4 @@ export const theme = darkTheme;
 
 // Tipos
 export type AppTheme = ReturnType<typeof createTheme>;
-export type ThemeMode = 'light' | 'dark';
+export type ThemeMode = 'light' | 'dark' | 'system';

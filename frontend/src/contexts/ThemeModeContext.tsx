@@ -15,17 +15,47 @@ const ThemeModeContext = createContext<ThemeModeContextValue | undefined>(undefi
 export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mode, setMode] = useState<ThemeMode>(() => {
     const stored = localStorage.getItem('themeMode');
-    return (stored === 'light' || stored === 'dark') ? (stored as ThemeMode) : 'dark';
+    if (stored === 'light' || stored === 'dark' || stored === 'system') {
+      return stored as ThemeMode;
+    }
+    return 'dark';
   });
 
-  const theme = useMemo(() => createTheme(mode), [mode]);
+  // Recalcula o tema quando o modo muda ou quando a preferência do sistema muda (se modo for 'system')
+  const [systemIsDark, setSystemIsDark] = useState<boolean>(() => {
+    return typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : true;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const media = window.matchMedia('(prefers-color-scheme: dark)');
+      const listener = (e: MediaQueryListEvent) => setSystemIsDark(e.matches);
+      try {
+        media.addEventListener('change', listener);
+      } catch {
+        // Fallback para navegadores antigos
+        media.addListener(listener);
+      }
+      return () => {
+        try {
+          media.removeEventListener('change', listener);
+        } catch {
+          media.removeListener(listener);
+        }
+      };
+    }
+    return () => {};
+  }, []);
+
+  const effectiveMode: ThemeMode = mode === 'system' ? (systemIsDark ? 'dark' : 'light') : mode;
+  const theme = useMemo(() => createTheme(effectiveMode), [effectiveMode]);
 
   useEffect(() => {
     localStorage.setItem('themeMode', mode);
-    document.documentElement.setAttribute('data-theme', mode);
-  }, [mode]);
+    document.documentElement.setAttribute('data-theme', effectiveMode);
+  }, [mode, effectiveMode]);
 
-  const toggle = () => setMode(prev => (prev === 'dark' ? 'light' : 'dark'));
+  const toggle = () => setMode(prev => (prev === 'dark' ? 'light' : prev === 'light' ? 'dark' : 'light'));
 
   return (
     <ThemeModeContext.Provider value={{ mode, theme, setMode, toggle }}>
