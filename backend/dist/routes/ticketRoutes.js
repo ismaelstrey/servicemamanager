@@ -44,6 +44,57 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *       201:
  *         description: Ticket criado
  */
+/**
+ * @swagger
+ * /api/tickets/kanban:
+ *   get:
+ *     summary: Kanban de tickets (global)
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: providerId
+ *         required: false
+ *         schema:
+ *           type: integer
+ *         description: Filtra o Kanban por um provider específico
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Limite de itens por coluna
+ *     responses:
+ *       200:
+ *         description: Board de Kanban retornado
+ */
+/**
+ * @swagger
+ * /api/providers/{providerId}/tickets/kanban:
+ *   get:
+ *     summary: Kanban de tickets por provider
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Limite de itens por coluna
+ *     responses:
+ *       200:
+ *         description: Board de Kanban retornado
+ */
 const express_1 = require("express");
 const ticketController_1 = require("../controllers/ticketController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
@@ -54,6 +105,10 @@ const controller = new ticketController_1.TicketController();
 // Protegidas: exigem autenticação com cache para consultas
 router.get('/:providerId/tickets', authMiddleware_1.authMiddleware, (0, ticketValidator_1.validateParams)(ticketValidator_1.providerIdParamSchema), (0, ticketValidator_1.validateQuery)(ticketValidator_1.listTicketsSchema), (0, cacheMiddleware_1.listCacheMiddleware)(), (req, res) => controller.list(req, res));
 router.get('/:providerId/tickets/kanban', authMiddleware_1.authMiddleware, (0, ticketValidator_1.validateParams)(ticketValidator_1.providerIdParamSchema), (0, cacheMiddleware_1.cacheMiddleware)({ ttl: 60, keyPrefix: 'kanban', varyBy: ['userId', 'providerId'] }), (req, res) => controller.kanban(req, res));
+// Kanban global (sem providerId) com cache
+router.get('/tickets/kanban', authMiddleware_1.authMiddleware, (0, cacheMiddleware_1.cacheMiddleware)({ ttl: 60, keyPrefix: 'kanban_all', varyBy: ['userId'] }), (req, res) => controller.kanbanAll(req, res));
+// Lista global de tickets (sem providerId) com cache
+router.get('/tickets', authMiddleware_1.authMiddleware, (0, ticketValidator_1.validateQuery)(ticketValidator_1.listTicketsSchema), (0, cacheMiddleware_1.cacheMiddleware)({ ttl: 30, keyPrefix: 'tickets_all', varyBy: ['userId', 'query.page', 'query.limit', 'query.search', 'query.status', 'query.priority', 'query.startDate', 'query.endDate'] }), (req, res) => controller.listAll(req, res));
 router.post('/:providerId/tickets', authMiddleware_1.authMiddleware, (0, ticketValidator_1.validateParams)(ticketValidator_1.providerIdParamSchema), (0, ticketValidator_1.validateSchema)(ticketValidator_1.createTicketSchema), (req, res) => controller.create(req, res));
 router.get('/:providerId/tickets/stats', authMiddleware_1.authMiddleware, (0, ticketValidator_1.validateParams)(ticketValidator_1.providerIdParamSchema), (0, cacheMiddleware_1.statsCacheMiddleware)(), (req, res) => controller.getStats(req, res));
 // CRUD por ID de ticket com cache para consultas

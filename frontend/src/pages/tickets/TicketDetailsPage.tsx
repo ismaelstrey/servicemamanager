@@ -16,10 +16,12 @@ import type { Priority } from '../../types/common';
 
 const statusLabels: Record<TicketStatus, string> = {
   open: 'Aberto',
+  assigned: 'Atribuído',
   in_progress: 'Em Andamento',
-  waiting_client: 'Aguardando Cliente',
+  pending: 'Pendente',
   resolved: 'Resolvido',
   closed: 'Fechado',
+  cancelled: 'Cancelado',
 };
 
 const priorityLabels: Record<Priority, string> = {
@@ -32,10 +34,12 @@ const priorityLabels: Record<Priority, string> = {
 const getStatusVariant = (status: TicketStatus): 'success' | 'warning' | 'danger' | 'info' | 'secondary' => {
   switch (status) {
     case 'open': return 'danger';
+    case 'assigned': return 'info';
     case 'in_progress': return 'warning';
-    case 'waiting_client': return 'info';
+    case 'pending': return 'info';
     case 'resolved': return 'success';
     case 'closed': return 'secondary';
+    case 'cancelled': return 'secondary';
     default: return 'secondary';
   }
 };
@@ -185,6 +189,7 @@ export function TicketDetailsPage() {
       const normalized: Ticket = {
         ...data,
         number: (data as any).number ?? String(data.id),
+        status: (((data as any).status === 'waiting_client') ? 'pending' : (data as any).status) as TicketStatus,
         customerInfo: (data as any).customerInfo ?? {
           name: (data as any).customerName ?? '',
           email: (data as any).customerEmail ?? '',

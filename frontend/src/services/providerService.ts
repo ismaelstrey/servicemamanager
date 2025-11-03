@@ -22,13 +22,13 @@ export class ProviderService {
         }
       });
     }
-    const res = await ApiService.get<{ success: boolean; data: ProviderListItem[]; pagination?: any }>(`/providers${query.toString() ? `?${query.toString()}` : ''}`);
-    return res.data?.data ?? [];
+    const res = await ApiService.get<ProviderListItem[]>(`/providers${query.toString() ? `?${query.toString()}` : ''}`);
+    return res.data;
   }
 
   static async getById(id: number): Promise<ProviderDetails | null> {
-    const res = await ApiService.get<{ success: boolean; data: ProviderDetails }>(`/providers/${id}`);
-    return res.data?.data ?? null;
+    const res = await ApiService.get<ProviderDetails>(`/providers/${id}`);
+    return res.data;
   }
 }
 

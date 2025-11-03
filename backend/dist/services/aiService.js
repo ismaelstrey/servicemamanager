@@ -195,7 +195,7 @@ class AIService {
      */
     scoreToPriority(score) {
         if (score >= 0.8)
-            return 'critical';
+            return 'urgent';
         if (score >= 0.6)
             return 'high';
         if (score >= 0.4)

@@ -51,6 +51,43 @@ class TicketController {
         }
     }
     /**
+     * Listar tickets globalmente (sem provider)
+     * GET /api/tickets
+     */
+    async listAll(req, res) {
+        try {
+            const paginationParams = (0, paginationHelper_1.calculatePagination)({
+                page: req.query.page ? parseInt(req.query.page) : undefined,
+                limit: req.query.limit ? parseInt(req.query.limit) : undefined,
+                maxLimit: 100,
+                defaultLimit: 10
+            });
+            const startDateStr = req.query.startDate || undefined;
+            const endDateStr = req.query.endDate || undefined;
+            const query = {
+                page: paginationParams.page,
+                limit: paginationParams.limit,
+                search: req.query.search || undefined,
+                status: req.query.status || undefined,
+                priority: req.query.priority || undefined,
+                startDate: startDateStr ? new Date(startDateStr) : undefined,
+                endDate: endDateStr ? new Date(endDateStr) : undefined
+            };
+            const result = await this.ticketService.listAll(query, req.user);
+            res.json({
+                success: true,
+                data: result.tickets,
+                pagination: result.pagination,
+                message: 'Tickets listados com sucesso'
+            });
+        }
+        catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro ao listar tickets';
+            const status = error?.status || 500;
+            res.status(status).json({ success: false, message });
+        }
+    }
+    /**
      * Criar ticket para um provedor
      * POST /api/providers/:providerId/tickets
      */
@@ -213,7 +250,35 @@ class TicketController {
                 res.status(400).json({ success: false, message: 'providerId inválido' });
                 return;
             }
-            const board = await this.ticketService.getKanban(providerId, req.user);
+            const limit = req.query.limit ? parseInt(String(req.query.limit)) : undefined;
+            const board = await this.ticketService.getKanban(providerId, req.user, limit);
+            res.json({ success: true, data: board, message: 'Kanban obtido com sucesso' });
+        }
+        catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro ao obter Kanban';
+            const status = error?.status || 500;
+            res.status(status).json({ success: false, message });
+        }
+    }
+    /**
+     * Kanban global (todos os tickets acessíveis ao usuário)
+     * GET /api/tickets/kanban
+     */
+    async kanbanAll(req, res) {
+        try {
+            const { providerId } = req.query;
+            const limit = req.query.limit ? parseInt(String(req.query.limit)) : undefined;
+            if (providerId) {
+                const id = parseInt(providerId);
+                if (isNaN(id)) {
+                    res.status(400).json({ success: false, message: 'providerId inválido' });
+                    return;
+                }
+                const board = await this.ticketService.getKanban(id, req.user, limit);
+                res.json({ success: true, data: board, message: 'Kanban obtido com sucesso' });
+                return;
+            }
+            const board = await this.ticketService.getKanbanAll(req.user, limit);
             res.json({ success: true, data: board, message: 'Kanban obtido com sucesso' });
         }
         catch (error) {

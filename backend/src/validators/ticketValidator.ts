@@ -8,8 +8,8 @@ export const ticketStatusSchema = z.enum(['open', 'assigned', 'in_progress', 'pe
   errorMap: () => ({ message: 'Status deve ser open, assigned, in_progress, pending, resolved, closed ou cancelled' })
 });
 
-export const ticketPrioritySchema = z.enum(['low', 'medium', 'high', 'critical'], {
-  errorMap: () => ({ message: 'Prioridade deve ser low, medium, high ou critical' })
+export const ticketPrioritySchema = z.enum(['low', 'medium', 'high', 'urgent'], {
+  errorMap: () => ({ message: 'Prioridade deve ser low, medium, high ou urgent' })
 });
 
 export const ticketCategorySchema = z.enum(['technical', 'billing', 'commercial', 'installation', 'maintenance', 'complaint', 'request', 'incident', 'change', 'other'], {

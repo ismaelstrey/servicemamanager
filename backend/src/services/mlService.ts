@@ -288,7 +288,7 @@ export class MLService {
    * Calcula scores de prioridade para um ticket
    */
   private calculatePriorityScores(features: any, model: TicketClassificationModel) {
-    const scores: { [key in Priority]: number } = { low: 0, medium: 0, high: 0, critical: 0 };
+    const scores: { [key in Priority]: number } = { low: 0, medium: 0, high: 0, urgent: 0 };
 
     // Score baseado em palavras-chave do título
     features.titleWords.forEach((word: string) => {
@@ -492,7 +492,7 @@ export class MLService {
   }
 
   private addWeightToScores(scores: { [key in Priority]: number }, weight: number) {
-    if (weight > 0.7) scores.critical += weight;
+    if (weight > 0.7) scores.urgent += weight;
     else if (weight > 0.5) scores.high += weight;
     else if (weight > 0.3) scores.medium += weight;
     else scores.low += weight;

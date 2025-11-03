@@ -28,6 +28,15 @@ class TicketService {
         await this.assertAccess(user, providerId);
         return this.repository.listByProvider(providerId, query);
     }
+    async listAll(query, user) {
+        // Somente administradores podem listar globalmente sem provider
+        if (user.role !== 'super_admin' && user.role !== 'admin') {
+            const err = new Error('Acesso negado: requer perfil admin/super_admin');
+            err.status = 403;
+            throw err;
+        }
+        return this.repository.listAll(query);
+    }
     async create(providerId, data, user) {
         await this.assertAccess(user, providerId);
         return this.repository.create(providerId, data);
@@ -79,6 +88,9 @@ class TicketService {
             await (0, cacheMiddleware_1.invalidateProviderCache)(String(existing.providerId));
             await (0, cacheMiddleware_1.invalidateResourceCache)('ticket', String(id));
             await (0, cacheMiddleware_1.invalidateResourceCache)('stats');
+            // Garantir que boards de Kanban sejam atualizados imediatamente
+            await (0, cacheMiddleware_1.invalidateResourceCache)('kanban');
+            await (0, cacheMiddleware_1.invalidateResourceCache)('kanban_all');
         }
         return updated;
     }
@@ -118,6 +130,9 @@ class TicketService {
             await (0, cacheMiddleware_1.invalidateProviderCache)(String(existing.providerId));
             await (0, cacheMiddleware_1.invalidateResourceCache)('ticket', String(id));
             await (0, cacheMiddleware_1.invalidateResourceCache)('stats');
+            // Garantir que boards de Kanban sejam atualizados imediatamente
+            await (0, cacheMiddleware_1.invalidateResourceCache)('kanban');
+            await (0, cacheMiddleware_1.invalidateResourceCache)('kanban_all');
         }
         return updated;
     }
@@ -141,9 +156,14 @@ class TicketService {
         await this.assertAccess(user, providerId);
         return this.repository.getStatsByProvider(providerId);
     }
-    async getKanban(providerId, user) {
+    async getKanban(providerId, user, limit) {
         await this.assertAccess(user, providerId);
-        return this.repository.getKanbanByProvider(providerId);
+        return this.repository.getKanbanByProvider(providerId, limit);
+    }
+    async getKanbanAll(user, limit) {
+        // Dependendo da política de acesso, poderia filtrar por providers acessíveis ao usuário.
+        // Por ora, retornamos todos os tickets disponíveis.
+        return this.repository.getKanbanAll(limit);
     }
     // New: list change history for a ticket
     async getHistory(id, user, page, limit) {

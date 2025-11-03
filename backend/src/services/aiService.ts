@@ -44,10 +44,10 @@ export class AIService {
     try {
       // Buscar tickets similares históricos
       const historicalTickets = await this.findSimilarTickets(title, description, category, providerId);
-      
+
       // Analisar padrões de palavras-chave críticas
       const criticalKeywords = this.extractCriticalKeywords(title, description);
-      
+
       // Calcular score de prioridade baseado em múltiplos fatores
       const priorityScore = this.calculatePriorityScore({
         criticalKeywords,
@@ -57,7 +57,7 @@ export class AIService {
 
       // Determinar prioridade sugerida
       const suggestedPriority = this.scoreToPriority(priorityScore.score);
-      
+
       // Calcular estatísticas históricas
       const historicalPatterns = await this.calculateHistoricalPatterns(historicalTickets);
 
@@ -123,7 +123,7 @@ export class AIService {
   ) {
     // Extrair palavras-chave principais
     const keywords = this.extractKeywords(title + ' ' + description);
-    
+
     // Buscar tickets com palavras-chave similares (removendo filtro por categoria já que não existe no schema)
     const tickets = await prisma.ticket.findMany({
       where: {
@@ -157,20 +157,20 @@ export class AIService {
    */
   private extractCriticalKeywords(title: string, description: string): string[] {
     const text = (title + ' ' + description).toLowerCase();
-    
+
     const criticalPatterns = [
       // Urgência
       'urgente', 'crítico', 'emergência', 'parado', 'fora do ar',
       'sem internet', 'sem conexão', 'indisponível', 'offline',
-      
+
       // Impacto
       'todos os clientes', 'múltiplos usuários', 'rede completa',
       'servidor principal', 'backbone', 'fibra óptica',
-      
+
       // Problemas graves
       'incêndio', 'fumaça', 'superaquecimento', 'curto-circuito',
       'vazamento', 'rompimento', 'queda de energia',
-      
+
       // Equipamentos críticos
       'olt', 'switch principal', 'roteador core', 'servidor dns',
       'dhcp', 'radius', 'firewall'
@@ -190,7 +190,7 @@ export class AIService {
 
     // Remover palavras comuns (stop words)
     const stopWords = ['para', 'com', 'sem', 'por', 'que', 'não', 'uma', 'dos', 'das', 'como'];
-    
+
     const uniqueWords = Array.from(new Set(words.filter(word => !stopWords.includes(word))));
     return uniqueWords.slice(0, 10);
   }
@@ -210,7 +210,7 @@ export class AIService {
     // Fator 1: Palavras-chave críticas (peso: 40%)
     const keywordScore = Math.min(factors.criticalKeywords.length * 0.3, 1.0);
     score += keywordScore * 0.4;
-    
+
     if (factors.criticalKeywords.length > 0) {
       reasoning.push(`Palavras-chave críticas detectadas: ${factors.criticalKeywords.join(', ')}`);
       confidence += 0.2;
@@ -229,10 +229,10 @@ export class AIService {
       'change': 0.5,
       'other': 0.3
     };
-    
+
     const categoryScore = categoryWeights[factors.category] || 0.3;
     score += categoryScore * 0.2;
-    
+
     if (categoryScore > 0.6) {
       reasoning.push(`Categoria "${factors.category}" indica alta prioridade`);
     }
@@ -242,15 +242,15 @@ export class AIService {
       const highPriorityCount = factors.historicalTickets.filter(
         t => t.priority === 'high' || t.priority === 'critical'
       ).length;
-      
+
       const historicalScore = highPriorityCount / factors.historicalTickets.length;
       score += historicalScore * 0.4;
-      
+
       if (historicalScore > 0.5) {
         reasoning.push(`${Math.round(historicalScore * 100)}% dos tickets similares tiveram alta prioridade`);
         confidence += 0.2;
       }
-      
+
       confidence += Math.min(factors.historicalTickets.length / 10, 0.3);
     } else {
       reasoning.push('Poucos dados históricos disponíveis para comparação');
@@ -268,7 +268,7 @@ export class AIService {
    * Converte score numérico para prioridade
    */
   private scoreToPriority(score: number): Priority {
-    if (score >= 0.8) return 'critical';
+    if (score >= 0.8) return 'urgent';
     if (score >= 0.6) return 'high';
     if (score >= 0.4) return 'medium';
     return 'low';
@@ -289,14 +289,14 @@ export class AIService {
     // Calcular tempo médio de resolução baseado em tickets fechados
     const resolvedTickets = tickets.filter(t => t.status === 'resolved' || t.status === 'closed');
     let averageResolutionTime = 0;
-    
+
     if (resolvedTickets.length > 0) {
       const totalTime = resolvedTickets.reduce((sum, ticket) => {
         // Usar updatedAt como aproximação para tempo de resolução
         const resolutionTime = new Date(ticket.updatedAt).getTime() - new Date(ticket.createdAt).getTime();
         return sum + resolutionTime;
       }, 0);
-      
+
       averageResolutionTime = Math.round(totalTime / resolvedTickets.length / (1000 * 60 * 60)); // em horas
     }
 
@@ -335,7 +335,7 @@ export class AIService {
     const ageInDays = Math.floor((now.getTime() - equipment.createdAt.getTime()) / (1000 * 60 * 60 * 24));
     const recentTicketCount = recentTickets.length;
     const totalTicketCount = relatedTickets.length;
-    
+
     // Fatores de risco baseados no tipo de equipamento
     const equipmentRiskFactors: Record<string, number> = {
       server: 0.3,
@@ -349,7 +349,7 @@ export class AIService {
     const baseRisk = equipmentRiskFactors[equipment.type as string] || 0.2;
     const ageRisk = Math.min(ageInDays / 1825, 1) * 0.3; // 5 anos = risco máximo por idade
     const ticketRisk = Math.min(recentTicketCount / 10, 1) * 0.4; // 10+ tickets recentes = risco máximo
-    
+
     const probability = Math.min(baseRisk + ageRisk + ticketRisk, 1);
 
     // Determinar nível de risco
@@ -384,7 +384,7 @@ export class AIService {
    */
   private generateMaintenanceRecommendations(equipment: any, probability: number, recentTicketCount: number): string[] {
     const recommendations: string[] = [];
-    
+
     // Recomendações baseadas na probabilidade de falha
     if (probability >= 0.8) {
       recommendations.push('URGENTE: Substituição imediata do equipamento recomendada');

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import {  Button, Spinner, Toast } from '../../components/ui';
+import { Button, Spinner, Toast } from '../../components/ui';
 import KanbanBoard from '../../components/kanban/KanbanBoard';
 import { ApiService } from '../../services/api';
 
@@ -8,16 +8,18 @@ type KanbanBoard = Record<string, { id: number; title: string; priority: 'low' |
 
 const statusLabels: Record<string, string> = {
   open: 'Aberto',
+  assigned: 'Atribuído',
   in_progress: 'Em Andamento',
-  waiting_client: 'Aguardando Cliente',
+  pending: 'Pendente',
   resolved: 'Resolvido',
   closed: 'Fechado',
+  cancelled: 'Cancelado',
 };
 
 
 
 // Ordem das colunas no board (somente statuses válidos do backend)
-const columnOrder = ['open', 'in_progress', 'waiting_client', 'resolved', 'closed'];
+const columnOrder = ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed', 'cancelled'];
 
 const TicketsKanbanPage: React.FC = () => {
   const navigate = useNavigate();
@@ -46,11 +48,15 @@ const TicketsKanbanPage: React.FC = () => {
           : `/tickets/kanban`;
         const res = await ApiService.get<KanbanBoard>(url);
 
-        console.log('response:', res);
+
         const raw = res.data || {};
-        console.log('raw:', raw);
-        // Normalização: manter as chaves por status como vierem da API
-        const normalized: KanbanBoard = { ...raw };
+
+        // Normalização: converte chaves antigas para novos statuses (ex: waiting_client -> pending)
+        const normalized: KanbanBoard = {} as KanbanBoard;
+        Object.keys(raw || {}).forEach((key) => {
+          const newKey = key === 'waiting_client' ? 'pending' : key;
+          (normalized as any)[newKey] = (raw as any)[key];
+        });
 
         // Garantir todas as colunas do columnOrder existem (arrays vazios por padrão)
         const completed: KanbanBoard = {} as KanbanBoard;
@@ -89,7 +95,7 @@ const TicketsKanbanPage: React.FC = () => {
     );
   }
 
-  console.log('Board:', board);
+
 
   return (
     <div className="tickets-kanban">

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Card, CardBody,
-  Button, Input, Select, Badge,
+  Button, Badge,
   Dropdown, DropdownItem,
   Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell,
   Pagination,
@@ -14,6 +14,7 @@ import type { Priority } from '../../types/common';
 import { UserRole } from '../../types/auth';
 import { TicketService } from '../../services/ticketService';
 import { useAuth } from '../../hooks/useAuth';
+import TicketFilters from '../../components/tickets/ticketFilters';
 
 interface TicketsFilters {
   search: string;
@@ -28,10 +29,12 @@ const ITEMS_PER_PAGE = 20;
 
 const statusLabels: Record<TicketStatus, string> = {
   open: 'Aberto',
+  assigned: 'Atribuído',
   in_progress: 'Em Andamento',
-  waiting_client: 'Aguardando Cliente',
+  pending: 'Pendente',
   resolved: 'Resolvido',
   closed: 'Fechado',
+  cancelled: 'Cancelado',
 };
 
 const priorityLabels: Record<Priority, string> = {
@@ -57,10 +60,12 @@ const categoryLabels: Record<TicketCategory, string> = {
 const getStatusVariant = (status: TicketStatus): 'success' | 'warning' | 'danger' | 'info' | 'secondary' => {
   switch (status) {
     case 'open': return 'danger';
+    case 'assigned': return 'info';
     case 'in_progress': return 'warning';
-    case 'waiting_client': return 'info';
+    case 'pending': return 'info';
     case 'resolved': return 'success';
     case 'closed': return 'secondary';
+    case 'cancelled': return 'secondary';
     default: return 'secondary';
   }
 };
@@ -78,14 +83,14 @@ const getPriorityVariant = (priority: Priority): 'success' | 'warning' | 'danger
 export function TicketsListPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  
+
   const [filters, setFilters] = useState<TicketsFilters>({
     search: searchParams.get('search') || '',
     status: (searchParams.get('status') as TicketStatus) || 'all',
@@ -113,7 +118,7 @@ export function TicketsListPage() {
 
   const { user } = useAuth();
   const providerId = user?.providerId;
-  const isGlobalView = providerId == null || user?.role === UserRole.ADMIN ;
+  const isGlobalView = providerId == null || user?.role === UserRole.ADMIN;
 
   const loadTickets = React.useCallback(async () => {
     try {
@@ -122,30 +127,34 @@ export function TicketsListPage() {
 
       // Converter filtros para o formato esperado pela API
       const apiFilters: any = {};
-      
+
       if (filters.search) {
         apiFilters.search = filters.search;
       }
-      
+
       if (filters.status !== 'all') {
         apiFilters.status = filters.status;
       }
-      
+
       if (filters.priority !== 'all') {
         apiFilters.priority = filters.priority;
       }
-      
+
       if (filters.category !== 'all') {
         apiFilters.category = filters.category;
       }
 
       // Buscar tickets do backend: global se não houver providerId ou perfil admin
-      const useGlobal = providerId == null || user?.role === UserRole.ADMIN ;
+      const useGlobal = providerId == null || user?.role === UserRole.ADMIN;
       const response = useGlobal
         ? await TicketService.getTicketsAll(apiFilters, currentPage, ITEMS_PER_PAGE)
         : await TicketService.getTickets(providerId!, apiFilters, currentPage, ITEMS_PER_PAGE);
 
-      setTickets(response.data || []);
+      // Normalizar possíveis statuses antigos do backend
+      setTickets((response.data || []).map((t: Ticket) => ({
+        ...t,
+        status: ((t as any).status === 'waiting_client' ? 'pending' : t.status) as TicketStatus,
+      })));
       setTotalItems(response.pagination?.total ?? 0);
     } catch (err) {
       setError('Erro ao carregar tickets');
@@ -208,7 +217,7 @@ export function TicketsListPage() {
             {totalItems} ticket{totalItems !== 1 ? 's' : ''} encontrado{totalItems !== 1 ? 's' : ''}
           </p>
         </div>
-        
+
         <div className="tickets-list__actions">
           <div style={{ display: 'inline-flex', gap: '0.5rem', marginRight: '0.5rem' }}>
             <Button variant={viewMode === 'list' ? 'primary' : 'secondary'} size="sm" onClick={() => setViewMode('list')}>Lista</Button>
@@ -231,157 +240,116 @@ export function TicketsListPage() {
         </Alert>
       )}
 
-      <Card className="tickets-list__filters">
-        <CardBody>
-          <div className="table-toolbar">
-            <div className="table-toolbar__filters">
-              <Input
-                placeholder="Buscar por título, número ou cliente..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                leftIcon="🔍"
-              />
-              <Select
-                value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-              >
-                <option value="all">Todos os Status</option>
-                {Object.entries(statusLabels).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </Select>
-              <Select
-                value={filters.priority}
-                onChange={(e) => handleFilterChange('priority', e.target.value)}
-              >
-                <option value="all">Todas as Prioridades</option>
-                {Object.entries(priorityLabels).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </Select>
-              <Select
-                value={filters.category}
-                onChange={(e) => handleFilterChange('category', e.target.value)}
-              >
-                <option value="all">Todas as Categorias</option>
-                {Object.entries(categoryLabels).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </Select>
-            </div>
-            <div className="table-toolbar__actions">
-              {hasActiveFilters && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleClearFilters}
+      <TicketFilters
+        filters={{
+          search: filters.search,
+          status: filters.status,
+          priority: filters.priority,
+          category: filters.category,
+        }}
+        hasActiveFilters={hasActiveFilters}
+        onChange={handleFilterChange}
+        onClear={handleClearFilters}
+      />
+
+      {viewMode === 'list' && (
+        <Card className="tickets-list__table">
+          <Table hoverable className="table--sticky-header">
+            <TableHeader>
+              <TableRow>
+                <TableHeaderCell scope="col">Número</TableHeaderCell>
+                <TableHeaderCell scope="col">Título</TableHeaderCell>
+                <TableHeaderCell scope="col">Cliente</TableHeaderCell>
+                <TableHeaderCell scope="col">Status</TableHeaderCell>
+                <TableHeaderCell scope="col">Prioridade</TableHeaderCell>
+                <TableHeaderCell scope="col">Categoria</TableHeaderCell>
+                <TableHeaderCell scope="col">Responsável</TableHeaderCell>
+                <TableHeaderCell scope="col">Criado em</TableHeaderCell>
+                <TableHeaderCell scope="col">Ações</TableHeaderCell>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tickets.map((ticket) => (
+                <TableRow
+                  key={ticket.id}
+                  onClick={() => handleTicketClick(ticket)}
+                  className="tickets-list__row"
                 >
-                  Limpar Filtros
+                  <TableCell>
+                    <code className="tickets-list__number">{ticket.number ?? ticket.id}</code>
+                  </TableCell>
+                  <TableCell>
+                    <div className="tickets-list__title-cell">
+                      <span className="tickets-list__ticket-title">{ticket.title}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="tickets-list__customer">
+                      <span className="tickets-list__customer-name">{ticket.customerInfo?.name ?? '—'}</span>
+                      <span className="tickets-list__customer-email">{ticket.customerInfo?.email ?? ''}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(ticket.status)}>
+                      {statusLabels[ticket.status]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getPriorityVariant(ticket.priority)}>
+                      {priorityLabels[ticket.priority]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="tickets-list__category">
+                      {categoryLabels[ticket.category] ?? '—'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {ticket.assignee?.name ? (
+                      <span className="tickets-list__assignee">{ticket.assignee.name}</span>
+                    ) : (
+                      <span className="tickets-list__unassigned">Não atribuído</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <span className="tickets-list__date">
+                      {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Dropdown>
+                      <DropdownItem onClick={() => navigate(`/tickets/${ticket.id}`)}>
+                        Ver Detalhes
+                      </DropdownItem>
+                      <DropdownItem onClick={() => navigate(`/tickets/${ticket.id}/edit`)}>
+                        Editar
+                      </DropdownItem>
+                    </Dropdown>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {tickets.length === 0 && !loading && (
+            <div className="tickets-list__empty">
+              <div className="tickets-list__empty-icon">🎫</div>
+              <h3>Nenhum ticket encontrado</h3>
+              <p>
+                {hasActiveFilters
+                  ? 'Tente ajustar os filtros para encontrar tickets.'
+                  : 'Ainda não há tickets cadastrados.'}
+              </p>
+              {!hasActiveFilters && (
+                <Button
+                  variant="primary"
+                  onClick={() => navigate('/tickets/new')}
+                >
+                  Criar Primeiro Ticket
                 </Button>
               )}
             </div>
-          </div>
-        </CardBody>
-      </Card>
-
-      {viewMode === 'list' && (
-      <Card className="tickets-list__table">
-        <Table hoverable className="table--sticky-header">
-          <TableHeader>
-            <TableRow>
-              <TableHeaderCell scope="col">Número</TableHeaderCell>
-              <TableHeaderCell scope="col">Título</TableHeaderCell>
-              <TableHeaderCell scope="col">Cliente</TableHeaderCell>
-              <TableHeaderCell scope="col">Status</TableHeaderCell>
-              <TableHeaderCell scope="col">Prioridade</TableHeaderCell>
-              <TableHeaderCell scope="col">Categoria</TableHeaderCell>
-              <TableHeaderCell scope="col">Responsável</TableHeaderCell>
-              <TableHeaderCell scope="col">Criado em</TableHeaderCell>
-              <TableHeaderCell scope="col">Ações</TableHeaderCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {tickets.map((ticket) => (
-              <TableRow
-                key={ticket.id}
-                onClick={() => handleTicketClick(ticket)}
-                className="tickets-list__row"
-              >
-                <TableCell>
-                  <code className="tickets-list__number">{ticket.number ?? ticket.id}</code>
-                </TableCell>
-                <TableCell>
-                  <div className="tickets-list__title-cell">
-                    <span className="tickets-list__ticket-title">{ticket.title}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="tickets-list__customer">
-                    <span className="tickets-list__customer-name">{ticket.customerInfo?.name ?? '—'}</span>
-                    <span className="tickets-list__customer-email">{ticket.customerInfo?.email ?? ''}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={getStatusVariant(ticket.status)}>
-                    {statusLabels[ticket.status]}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={getPriorityVariant(ticket.priority)}>
-                    {priorityLabels[ticket.priority]}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <span className="tickets-list__category">
-                    {categoryLabels[ticket.category] ?? '—'}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  {ticket.assignee?.name ? (
-                    <span className="tickets-list__assignee">{ticket.assignee.name}</span>
-                  ) : (
-                    <span className="tickets-list__unassigned">Não atribuído</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <span className="tickets-list__date">
-                    {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <Dropdown>
-                    <DropdownItem onClick={() => navigate(`/tickets/${ticket.id}`)}>
-                      Ver Detalhes
-                    </DropdownItem>
-                    <DropdownItem onClick={() => navigate(`/tickets/${ticket.id}/edit`)}>
-                      Editar
-                    </DropdownItem>
-                  </Dropdown>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        {tickets.length === 0 && !loading && (
-          <div className="tickets-list__empty">
-            <div className="tickets-list__empty-icon">🎫</div>
-            <h3>Nenhum ticket encontrado</h3>
-            <p>
-              {hasActiveFilters
-                ? 'Tente ajustar os filtros para encontrar tickets.'
-                : 'Ainda não há tickets cadastrados.'}
-            </p>
-            {!hasActiveFilters && (
-              <Button
-                variant="primary"
-                onClick={() => navigate('/tickets/new')}
-              >
-                Criar Primeiro Ticket
-              </Button>
-            )}
-          </div>
-        )}
-      </Card>
+          )}
+        </Card>
       )}
 
       {viewMode === 'grid' && (

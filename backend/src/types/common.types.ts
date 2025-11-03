@@ -51,7 +51,7 @@ export interface SearchFilter {
 export type Status = 'active' | 'inactive' | 'pending' | 'suspended';
 
 // Tipos de prioridade
-export type Priority = 'low' | 'medium' | 'high' | 'critical';
+export type Priority = 'low' | 'medium' | 'high' | 'urgent';
 
 // Tipos de auditoria
 export interface AuditFields {
@@ -119,11 +119,11 @@ export interface WorkspaceInfo {
 }
 
 // Tipos de permissão
-export type Permission = 
-  | 'read' 
-  | 'write' 
-  | 'delete' 
-  | 'admin' 
+export type Permission =
+  | 'read'
+  | 'write'
+  | 'delete'
+  | 'admin'
   | 'owner';
 
 export interface UserPermissions {
@@ -140,10 +140,10 @@ export interface BaseStats {
 }
 
 // Tipos de notificação
-export type NotificationType = 
-  | 'info' 
-  | 'success' 
-  | 'warning' 
+export type NotificationType =
+  | 'info'
+  | 'success'
+  | 'warning'
   | 'error';
 
 export interface Notification {

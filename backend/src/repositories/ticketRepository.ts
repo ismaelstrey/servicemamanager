@@ -4,7 +4,16 @@ import { PrismaClient } from '@prisma/client';
 import { PaginationMeta } from '../types/common.types';
 import { calculatePagination, createPaginationMeta } from '../utils/paginationHelper';
 
-export type TicketStatus = 'open' | 'in_progress' | 'waiting_client' | 'resolved' | 'closed';
+export type TicketStatus =
+  | 'open'
+  | 'assigned'
+  | 'in_progress'
+  | 'pending'
+  | 'resolved'
+  | 'closed'
+  | 'cancelled'
+  // Legado ainda pode existir no banco; manter compatibilidade de leitura
+  | 'waiting_client';
 export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';
 export type TicketSource = 'manual' | 'zabbix' | 'api';
 
@@ -298,14 +307,18 @@ export class TicketRepository {
 
       const byStatus = {
         open: 0,
+        assigned: 0,
         in_progress: 0,
-        waiting_client: 0,
+        pending: 0,
         resolved: 0,
-        closed: 0
+        closed: 0,
+        cancelled: 0,
+        waiting_client: 0 // legado, será somado em pending abaixo
       } as Record<TicketStatus, number>;
 
       for (const g of statusGroups as Array<{ status: TicketStatus; _count: { _all: number } }>) {
-        byStatus[g.status] = g._count._all;
+        const key = (g.status === 'waiting_client' ? 'pending' : g.status) as TicketStatus;
+        byStatus[key] = (byStatus[key] || 0) + g._count._all;
       }
 
       const byPriority = { low: 0, medium: 0, high: 0, critical: 0 } as Record<TicketPriority, number>;
@@ -329,13 +342,18 @@ export class TicketRepository {
       });
       const board = {
         open: [],
+        assigned: [],
         in_progress: [],
-        waiting_client: [],
+        pending: [],
         resolved: [],
-        closed: []
+        closed: [],
+        cancelled: [],
+        waiting_client: [] // mantém chave legado apenas para compatibilidade de tipo
       } as KanbanBoard;
       for (const t of items as any[]) {
-        const col = t.status as TicketStatus;
+        // Normalizar status legado para novo padrão
+        const statusRaw = t.status as TicketStatus;
+        const col = (statusRaw === 'waiting_client' ? 'pending' : statusRaw) as TicketStatus;
         if (!board[col]) continue;
         board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt });
       }
@@ -359,13 +377,17 @@ export class TicketRepository {
       });
       const board = {
         open: [],
+        assigned: [],
         in_progress: [],
-        waiting_client: [],
+        pending: [],
         resolved: [],
-        closed: []
+        closed: [],
+        cancelled: [],
+        waiting_client: [] // mantém chave legado apenas para compatibilidade de tipo
       } as KanbanBoard;
       for (const t of items as any[]) {
-        const col = t.status as TicketStatus;
+        const statusRaw = t.status as TicketStatus;
+        const col = (statusRaw === 'waiting_client' ? 'pending' : statusRaw) as TicketStatus;
         if (!board[col]) continue;
         board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt });
       }

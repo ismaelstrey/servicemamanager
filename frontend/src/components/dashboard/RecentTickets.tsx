@@ -13,13 +13,17 @@ const getStatusVariant = (status: TicketStatus) => {
   switch (status) {
     case 'open':
       return 'info';
+    case 'assigned':
+      return 'info';
     case 'in_progress':
       return 'warning';
-    case 'waiting_client':
-      return 'warning';
+    case 'pending':
+      return 'info';
     case 'resolved':
       return 'success';
     case 'closed':
+      return 'secondary';
+    case 'cancelled':
       return 'secondary';
     default:
       return 'default';
@@ -30,14 +34,18 @@ const getStatusLabel = (status: TicketStatus) => {
   switch (status) {
     case 'open':
       return 'Aberto';
+    case 'assigned':
+      return 'Atribuído';
     case 'in_progress':
       return 'Em Andamento';
-    case 'waiting_client':
-      return 'Aguardando Cliente';
+    case 'pending':
+      return 'Pendente';
     case 'resolved':
       return 'Resolvido';
     case 'closed':
       return 'Fechado';
+    case 'cancelled':
+      return 'Cancelado';
     default:
       return status;
   }

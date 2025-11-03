@@ -24,6 +24,7 @@ const swagger_1 = __importDefault(require("./docs/swagger"));
 const rateLimitMiddleware_1 = require("./middleware/rateLimitMiddleware");
 const corsMiddleware_1 = require("./middleware/corsMiddleware");
 const redis_1 = require("./config/redis");
+const requestLogger_1 = require("./middleware/requestLogger");
 // Configura variáveis de ambiente
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -36,6 +37,8 @@ const port = process.env.NODE_ENV === 'production'
 // Middlewares globais
 app.use('/api', corsMiddleware_1.corsMiddleware);
 app.use(express_1.default.json());
+// Log de requisições (apenas em desenvolvimento)
+app.use('/api', requestLogger_1.requestLogger);
 // Rate limiting geral para todas as rotas da API
 app.use('/api', rateLimitMiddleware_1.generalRateLimit);
 // Rate limiting específico para autenticação
@@ -46,6 +49,8 @@ app.use('/api/client/auth', customerAuthRoutes_1.default);
 app.use('/api/providers', providerRoutes_1.default);
 app.use('/api/providers', equipmentRoutes_1.default);
 app.use('/api/providers', ticketRoutes_1.default);
+// Também expõe rotas de tickets sem prefixo de provider (ex.: /api/tickets/kanban)
+app.use('/api', ticketRoutes_1.default);
 app.use('/api/providers', passwordVaultRoutes_1.default);
 app.use('/api/providers', notificationRoutes_1.default);
 app.use('/api/dashboard', dashboardRoutes_1.default);

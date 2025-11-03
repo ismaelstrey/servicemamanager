@@ -28,7 +28,7 @@ interface DashboardStats {
 export function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentTickets, setRecentTickets] = useState<Ticket[]>([]);
   const [recentServiceOrders, setRecentServiceOrders] = useState<ServiceOrder[]>([]);
@@ -45,6 +45,8 @@ export function DashboardPage() {
   useEffect(() => {
     loadProvidersAndInit();
   }, []);
+
+
 
   const loadProvidersAndInit = async () => {
     try {
@@ -143,65 +145,65 @@ export function DashboardPage() {
           ApiService.get<PaginatedResponse<any>>(`/providers/${providerId}/tickets?page=1&limit=5`),
           ServiceOrderService.getServiceOrders({ page: 1, limit: 5 })
         ]);
-  
-      const newStats: DashboardStats = {
-        totalTickets: dashboardData.overview.totalTickets,
-        openTickets: dashboardData.overview.openTickets,
-        totalServiceOrders: (serviceOrderStats as any)?.total ?? 0,
-        pendingServiceOrders: (serviceOrderStats as any)?.pending ?? (serviceOrderStats as any)?.byStatus?.pending ?? 0,
-        completedThisMonth: (serviceOrderStats as any)?.completed ?? (serviceOrderStats as any)?.byStatus?.completed ?? 0,
-        revenue: (serviceOrderStats as any)?.totalRevenue ?? 0,
-        customerSatisfaction: 0,
-        averageResolutionTime: (serviceOrderStats as any)?.averageCompletionTime ?? 0,
-      };
-  
-      const recentTicketsData = (ticketsRes.data?.data ?? []);
-      const mappedTickets: Ticket[] = recentTicketsData.map((t: any) => ({
-        id: t.id,
-        providerId: t.providerId,
-        number: String(t.id),
-        title: t.title,
-        description: t.description,
-        status: t.status === 'waiting_client' ? 'pending' : t.status,
-        priority: t.priority,
-        category: 'other',
-        source: typeof t.source === 'string' ? (t.source === 'manual' ? 'web' : t.source) : 'web',
-        customerInfo: { name: '', email: '' },
-        comments: [],
-        attachments: [],
-        history: [],
-        tags: [],
-        slaStatus: t.slaStatus ?? 'within_sla',
-        createdAt: new Date(t.createdAt),
-        updatedAt: new Date(t.updatedAt),
-      }));
-  
-      const recentServiceOrdersData = (serviceOrdersRes.data ?? []);
-      const mappedServiceOrders: ServiceOrder[] = recentServiceOrdersData.map((so: any) => ({
-        id: so.id,
-        providerId: so.providerId ?? 0,
-        number: String(so.id),
-        title: so.title,
-        description: so.description,
-        status: so.status,
-        priority: so.priority,
-        type: 'maintenance',
-        category: 'support',
-        customerInfo: { name: '', email: '' },
-        tasks: [],
-        comments: [],
-        attachments: [],
-        history: [],
-        tags: [],
-        createdAt: new Date(so.createdAt),
-        updatedAt: new Date(so.updatedAt),
-      }));
-  
-      setStats(newStats);
-      setRecentTickets(mappedTickets);
-      setRecentServiceOrders(mappedServiceOrders);
-      setRecentActivities(dashboardData.recentActivities ?? []);
-    }
+
+        const newStats: DashboardStats = {
+          totalTickets: dashboardData.overview.totalTickets,
+          openTickets: dashboardData.overview.openTickets,
+          totalServiceOrders: (serviceOrderStats as any)?.total ?? 0,
+          pendingServiceOrders: (serviceOrderStats as any)?.pending ?? (serviceOrderStats as any)?.byStatus?.pending ?? 0,
+          completedThisMonth: (serviceOrderStats as any)?.completed ?? (serviceOrderStats as any)?.byStatus?.completed ?? 0,
+          revenue: (serviceOrderStats as any)?.totalRevenue ?? 0,
+          customerSatisfaction: 0,
+          averageResolutionTime: (serviceOrderStats as any)?.averageCompletionTime ?? 0,
+        };
+
+        const recentTicketsData = (ticketsRes.data?.data ?? []);
+        const mappedTickets: Ticket[] = recentTicketsData.map((t: any) => ({
+          id: t.id,
+          providerId: t.providerId,
+          number: String(t.id),
+          title: t.title,
+          description: t.description,
+          status: t.status === 'waiting_client' ? 'pending' : t.status,
+          priority: t.priority,
+          category: 'other',
+          source: typeof t.source === 'string' ? (t.source === 'manual' ? 'web' : t.source) : 'web',
+          customerInfo: { name: '', email: '' },
+          comments: [],
+          attachments: [],
+          history: [],
+          tags: [],
+          slaStatus: t.slaStatus ?? 'within_sla',
+          createdAt: new Date(t.createdAt),
+          updatedAt: new Date(t.updatedAt),
+        }));
+
+        const recentServiceOrdersData = (serviceOrdersRes.data ?? []);
+        const mappedServiceOrders: ServiceOrder[] = recentServiceOrdersData.map((so: any) => ({
+          id: so.id,
+          providerId: so.providerId ?? 0,
+          number: String(so.id),
+          title: so.title,
+          description: so.description,
+          status: so.status,
+          priority: so.priority,
+          type: 'maintenance',
+          category: 'support',
+          customerInfo: { name: '', email: '' },
+          tasks: [],
+          comments: [],
+          attachments: [],
+          history: [],
+          tags: [],
+          createdAt: new Date(so.createdAt),
+          updatedAt: new Date(so.updatedAt),
+        }));
+
+        setStats(newStats);
+        setRecentTickets(mappedTickets);
+        setRecentServiceOrders(mappedServiceOrders);
+        setRecentActivities(dashboardData.recentActivities ?? []);
+      }
     } catch (err) {
       setError('Erro ao carregar dados do dashboard');
       console.error('Dashboard loading error:', err);
@@ -387,7 +389,7 @@ export function DashboardPage() {
                 color="primary"
                 onClick={() => navigate('/tickets')}
               />
-              
+
               <StatsCard
                 title="Tickets Abertos"
                 value={stats.openTickets}
@@ -413,7 +415,7 @@ export function DashboardPage() {
             onClick={() => navigate('/providers')}
             tooltip="Clique para ver provedores"
           />
-          
+
           <StatsCard
             title="Ordens de Serviço"
             value={stats.totalServiceOrders}
@@ -422,7 +424,7 @@ export function DashboardPage() {
             color="success"
             onClick={() => navigate('/service-orders')}
           />
-          
+
           <StatsCard
             title="OS Pendentes"
             value={stats.pendingServiceOrders}
@@ -436,7 +438,7 @@ export function DashboardPage() {
             }}
             onClick={() => navigate('/service-orders?status=pending')}
           />
-          
+
           <StatsCard
             title="Concluídos este Mês"
             value={stats.completedThisMonth}
@@ -449,7 +451,7 @@ export function DashboardPage() {
               isPositive: true,
             }}
           />
-          
+
           <StatsCard
             title="Receita"
             value={`R$ ${stats.revenue.toLocaleString('pt-BR')}`}
@@ -462,7 +464,7 @@ export function DashboardPage() {
               isPositive: true,
             }}
           />
-          
+
           <StatsCard
             title="Satisfação do Cliente"
             value={`${stats.customerSatisfaction}/5`}
@@ -475,7 +477,7 @@ export function DashboardPage() {
               isPositive: true,
             }}
           />
-          
+
           <StatsCard
             title="Tempo Médio de Resolução"
             value={`${stats.averageResolutionTime}h`}
@@ -510,7 +512,7 @@ export function DashboardPage() {
               onTicketClick={handleTicketClick}
             />
           )}
-          
+
           <RecentServiceOrders
             serviceOrders={recentServiceOrders}
             onViewAll={() => navigate('/service-orders')}

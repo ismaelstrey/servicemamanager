@@ -186,7 +186,7 @@ class MLService {
      * Calcula scores de prioridade para um ticket
      */
     calculatePriorityScores(features, model) {
-        const scores = { low: 0, medium: 0, high: 0, critical: 0 };
+        const scores = { low: 0, medium: 0, high: 0, urgent: 0 };
         // Score baseado em palavras-chave do título
         features.titleWords.forEach((word) => {
             const weight = model.features.titleKeywords[word] || 0;
@@ -325,7 +325,7 @@ class MLService {
     }
     addWeightToScores(scores, weight) {
         if (weight > 0.7)
-            scores.critical += weight;
+            scores.urgent += weight;
         else if (weight > 0.5)
             scores.high += weight;
         else if (weight > 0.3)
