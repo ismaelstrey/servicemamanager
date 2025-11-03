@@ -52,10 +52,13 @@ const TicketsKanbanPage: React.FC = () => {
         const raw = res.data || {};
 
         // Normalização: converte chaves antigas para novos statuses (ex: waiting_client -> pending)
+        // e mescla arrays caso venham as duas chaves (pending e waiting_client)
         const normalized: KanbanBoard = {} as KanbanBoard;
         Object.keys(raw || {}).forEach((key) => {
           const newKey = key === 'waiting_client' ? 'pending' : key;
-          (normalized as any)[newKey] = (raw as any)[key];
+          const incoming = ((raw as any)[key] || []) as any[];
+          const existing = ((normalized as any)[newKey] || []) as any[];
+          (normalized as any)[newKey] = [...existing, ...incoming];
         });
 
         // Garantir todas as colunas do columnOrder existem (arrays vazios por padrão)
@@ -182,8 +185,15 @@ const TicketsKanbanPage: React.FC = () => {
               const cacheBuster = `t=${Date.now()}`;
               const url = baseUrl.includes('?') ? `${baseUrl}&${cacheBuster}` : `${baseUrl}?${cacheBuster}`;
               const fresh = await ApiService.get<KanbanBoard>(url);
-              // Normalizar conforme carregamento inicial
-              const normalized: KanbanBoard = { ...fresh.data };
+              // Normalização conforme carregamento inicial (mesma lógica)
+              const raw = fresh.data || {};
+              const normalized: KanbanBoard = {} as KanbanBoard;
+              Object.keys(raw || {}).forEach((key) => {
+                const newKey = key === 'waiting_client' ? 'pending' : key;
+                const incoming = ((raw as any)[key] || []) as any[];
+                const existing = ((normalized as any)[newKey] || []) as any[];
+                (normalized as any)[newKey] = [...existing, ...incoming];
+              });
               const completed: KanbanBoard = {} as KanbanBoard;
               for (const col of columnOrder) {
                 completed[col] = (normalized[col] || []).map((item: any) => ({
