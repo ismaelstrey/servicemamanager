@@ -69,12 +69,13 @@ const variantStyles = {
     border: 1px solid transparent;
 
     &:hover:not(:disabled) {
-      background-color: ${({ theme }) => theme.colors.neutral[100]};
-      color: ${({ theme }) => theme.colors.primary.main};
+      background-color: transparent;
+      color: ${({ theme }) => theme.colors.text.secondary};
     }
 
     &:active:not(:disabled) {
-      background-color: ${({ theme }) => theme.colors.neutral[200]};
+      background-color: transparent;
+      color: ${({ theme }) => theme.colors.primary.main};
     }
   `,
 

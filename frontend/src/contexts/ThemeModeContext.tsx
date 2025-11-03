@@ -55,7 +55,8 @@ export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     document.documentElement.setAttribute('data-theme', effectiveMode);
   }, [mode, effectiveMode]);
 
-  const toggle = () => setMode(prev => (prev === 'dark' ? 'light' : prev === 'light' ? 'dark' : 'light'));
+  // Toggle cíclico minimalista: dark -> light -> system -> dark
+  const toggle = () => setMode(prev => (prev === 'dark' ? 'light' : prev === 'light' ? 'system' : 'dark'));
 
   return (
     <ThemeModeContext.Provider value={{ mode, theme, setMode, toggle }}>

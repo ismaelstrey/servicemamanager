@@ -1,21 +1,27 @@
 import React from 'react';
 import { useThemeMode } from '../../contexts/ThemeModeContext';
 import Button from './Button';
-import { Sun, Moon } from 'lucide-react';
+import Tooltip from './Tooltip';
+import { Sun, Moon, Monitor } from 'lucide-react';
 
 const ThemeToggle: React.FC = () => {
   const { mode, toggle } = useThemeMode();
-  const isDark = mode === 'dark';
+
+  const icon = mode === 'dark' ? <Moon size={18} /> : mode === 'light' ? <Sun size={18} /> : <Monitor size={18} />;
+  const tooltip = `Tema: ${mode === 'dark' ? 'Escuro' : mode === 'light' ? 'Claro' : 'Sistema'}`;
+
   return (
-    <Button
-      variant="secondary"
-      onClick={toggle}
-      aria-label={isDark ? 'Alternar para tema claro' : 'Alternar para tema escuro'}
-      title={isDark ? 'Alternar para tema claro' : 'Alternar para tema escuro'}
-      leftIcon={isDark ? <Sun size={18} /> : <Moon size={18} />}
-    >
-      {isDark ? 'Tema Claro' : 'Tema Escuro'}
-    </Button>
+    <Tooltip content={tooltip} placement="bottom">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={toggle}
+        aria-label="Alternar modo de tema"
+        title={tooltip}
+        leftIcon={icon}
+        children=""
+      />
+    </Tooltip>
   );
 };
 

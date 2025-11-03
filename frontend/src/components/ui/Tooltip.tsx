@@ -18,7 +18,10 @@ const Bubble = styled.div<{ placement: TooltipPlacement }>`
   position: absolute;
   white-space: nowrap;
   background: ${({ theme }) => theme.colors.background.overlay};
-  color: ${({ theme }) => theme.colors.text.inverse};
+  color: ${({ theme }) =>
+    theme.mode === 'dark'
+      ? theme.colors.text.primary
+      : theme.colors.text.inverse};
   border-radius: ${({ theme }) => theme.borders.radius.sm};
   padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
   box-shadow: ${({ theme }) => theme.shadows.md};

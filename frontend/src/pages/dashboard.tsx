@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { StatsCard, RecentTickets, RecentServiceOrders, QuickActions, createQuickActions } from '../components/dashboard';
-import { Spinner, Alert, Select, Button, ChartContainer, Toast } from '../components/ui';
+import { Spinner, Alert, ChartContainer, Toast } from '../components/ui';
+import DashboardHeader from '../components/dashboard/DashboardHeader';
 import type { Ticket } from '../types/ticket';
 import type { ServiceOrder } from '../types/serviceOrder';
 import { useNavigate } from 'react-router-dom';
@@ -315,67 +316,17 @@ export function DashboardPage() {
 
   return (
     <div className="dashboard">
-      <div className="dashboard__header">
-        <h1 className="dashboard__title">
-          Bem-vindo, {user?.name || 'Usuário'}!
-        </h1>
-        <p className="dashboard__subtitle">
-          Aqui está um resumo das suas atividades recentes
-        </p>
-        <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ minWidth: 240 }}>
-            <Select
-              label="Contexto"
-              size="sm"
-              value={selectedProviderId === 'global' ? 'global' : String(selectedProviderId)}
-              onChange={(e) => handleProviderChange((e.target as HTMLSelectElement).value)}
-            >
-              <option value="global">Visão Global</option>
-              {providers.map((p) => (
-                <option key={p.id} value={String(p.id)}>{p.name}</option>
-              ))}
-            </Select>
-          </div>
-          <div style={{ minWidth: 200 }}>
-            <Select
-              label="Período"
-              size="sm"
-              value={period}
-              onChange={(e) => setPeriod((e.target as HTMLSelectElement).value as any)}
-            >
-              <option value="7d">7 dias</option>
-              <option value="30d">30 dias</option>
-              <option value="3m">3 meses</option>
-              <option value="12m">12 meses</option>
-            </Select>
-          </div>
-          <Button variant="secondary" onClick={() => exportCsv()}>
-            Exportar Relatório (CSV)
-          </Button>
-          {providers.length === 0 && (
-            <button
-              onClick={() => navigate('/providers/create')}
-              style={{
-                padding: '8px 12px',
-                borderRadius: 8,
-                border: 'none',
-                background: '#2563eb',
-                color: '#fff',
-                cursor: 'pointer'
-              }}
-            >
-              Criar Provedor
-            </button>
-          )}
-        </div>
-        {selectedProviderId === 'global' && (
-          <div style={{ marginTop: 8 }}>
-            <Alert variant="info" title="Visão Global">
-              Você está visualizando dados gerais. Selecione um provedor para acessar o workspace específico.
-            </Alert>
-          </div>
-        )}
-      </div>
+      <DashboardHeader
+        title={`Bem-vindo, ${user?.name || 'Usuário'}!`}
+        subtitle="Aqui está um resumo das suas atividades recentes"
+        providers={providers}
+        selectedProviderId={selectedProviderId}
+        onProviderChange={(value) => handleProviderChange(value)}
+        period={period as '7d' | '30d' | '3m' | '12m'}
+        onPeriodChange={(value) => setPeriod(value as any)}
+        onExportCsv={() => exportCsv()}
+        onCreateProvider={() => navigate('/providers/create')}
+      />
 
       {stats && (
         <div className="dashboard__stats">
