@@ -110,6 +110,9 @@ export class TicketService {
       await invalidateProviderCache(String(existing.providerId));
       await invalidateResourceCache('ticket', String(id));
       await invalidateResourceCache('stats');
+      // Garantir que boards de Kanban sejam atualizados imediatamente
+      await invalidateResourceCache('kanban');
+      await invalidateResourceCache('kanban_all');
     }
 
     return updated;
@@ -163,6 +166,9 @@ export class TicketService {
       await invalidateProviderCache(String(existing.providerId));
       await invalidateResourceCache('ticket', String(id));
       await invalidateResourceCache('stats');
+      // Garantir que boards de Kanban sejam atualizados imediatamente
+      await invalidateResourceCache('kanban');
+      await invalidateResourceCache('kanban_all');
     }
 
     return updated;

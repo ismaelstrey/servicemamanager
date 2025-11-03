@@ -172,7 +172,9 @@ const TicketsKanbanPage: React.FC = () => {
             setToastOpen(true);
             // Recarregar o board para desfazer otimista e refletir estado real
             try {
-              const url = providerId ? `/providers/${providerId}/tickets/kanban` : `/tickets/kanban`;
+              const baseUrl = providerId ? `/providers/${providerId}/tickets/kanban` : `/tickets/kanban`;
+              const cacheBuster = `t=${Date.now()}`;
+              const url = baseUrl.includes('?') ? `${baseUrl}&${cacheBuster}` : `${baseUrl}?${cacheBuster}`;
               const fresh = await ApiService.get<KanbanBoard>(url);
               // Normalizar conforme carregamento inicial
               const normalized: KanbanBoard = { ...fresh.data };

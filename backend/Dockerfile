@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Etapa de build (prepara node_modules e Prisma Client)
-FROM node:20-slim AS build
+FROM node:20-bookworm AS build
 WORKDIR /app
 
 # Dependências necessárias para build
@@ -27,7 +27,7 @@ RUN npx prisma generate
 COPY dist ./dist
 
 # Etapa de runtime
-FROM node:20-slim AS runtime
+FROM node:20-bookworm AS runtime
 WORKDIR /app
 
 # Dependências necessárias para Prisma e healthcheck

@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { ThemeToggle } from '../ui'
+import ProfileMenu from './ProfileMenu'
 
 const LayoutContainer = styled.div`
   min-height: 100vh;
@@ -33,6 +34,12 @@ const HeaderContent = styled.div`
   justify-content: space-between;
 `
 
+const RightActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`
+
 interface LayoutProps {
   children: React.ReactNode
   title?: string
@@ -44,7 +51,10 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'TelecomAI' }) => {
       <Header>
         <HeaderContent>
           <Title>{title}</Title>
-          <ThemeToggle />
+          <RightActions>
+            <ThemeToggle />
+            <ProfileMenu />
+          </RightActions>
         </HeaderContent>
       </Header>
       <Main>

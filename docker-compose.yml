@@ -3,6 +3,7 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: telecomai-postgres
+    init: true
     restart: unless-stopped
     environment:
       # Variáveis do banco (podem vir do .env). Defaults entre chaves são usados se não houver .env.
@@ -18,10 +19,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
 
   redis:
     image: redis:7-alpine
     container_name: telecomai-redis
+    init: true
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-localdevredis}"]
     ports:
@@ -33,25 +36,29 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: telecomai-backend
+    init: true
     restart: unless-stopped
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${BACKEND_PORT:-4002}
       JWT_SECRET: ${JWT_SECRET:-local-dev-secret}
       FRONTEND_URL: http://localhost:5173
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-telecomai}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-telecomai}?schema=public
       REDIS_ENABLED: ${REDIS_ENABLED:-true}
-      REDIS_URL: redis://redis:${REDIS_PORT:-6379}
+      REDIS_URL: redis://redis:6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-localdevredis}
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
       - "${BACKEND_PORT:-4002}:4002"
     healthcheck:
@@ -59,6 +66,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
 volumes:
   postgres_data:

@@ -27,7 +27,7 @@ const Container = styled.div`
   z-index: ${({ theme }) => theme.zIndex.toast};
 `;
 
-const Card = styled.div<{ variant: ToastVariant }>`
+const Card = styled.div<{ $variant: ToastVariant }>`
   min-width: 280px;
   max-width: 360px;
   background: ${({ theme }) => theme.colors.background.secondary};
@@ -39,10 +39,10 @@ const Card = styled.div<{ variant: ToastVariant }>`
   animation: ${slideIn} 200ms ease;
   color: ${({ theme }) => theme.colors.text.primary};
 
-  ${({ theme, variant }) =>
-    variant === 'success' && css`border-left-color: ${theme.colors.success.main};` ||
-    variant === 'warning' && css`border-left-color: ${theme.colors.warning.main};` ||
-    variant === 'error' && css`border-left-color: ${theme.colors.error.main};` ||
+  ${({ theme, $variant }) =>
+    $variant === 'success' && css`border-left-color: ${theme.colors.success.main};` ||
+    $variant === 'warning' && css`border-left-color: ${theme.colors.warning.main};` ||
+    $variant === 'error' && css`border-left-color: ${theme.colors.error.main};` ||
     css`border-left-color: ${theme.colors.info.main};`}
 `;
 
@@ -66,7 +66,7 @@ export const Toast: React.FC<ToastProps> = ({ open, onClose, duration = 3000, ti
 
   return (
     <Container>
-      <Card variant={variant} role="status" aria-live="polite" {...props}>
+      <Card $variant={variant} role="status" aria-live="polite" {...props}>
         {title && <Title>{title}</Title>}
         {description && <Desc>{description}</Desc>}
       </Card>

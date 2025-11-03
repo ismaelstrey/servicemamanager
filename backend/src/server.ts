@@ -20,6 +20,7 @@ import swaggerSpec from './docs/swagger';
 import { generalRateLimit, authRateLimit, aiRateLimit, createResourceRateLimit } from './middleware/rateLimitMiddleware';
 import { corsMiddleware, restrictiveCorsMiddleware, publicCorsMiddleware, validateCorsConfig } from './middleware/corsMiddleware';
 import { redisClient } from './config/redis';
+import { requestLogger } from './middleware/requestLogger';
 
 // Configura variáveis de ambiente
 dotenv.config();
@@ -36,6 +37,8 @@ validateCorsConfig();
 // Middlewares globais
 app.use('/api', corsMiddleware);
 app.use(express.json());
+// Log de requisições (apenas em desenvolvimento)
+app.use('/api', requestLogger);
 
 // Rate limiting geral para todas as rotas da API
 app.use('/api', generalRateLimit);
