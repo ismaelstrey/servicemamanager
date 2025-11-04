@@ -64,7 +64,9 @@ api.interceptors.response.use(
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
         return Promise.reject(error);
       }
 
@@ -91,7 +93,9 @@ api.interceptors.response.use(
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           localStorage.removeItem('refreshToken');
-          window.location.href = '/login';
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
           return Promise.reject(refreshError);
         }
       }
@@ -112,7 +116,9 @@ api.interceptors.response.use(
       // Fluxo cliente: ainda sem refresh automático
       localStorage.removeItem('clientToken');
       localStorage.removeItem('clientUser');
-      window.location.href = '/client/login';
+      if (window.location.pathname !== '/client/login') {
+        window.location.href = '/client/login';
+      }
     }
 
     return Promise.reject(error);

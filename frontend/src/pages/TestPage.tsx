@@ -82,7 +82,7 @@ const TestPage: React.FC = () => {
 
           <h3>Tamanhos</h3>
           <FlexRow>
-            <Button size="xs">Extra Small</Button>
+<Button size="sm">Extra Small</Button>
             <Button size="sm">Small</Button>
             <Button size="md">Medium</Button>
             <Button size="lg">Large</Button>

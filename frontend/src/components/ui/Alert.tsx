@@ -10,6 +10,7 @@ export interface AlertProps {
   className?: string;
   title?: string;
   dismissible?: boolean;
+  description?: React.ReactNode;
   onDismiss?: () => void;
   icon?: React.ReactNode;
 }
@@ -26,6 +27,7 @@ export const Alert: React.FC<AlertProps> = ({
   variant,
   size = 'md',
   className = '',
+  description,
   title,
   dismissible = false,
   onDismiss,
@@ -47,7 +49,7 @@ export const Alert: React.FC<AlertProps> = ({
   const alertIcon = icon || defaultIcons[variant as keyof typeof defaultIcons];
 
   return (
-    <div className={classes} role="alert">
+    <div className={classes} role="alert" aria-live="polite">
       <div className="alert__content">
         {alertIcon && (
           <div className="alert__icon">
@@ -58,6 +60,11 @@ export const Alert: React.FC<AlertProps> = ({
           {title && (
             <div className="alert__title">
               {title}
+              {description && (
+                <div className="alert__description">
+                  {description}
+                </div>
+              )}
             </div>
           )}
           <div className="alert__message">

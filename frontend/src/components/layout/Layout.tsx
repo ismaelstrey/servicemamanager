@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
+import { useNavigate } from 'react-router-dom'
 import { ThemeToggle } from '../ui'
 import ProfileMenu from './ProfileMenu'
 
@@ -26,6 +27,7 @@ const Title = styled.h1`
   color: ${({ theme }) => theme.colors.text.primary};
   font-size: 1.5rem;
   margin: 0;
+  cursor: pointer; /* apenas cursor pointer, sem hover */
 `
 
 const HeaderContent = styled.div`
@@ -46,11 +48,24 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, title = 'TelecomAI' }) => {
+  const navigate = useNavigate()
   return (
     <LayoutContainer>
       <Header>
         <HeaderContent>
-          <Title>{title}</Title>
+          <Title
+            role="link"
+            tabIndex={0}
+            onClick={() => navigate('/dashboard')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                navigate('/dashboard')
+              }
+            }}
+          >
+            {title}
+          </Title>
           <RightActions>
             <ThemeToggle />
             <ProfileMenu />

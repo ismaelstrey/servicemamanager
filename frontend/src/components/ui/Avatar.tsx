@@ -81,7 +81,7 @@ export const Avatar: React.FC<AvatarProps> = ({ src, alt, name, size = 'md', sta
 
   return (
     <Wrapper size={size} aria-label={name} {...props}>
-      {src ? <Img src={src} alt={alt ?? name ?? 'avatar'} /> : <Initials>{initials}</Initials>}
+      {src ? <Img src={src} alt={alt ?? name ?? 'avatar'} loading="lazy" /> : <Initials>{initials}</Initials>}
       <StatusDot status={status} />
     </Wrapper>
   );

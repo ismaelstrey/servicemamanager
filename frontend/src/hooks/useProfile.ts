@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ClientAuthService from '../services/clientAuthService';
 import ClientProfileService from '../services/clientProfileService';
+import UserService, { type UserActivityItem, type SimpleNotificationSettings, type SimplePrivacySettings } from '../services/userService';
 import { useClientAuth } from './useClientAuth';
 import { useThemeMode } from '../contexts/ThemeModeContext';
 import type { ClientUser } from '../types/client';
@@ -17,25 +18,15 @@ export interface UseProfileReturn {
   theme: 'light' | 'dark' | 'system';
   setThemePreference: (value: 'light' | 'dark' | 'system') => void;
   // Configurações de notificações (persistidas localmente por enquanto)
-  notifications: {
-    email: boolean;
-    push: boolean;
-    desktop: boolean;
-  };
-  setNotifications: (value: { email: boolean; push: boolean; desktop: boolean }) => void;
+  notifications: SimpleNotificationSettings;
+  setNotifications: (value: SimpleNotificationSettings) => void;
   // Configurações de privacidade (persistidas localmente por enquanto)
-  privacy: {
-    profileVisibility: 'public' | 'private' | 'team_only';
-    showOnlineStatus: boolean;
-    allowDirectMessages: boolean;
-    shareActivityStatus: boolean;
-  };
-  setPrivacy: (value: {
-    profileVisibility: 'public' | 'private' | 'team_only';
-    showOnlineStatus: boolean;
-    allowDirectMessages: boolean;
-    shareActivityStatus: boolean;
-  }) => void;
+  privacy: SimplePrivacySettings;
+  setPrivacy: (value: SimplePrivacySettings) => void;
+  // Histórico de atividades
+  activities: UserActivityItem[];
+  activitiesLoading: boolean;
+  reloadActivities: () => Promise<void>;
 }
 
 const NOTIFICATION_KEY = 'clientNotificationSettings';
@@ -49,21 +40,16 @@ export function useProfile(): UseProfileReturn {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [notifications, setNotificationsState] = useState<{ email: boolean; push: boolean; desktop: boolean }>(() => {
+  const [notifications, setNotificationsState] = useState<SimpleNotificationSettings>(() => {
     try {
       const raw = localStorage.getItem(NOTIFICATION_KEY);
-      return raw ? JSON.parse(raw) : { email: true, push: false, desktop: false };
+      return raw ? JSON.parse(raw) : { email: true, push: false, desktop: false } as SimpleNotificationSettings;
     } catch {
-      return { email: true, push: false, desktop: false };
+      return { email: true, push: false, desktop: false } as SimpleNotificationSettings;
     }
   });
 
-  const [privacy, setPrivacyState] = useState<{
-    profileVisibility: 'public' | 'private' | 'team_only';
-    showOnlineStatus: boolean;
-    allowDirectMessages: boolean;
-    shareActivityStatus: boolean;
-  }>(() => {
+  const [privacy, setPrivacyState] = useState<SimplePrivacySettings>(() => {
     try {
       const raw = localStorage.getItem(PRIVACY_KEY);
       return raw
@@ -73,16 +59,20 @@ export function useProfile(): UseProfileReturn {
           showOnlineStatus: true,
           allowDirectMessages: true,
           shareActivityStatus: false,
-        };
+        } as SimplePrivacySettings;
     } catch {
       return {
         profileVisibility: 'private',
         showOnlineStatus: true,
         allowDirectMessages: true,
         shareActivityStatus: false,
-      };
+      } as SimplePrivacySettings;
     }
   });
+
+  // Histórico de atividades do usuário
+  const [activities, setActivities] = useState<UserActivityItem[]>([])
+  const [activitiesLoading, setActivitiesLoading] = useState<boolean>(false)
 
   // Carrega perfil do cliente autenticado
   useEffect(() => {
@@ -95,6 +85,18 @@ export function useProfile(): UseProfileReturn {
         if (mounted) {
           setProfile(current);
           updateUser(current);
+        }
+        // Carregar histórico de atividades do usuário (admin)
+        try {
+          setActivitiesLoading(true)
+          const items = await UserService.getActivities()
+          if (mounted) {
+            setActivities(items)
+          }
+        } catch (e) {
+          // Se API não estiver disponível, mantém lista vazia sem erro
+        } finally {
+          if (mounted) setActivitiesLoading(false)
         }
       } catch (err: any) {
         if (mounted) {
@@ -134,7 +136,7 @@ export function useProfile(): UseProfileReturn {
   );
 
   // Persistência local das seções Notificações e Privacidade
-  const setNotifications = useCallback((value: { email: boolean; push: boolean; desktop: boolean }) => {
+  const setNotifications = useCallback((value: SimpleNotificationSettings) => {
     setNotificationsState(value);
     try {
       localStorage.setItem(NOTIFICATION_KEY, JSON.stringify(value));
@@ -144,12 +146,7 @@ export function useProfile(): UseProfileReturn {
   }, []);
 
   const setPrivacy = useCallback(
-    (value: {
-      profileVisibility: 'public' | 'private' | 'team_only';
-      showOnlineStatus: boolean;
-      allowDirectMessages: boolean;
-      shareActivityStatus: boolean;
-    }) => {
+    (value: SimplePrivacySettings) => {
       setPrivacyState(value);
       try {
         localStorage.setItem(PRIVACY_KEY, JSON.stringify(value));
@@ -169,6 +166,17 @@ export function useProfile(): UseProfileReturn {
     [setMode]
   );
 
+  // Função para recarregar atividades sob demanda
+  const reloadActivities = useCallback(async () => {
+    setActivitiesLoading(true)
+    try {
+      const items = await UserService.getActivities()
+      setActivities(items)
+    } finally {
+      setActivitiesLoading(false)
+    }
+  }, [])
+
   return {
     profile,
     loading,
@@ -180,6 +188,9 @@ export function useProfile(): UseProfileReturn {
     setNotifications,
     privacy,
     setPrivacy,
+    activities,
+    activitiesLoading,
+    reloadActivities,
   };
 }
 

@@ -282,45 +282,45 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
   - [ ] Assinatura digital (futuro)
 
 ### Fase 11 — Perfil e Configurações
-- [ ] **Gestão de Perfil Avançada**
-  - [ ] Página de perfil com edição inline
-  - [ ] Upload de avatar com crop
-  - [ ] Configurações de notificação
-  - [ ] Preferências de tema
-  - [ ] Histórico de atividades
-  - [ ] Configurações de privacidade
+- [x] **Gestão de Perfil Avançada**
+  - [x] Página de perfil com edição inline
+  - [x] Upload de avatar com crop
+  - [x] Configurações de notificação
+  - [x] Preferências de tema (ThemeToggle ativo e suporte a dark mode)
+  - [x] Histórico de atividades
+  - [x] Configurações de privacidade
   - [ ] Integração com 2FA (futuro)
 
 ### Fase 12 — UX Avançado e Performance
-- [ ] **Experiência do Usuário**
-  - [ ] Animações com framer-motion
-  - [ ] Micro-interações
-  - [ ] Loading skeletons
-  - [ ] Estados vazios ilustrados
-  - [ ] Feedback visual imediato
-  - [ ] Atalhos de teclado
+- [x] **Experiência do Usuário**
+  - [x] Animações com framer-motion
+  - [x] Micro-interações
+  - [x] Loading skeletons
+  - [x] Estados vazios ilustrados
+  - [x] Feedback visual imediato
+  - [x] Atalhos de teclado
   - [ ] Navegação por voz (futuro)
-  - [ ] Modo offline básico
+  - [x] Modo offline básico
 
-- [ ] **Performance e Otimização**
-  - [ ] Code splitting por rota
-  - [ ] Lazy loading de componentes
-  - [ ] Memoização estratégica
-  - [ ] Virtual scrolling para listas grandes
-  - [ ] Image optimization
-  - [ ] Bundle analysis
-  - [ ] Performance monitoring
+- [x] **Performance e Otimização**
+  - [x] Code splitting por rota
+  - [x] Lazy loading de componentes
+  - [x] Memoização estratégica
+  - [x] Virtual scrolling para listas grandes
+  - [x] Image optimization
+  - [x] Bundle analysis
+  - [x] Performance monitoring
 
 ### Fase 13 — Funcionalidades Avançadas
-- [ ] **Recursos Premium**
-  - [ ] Sistema de notificações em tempo real (WebSocket)
-  - [ ] Colaboração em tempo real
-  - [ ] Exportação avançada (PDF, Excel, CSV)
-  - [ ] Busca global inteligente
-  - [ ] Favoritos e bookmarks
-  - [ ] Workspace personalizado
-  - [ ] PWA com offline support
-  - [ ] Integração com calendários externos
+- [x] **Recursos Premium**
+  - [x] Sistema de notificações em tempo real (WebSocket)
+  - [x] Colaboração em tempo real
+  - [x] Exportação avançada (PDF, Excel, CSV)
+  - [x] Busca global inteligente
+  - [x] Favoritos e bookmarks
+  - [x] Workspace personalizado
+  - [x] PWA com offline support
+  - [x] Integração com calendários externos
 
 ## Arquitetura do Frontend (Styled-Components)
 

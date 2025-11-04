@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Card, CardBody,
@@ -14,7 +14,12 @@ import type { Priority } from '../../types/common';
 import { UserRole } from '../../types/auth';
 import { TicketService } from '../../services/ticketService';
 import { useAuth } from '../../hooks/useAuth';
-import TicketFilters from '../../components/tickets/ticketFilters';
+const TicketFilters = React.lazy(() => import('../../components/tickets/ticketFilters'));
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import jsPDF from 'jspdf';
+import { useNotifications } from '../../hooks/useNotifications';
+import { usePresence } from '../../hooks/usePresence';
 
 interface TicketsFilters {
   search: string;
@@ -89,7 +94,16 @@ export function TicketsListPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => (localStorage.getItem('tickets.viewMode') as 'list' | 'grid') || 'list');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState<boolean>(false);
+  const [favoriteIds, setFavoriteIds] = useState<number[]>(() => {
+    try {
+      const raw = localStorage.getItem('favorites.tickets');
+      return raw ? JSON.parse(raw) as number[] : [];
+    } catch {
+      return [];
+    }
+  });
 
   const [filters, setFilters] = useState<TicketsFilters>({
     search: searchParams.get('search') || '',
@@ -168,6 +182,103 @@ export function TicketsListPage() {
     loadTickets();
   }, [loadTickets]);
 
+  // Persistência do modo de visualização
+  useEffect(() => {
+    try { localStorage.setItem('tickets.viewMode', viewMode); } catch { }
+  }, [viewMode]);
+
+  // Utilitário: alternar favorito
+  const toggleFavorite = (id: number) => {
+    setFavoriteIds(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      try { localStorage.setItem('favorites.tickets', JSON.stringify(next)); } catch { }
+      return next;
+    });
+  };
+
+  // Tickets exibidos considerando favoritos
+  const displayedTickets = useMemo(() => {
+    return showFavoritesOnly ? tickets.filter(t => favoriteIds.includes(t.id)) : tickets;
+  }, [tickets, showFavoritesOnly, favoriteIds]);
+
+  // Exportações avançadas
+  const exportCSV = () => {
+    const rows = displayedTickets.map(t => ({
+      Numero: t.number ?? t.id,
+      Titulo: t.title,
+      Cliente: t.customerInfo?.name ?? '',
+      Email: t.customerInfo?.email ?? '',
+      Status: statusLabels[t.status],
+      Prioridade: priorityLabels[t.priority],
+      Categoria: categoryLabels[t.category],
+      Responsavel: t.assignee?.name ?? '',
+      CriadoEm: new Date(t.createdAt).toISOString()
+    }));
+    const headers = Object.keys(rows[0] || {});
+    const csv = [headers.join(';'), ...rows.map(r => headers.map(h => String((r as any)[h]).replace(/;/g, ',')).join(';'))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    saveAs(blob, 'tickets.csv');
+  };
+
+  const exportExcel = () => {
+    const data = displayedTickets.map(t => ({
+      Numero: t.number ?? t.id,
+      Titulo: t.title,
+      Cliente: t.customerInfo?.name ?? '',
+      Email: t.customerInfo?.email ?? '',
+      Status: statusLabels[t.status],
+      Prioridade: priorityLabels[t.priority],
+      Categoria: categoryLabels[t.category],
+      Responsavel: t.assignee?.name ?? '',
+      CriadoEm: new Date(t.createdAt).toLocaleString('pt-BR')
+    }));
+    const sheet = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, sheet, 'Tickets');
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    saveAs(new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'tickets.xlsx');
+  };
+
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(12);
+    doc.text('Relatório de Tickets', 14, 16);
+    let y = 26;
+    displayedTickets.slice(0, 50).forEach(t => {
+      const line = `${t.number ?? t.id} • ${t.title} • ${statusLabels[t.status]} • ${priorityLabels[t.priority]} • ${t.customerInfo?.name ?? ''}`;
+      doc.text(line.substring(0, 95), 14, y);
+      y += 6;
+      if (y > 280) { doc.addPage(); y = 20; }
+    });
+    doc.save('tickets.pdf');
+  };
+
+  // Exportar evento ICS para um ticket
+  const exportICS = (ticket: Ticket) => {
+    const start = new Date(ticket.createdAt);
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const fmt = (d: Date) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+    const uid = `${ticket.id}@telecomai`;
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//TelecomAI//PT-BR',
+      'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${fmt(new Date())}`,
+      `DTSTART:${fmt(start)}`,
+      `DTEND:${fmt(end)}`,
+      `SUMMARY:${(ticket.title || 'Ticket')}`,
+      `DESCRIPTION:Status ${statusLabels[ticket.status]} - Prioridade ${priorityLabels[ticket.priority]}`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    saveAs(blob, `ticket-${ticket.number ?? ticket.id}.ics`);
+  };
+
   const handleFilterChange = (key: keyof TicketsFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setCurrentPage(1);
@@ -194,6 +305,10 @@ export function TicketsListPage() {
   const hasActiveFilters = useMemo(() => {
     return Object.values(filters).some(value => value && value !== 'all');
   }, [filters]);
+
+  // Notificações e presença
+  const { count: notificationCount } = useNotifications();
+  const { count: presenceCount } = usePresence('telecomai-tickets-presence');
 
   if (loading && tickets.length === 0) {
     return (
@@ -223,14 +338,26 @@ export function TicketsListPage() {
             <Button variant={viewMode === 'list' ? 'primary' : 'secondary'} size="sm" onClick={() => setViewMode('list')}>Lista</Button>
             <Button variant={viewMode === 'grid' ? 'primary' : 'secondary'} size="sm" onClick={() => setViewMode('grid')}>Grade</Button>
             <Button variant="secondary" size="sm" onClick={() => navigate('/tickets/kanban')}>Kanban</Button>
+            <Button variant={showFavoritesOnly ? 'primary' : 'secondary'} size="sm" onClick={() => setShowFavoritesOnly(v => !v)}>
+              {showFavoritesOnly ? 'Favoritos ✓' : 'Favoritos'}
+            </Button>
+            <Badge variant="secondary">👥 {presenceCount} online</Badge>
+            <Badge variant="secondary">🔔 {notificationCount}</Badge>
           </div>
-          <Button
-            variant="primary"
-            onClick={() => navigate('/tickets/new')}
-            leftIcon="➕"
-          >
-            Novo Ticket
-          </Button>
+          <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+            <Dropdown>
+              <DropdownItem onClick={exportCSV}>Exportar CSV</DropdownItem>
+              <DropdownItem onClick={exportExcel}>Exportar Excel</DropdownItem>
+              <DropdownItem onClick={exportPDF}>Exportar PDF</DropdownItem>
+            </Dropdown>
+            <Button
+              variant="primary"
+              onClick={() => navigate('/tickets/new')}
+              leftIcon="➕"
+            >
+              Novo Ticket
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -240,17 +367,19 @@ export function TicketsListPage() {
         </Alert>
       )}
 
-      <TicketFilters
-        filters={{
-          search: filters.search,
-          status: filters.status,
-          priority: filters.priority,
-          category: filters.category,
-        }}
-        hasActiveFilters={hasActiveFilters}
-        onChange={handleFilterChange}
-        onClear={handleClearFilters}
-      />
+      <Suspense fallback={<Spinner />}>
+        <TicketFilters
+          filters={{
+            search: filters.search,
+            status: filters.status,
+            priority: filters.priority,
+            category: filters.category,
+          }}
+          hasActiveFilters={hasActiveFilters}
+          onChange={handleFilterChange}
+          onClear={handleClearFilters}
+        />
+      </Suspense>
 
       {viewMode === 'list' && (
         <Card className="tickets-list__table">
@@ -269,7 +398,7 @@ export function TicketsListPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tickets.map((ticket) => (
+              {displayedTickets.map((ticket) => (
                 <TableRow
                   key={ticket.id}
                   onClick={() => handleTicketClick(ticket)}
@@ -281,6 +410,9 @@ export function TicketsListPage() {
                   <TableCell>
                     <div className="tickets-list__title-cell">
                       <span className="tickets-list__ticket-title">{ticket.title}</span>
+                      <Button size="sm" variant={favoriteIds.includes(ticket.id) ? 'primary' : 'secondary'} onClick={(e) => { e.stopPropagation(); toggleFavorite(ticket.id); }}>
+                        {favoriteIds.includes(ticket.id) ? '★' : '☆'}
+                      </Button>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -324,18 +456,24 @@ export function TicketsListPage() {
                       <DropdownItem onClick={() => navigate(`/tickets/${ticket.id}/edit`)}>
                         Editar
                       </DropdownItem>
+                      <DropdownItem onClick={(e) => { e?.stopPropagation(); exportICS(ticket); }}>
+                        Exportar ICS
+                      </DropdownItem>
+                      <DropdownItem onClick={(e) => { e?.stopPropagation(); toggleFavorite(ticket.id); }}>
+                        {favoriteIds.includes(ticket.id) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'}
+                      </DropdownItem>
                     </Dropdown>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-          {tickets.length === 0 && !loading && (
+          {displayedTickets.length === 0 && !loading && (
             <div className="tickets-list__empty">
               <div className="tickets-list__empty-icon">🎫</div>
               <h3>Nenhum ticket encontrado</h3>
               <p>
-                {hasActiveFilters
+                {hasActiveFilters || showFavoritesOnly
                   ? 'Tente ajustar os filtros para encontrar tickets.'
                   : 'Ainda não há tickets cadastrados.'}
               </p>
@@ -356,7 +494,7 @@ export function TicketsListPage() {
         <Card>
           <CardBody>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
-              {tickets.map(ticket => (
+              {displayedTickets.map(ticket => (
                 <div key={ticket.id} style={{ border: '1px solid var(--color-border)', borderRadius: '12px', padding: '1rem', background: 'var(--color-surface)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <code className="tickets-list__number">{ticket.number ?? ticket.id}</code>
@@ -371,15 +509,19 @@ export function TicketsListPage() {
                   <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
                     <Button size="sm" variant="secondary" onClick={() => navigate(`/tickets/${ticket.id}`)}>Abrir</Button>
                     <Button size="sm" variant="secondary" onClick={() => navigate(`/tickets/${ticket.id}/edit`)}>Editar</Button>
+                    <Button size="sm" variant="secondary" onClick={() => exportICS(ticket)}>ICS</Button>
+                    <Button size="sm" variant={favoriteIds.includes(ticket.id) ? 'primary' : 'secondary'} onClick={() => toggleFavorite(ticket.id)}>
+                      {favoriteIds.includes(ticket.id) ? '★' : '☆'}
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
-            {tickets.length === 0 && !loading && (
+            {displayedTickets.length === 0 && !loading && (
               <div className="tickets-list__empty">
                 <div className="tickets-list__empty-icon">🎫</div>
                 <h3>Nenhum ticket encontrado</h3>
-                <p>{hasActiveFilters ? 'Tente ajustar os filtros.' : 'Ainda não há tickets.'}</p>
+                <p>{hasActiveFilters || showFavoritesOnly ? 'Tente ajustar os filtros.' : 'Ainda não há tickets.'}</p>
               </div>
             )}
           </CardBody>

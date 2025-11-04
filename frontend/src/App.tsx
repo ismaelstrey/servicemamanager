@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -11,37 +11,39 @@ import { useAuth } from './hooks/useAuth'
 // Estilos
 // Tema é gerenciado via ThemeModeProvider em main.tsx
 
-// Páginas
-import LoginPage from './pages/auth/LoginPage'
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
-import ResetPasswordPage from './pages/auth/ResetPasswordPage'
-import RegisterPage from './pages/register'
-import DashboardPage from './pages/dashboard'
-import { TicketsListPage } from './pages/tickets/TicketsListPage'
-import CreateTicketPage from './pages/tickets/CreateTicketPage'
-import { TicketDetailsPage } from './pages/tickets/TicketDetailsPage'
-import TicketsKanbanPage from './pages/tickets/TicketsKanbanPage'
-import ServiceOrdersKanbanPage from './pages/service-orders/ServiceOrdersKanbanPage'
-import ServiceOrdersListPage from './pages/service-orders/ServiceOrdersListPage'
-import ServiceOrderDetailsPage from './pages/service-orders/ServiceOrderDetailsPage'
-import CreateServiceOrderPage from './pages/service-orders/CreateServiceOrderPage'
-import ServiceOrdersCalendarPage from './pages/service-orders/ServiceOrdersCalendarPage'
-import ServiceOrdersSlaReportsPage from './pages/service-orders/ServiceOrdersReportsPage'
-import ProfilePage from './pages/ProfilePage'
-import SettingsPage from './pages/SettingsPage'
-import NotFoundPage from './pages/NotFoundPage'
-import TestPage from './pages/TestPage'
-import CreateProviderPage from './pages/providers/CreateProviderPage'
-import ProvidersListPage from './pages/providers/ProvidersListPage'
-import ProviderDetailsPage from './pages/providers/ProviderDetailsPage'
-import ClientLoginPage from './pages/client/LoginPage'
-import ClientDashboardPage from './pages/client/DashboardPage'
-import TemplateShowcase from './pages/templates/TemplateShowcase'
-import ResponsiveLayoutShowcase from './pages/layout/ResponsiveLayoutShowcase'
+// Páginas (code splitting com React.lazy)
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
+const RegisterPage = lazy(() => import('./pages/register'))
+const DashboardPage = lazy(() => import('./pages/dashboard'))
+const TicketsListPage = lazy(() => import('./pages/tickets/TicketsListPage').then(m => ({ default: m.TicketsListPage })))
+const CreateTicketPage = lazy(() => import('./pages/tickets/CreateTicketPage'))
+const TicketDetailsPage = lazy(() => import('./pages/tickets/TicketDetailsPage').then(m => ({ default: m.TicketDetailsPage })))
+const TicketsKanbanPage = lazy(() => import('./pages/tickets/TicketsKanbanPage'))
+const ServiceOrdersKanbanPage = lazy(() => import('./pages/service-orders/ServiceOrdersKanbanPage'))
+const ServiceOrdersListPage = lazy(() => import('./pages/service-orders/ServiceOrdersListPage'))
+const ServiceOrderDetailsPage = lazy(() => import('./pages/service-orders/ServiceOrderDetailsPage'))
+const CreateServiceOrderPage = lazy(() => import('./pages/service-orders/CreateServiceOrderPage'))
+const ServiceOrdersCalendarPage = lazy(() => import('./pages/service-orders/ServiceOrdersCalendarPage'))
+const ServiceOrdersSlaReportsPage = lazy(() => import('./pages/service-orders/ServiceOrdersReportsPage'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
+const TestPage = lazy(() => import('./pages/TestPage'))
+const CreateProviderPage = lazy(() => import('./pages/providers/CreateProviderPage'))
+const ProvidersListPage = lazy(() => import('./pages/providers/ProvidersListPage'))
+const ProviderDetailsPage = lazy(() => import('./pages/providers/ProviderDetailsPage'))
+const ClientLoginPage = lazy(() => import('./pages/client/LoginPage'))
+const ClientDashboardPage = lazy(() => import('./pages/client/DashboardPage'))
+const TemplateShowcase = lazy(() => import('./pages/templates/TemplateShowcase'))
+const ResponsiveLayoutShowcase = lazy(() => import('./pages/layout/ResponsiveLayoutShowcase'))
+const EquipmentsPage = lazy(() => import('./pages/equipments').then(m => ({ default: m.EquipmentsPage })))
 
 // Layout
 import { Layout } from './components/layout'
 import ClientProtectedRoute from './components/auth/ClientProtectedRoute'
+import CommandPalette from './components/CommandPalette'
 import ClientPublicRoute from './components/auth/ClientPublicRoute'
 
 // Cliente React Query
@@ -101,6 +103,7 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ClientAuthProvider>
+            <Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'60vh'}}>Carregando...</div>}>
             <Routes>
             {/* Rotas públicas */}
             <Route
@@ -261,6 +264,17 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+            {/* Equipamentos */}
+            <Route
+              path="/equipments"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EquipmentsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
             {/* Service Orders */}
             <Route
               path="/service-orders"
@@ -360,6 +374,16 @@ const App: React.FC = () => {
             {/* Página 404 */}
             <Route path="*" element={<NotFoundPage />} />
             </Routes>
+            </Suspense>
+        {/* Command Palette global (Ctrl+K) apenas quando autenticado */}
+        {(() => {
+          // Wrapper inline para acessar contexto apenas dentro dos providers
+          const AuthCommandPalette: React.FC = () => {
+            const { isAuthenticated } = useAuth()
+            return isAuthenticated ? <CommandPalette /> : null
+          }
+          return <AuthCommandPalette />
+        })()}
         </ClientAuthProvider>
       </AuthProvider>
 

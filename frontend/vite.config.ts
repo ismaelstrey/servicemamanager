@@ -2,6 +2,8 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vite.dev/config/
 import path from 'node:path';
@@ -11,7 +13,38 @@ const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(file
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,woff2}']
+      },
+      manifest: {
+        name: 'TelecomAI',
+        short_name: 'TelecomAI',
+        description: 'Portal de suporte e operações TelecomAI',
+        theme_color: '#0ea5e9',
+        background_color: '#ffffff',
+        display: 'standalone',
+        start_url: '/',
+        lang: 'pt-BR'
+      }
+    })
+  ],
+  build: {
+    rollupOptions: {
+      plugins: [
+        visualizer({
+          filename: 'stats.html',
+          template: 'treemap',
+          gzipSize: true,
+          brotliSize: true,
+          open: process.env.ANALYZE === 'true'
+        })
+      ]
+    }
+  },
   test: {
     projects: [{
       extends: true,

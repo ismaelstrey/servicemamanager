@@ -47,29 +47,34 @@ const Input = styled.input`
   }
 `;
 
-export const SearchBox: React.FC<SearchBoxProps> = ({ value, onChange, onSearch, onClear, placeholder = 'Buscar...', onKeyDown, ...rest }) => {
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    onKeyDown?.(e);
-    if (e.key === 'Enter') {
-      onSearch?.(value);
-    }
-  };
+// Componente SearchBox com suporte a forwardRef para permitir foco programático
+// Comentário: Encaminha o ref para o input interno para facilitar o controle de foco.
+export const SearchBox = React.forwardRef<HTMLInputElement, SearchBoxProps>(
+  ({ value, onChange, onSearch, onClear, placeholder = 'Buscar...', onKeyDown, ...rest }, ref) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      onKeyDown?.(e);
+      if (e.key === 'Enter') {
+        onSearch?.(value);
+      }
+    };
 
-  return (
-    <Wrapper>
-      <IconLeft size={18} />
-      <Input
-        value={value}
-        onChange={onChange}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        {...rest}
-      />
-      {value && (
-        <IconRight size={18} onClick={() => onClear ? onClear() : onChange({ target: { value: '' } } as any)} />
-      )}
-    </Wrapper>
-  );
-};
+    return (
+      <Wrapper>
+        <IconLeft size={18} />
+        <Input
+          ref={ref}
+          value={value}
+          onChange={onChange}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          {...rest}
+        />
+        {value && (
+          <IconRight size={18} onClick={() => onClear ? onClear() : onChange({ target: { value: '' } } as any)} />
+        )}
+      </Wrapper>
+    );
+  }
+);
 
 export default SearchBox;

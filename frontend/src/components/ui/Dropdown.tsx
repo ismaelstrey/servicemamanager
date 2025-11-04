@@ -14,7 +14,7 @@ export interface DropdownProps {
 
 export interface DropdownItemProps {
   children: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (event?: React.MouseEvent) => void;
   disabled?: boolean;
   className?: string;
   href?: string;
@@ -161,7 +161,8 @@ export const DropdownItem: React.FC<DropdownItemProps> = ({
       event.preventDefault();
       return;
     }
-    onClick?.();
+    // Encaminha o evento para o handler do consumidor, permitindo stopPropagation/preventDefault
+    onClick?.(event);
   };
 
   if (href) {
