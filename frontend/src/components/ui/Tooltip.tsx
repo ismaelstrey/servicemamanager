@@ -14,7 +14,7 @@ const Wrapper = styled.div`
   display: inline-block;
 `;
 
-const Bubble = styled.div<{ placement: TooltipPlacement }>`
+const Bubble = styled.div<{ $placement: TooltipPlacement }>`
   position: absolute;
   white-space: nowrap;
   background: ${({ theme }) => theme.colors.background.overlay};
@@ -27,10 +27,10 @@ const Bubble = styled.div<{ placement: TooltipPlacement }>`
   box-shadow: ${({ theme }) => theme.shadows.md};
   z-index: ${({ theme }) => theme.zIndex.tooltip};
 
-  ${({ placement }) => placement === 'top' && css`bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 8px;`}
-  ${({ placement }) => placement === 'bottom' && css`top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px;`}
-  ${({ placement }) => placement === 'left' && css`right: 100%; top: 50%; transform: translateY(-50%); margin-right: 8px;`}
-  ${({ placement }) => placement === 'right' && css`left: 100%; top: 50%; transform: translateY(-50%); margin-left: 8px;`}
+  ${({ $placement }) => $placement === 'top' && css`bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 8px;`}
+  ${({ $placement }) => $placement === 'bottom' && css`top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px;`}
+  ${({ $placement }) => $placement === 'left' && css`right: 100%; top: 50%; transform: translateY(-50%); margin-right: 8px;`}
+  ${({ $placement }) => $placement === 'right' && css`left: 100%; top: 50%; transform: translateY(-50%); margin-left: 8px;`}
 `;
 
 export const Tooltip: React.FC<TooltipProps> = ({ content, placement = 'top', children }) => {
@@ -52,7 +52,7 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, placement = 'top', ch
   return (
     <Wrapper ref={ref} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       {children}
-      {open && <Bubble placement={placement} role="tooltip">{content}</Bubble>}
+      {open && <Bubble $placement={placement} role="tooltip">{content}</Bubble>}
     </Wrapper>
   );
 };

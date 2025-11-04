@@ -60,11 +60,11 @@ const ControlsRow = styled.div`
 `
 
 // Larguras mínimas para Selects (melhora UX em wrap)
-const SelectWrapper = styled.div<{ minWidth?: number }>`
+const SelectWrapper = styled.div<{ $minWidth?: number }>`
   display: flex;
   flex-direction: column;
   justify-content: flex-end; /* garante base alinhada com o botão */
-  min-width: ${({ minWidth }) => (minWidth ? `${minWidth}px` : '200px')};
+  min-width: ${({ $minWidth }) => ($minWidth ? `${$minWidth}px` : '200px')};
 `
 
 // Área do alerta
@@ -94,7 +94,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       </TitleGroup>
 
       <ControlsRow>
-        <SelectWrapper minWidth={240}>
+        <SelectWrapper $minWidth={240}>
           <Select
             label="Contexto"
             size="sm"
@@ -108,7 +108,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           </Select>
         </SelectWrapper>
 
-        <SelectWrapper minWidth={200}>
+        <SelectWrapper $minWidth={200}>
           <Select
             label="Período"
             size="sm"

@@ -16,37 +16,37 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
 }
 
 // Container principal do input
-const InputContainer = styled.div<{ fullWidth?: boolean }>`
+const InputContainer = styled.div<{ $fullWidth?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing[1]};
-  width: ${({ fullWidth }) => fullWidth ? '100%' : 'auto'};
+  width: ${({ $fullWidth }) => $fullWidth ? '100%' : 'auto'};
 `
 
 // Label do input
-const InputLabel = styled.label<{ error?: boolean }>`
+const InputLabel = styled.label<{ $error?: boolean }>`
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
   font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  color: ${({ theme, error }) =>
-    error ? theme.colors.error.main : theme.colors.text.primary
+  color: ${({ theme, $error }) =>
+    $error ? theme.colors.error.main : theme.colors.text.primary
   };
   line-height: ${({ theme }) => theme.typography.lineHeight.tight};
 `
 
 // Wrapper para o input com ícones
 const InputWrapper = styled.div<{
-  hasLeftIcon?: boolean
-  hasRightIcon?: boolean
-  error?: boolean
-  variant?: InputProps['variant']
-  size?: InputProps['size']
+  $hasLeftIcon?: boolean
+  $hasRightIcon?: boolean
+  $error?: boolean
+  $variant?: InputProps['variant']
+  $size?: InputProps['size']
 }>`
   position: relative;
   display: flex;
   align-items: center;
   
-  ${({ variant, theme, error }) => {
-    switch (variant) {
+  ${({ $variant, theme, $error }) => {
+    switch ($variant) {
       case 'filled':
         return css`
           background-color: ${theme.colors.background.secondary};
@@ -55,43 +55,43 @@ const InputWrapper = styled.div<{
           
           &:focus-within {
             background-color: ${theme.colors.background.primary};
-            border-color: ${error ? theme.colors.error.main : theme.colors.primary.main};
-            box-shadow: ${error ? theme.shadows.focus.danger : theme.shadows.focus.primary};
+            border-color: ${$error ? theme.colors.error.main : theme.colors.primary.main};
+            box-shadow: ${$error ? theme.shadows.focus.danger : theme.shadows.focus.primary};
           }
         `
       case 'flushed':
         return css`
           background-color: transparent;
           border: none;
-          border-bottom: ${theme.borders.width.medium} solid ${error ? theme.colors.error.main : theme.colors.border.primary
+          border-bottom: ${theme.borders.width.medium} solid ${$error ? theme.colors.error.main : theme.colors.border.primary
           };
           border-radius: 0;
           
           &:focus-within {
-            border-bottom-color: ${error ? theme.colors.error.main : theme.colors.primary.main};
+            border-bottom-color: ${$error ? theme.colors.error.main : theme.colors.primary.main};
           }
         `
       default: // default
         return css`
           background-color: ${theme.colors.background.primary};
-          border: ${theme.borders.width.thin} solid ${error ? theme.colors.error.main : theme.colors.border.primary
+          border: ${theme.borders.width.thin} solid ${$error ? theme.colors.error.main : theme.colors.border.primary
           };
           border-radius: ${theme.borders.radius.md};
           
           &:focus-within {
-            border-color: ${error ? theme.colors.error.main : theme.colors.primary.main};
-            box-shadow: ${error ? theme.shadows.focus.danger : theme.shadows.focus.primary};
+            border-color: ${$error ? theme.colors.error.main : theme.colors.primary.main};
+            box-shadow: ${$error ? theme.shadows.focus.danger : theme.shadows.focus.primary};
           }
           
           &:hover:not(:focus-within) {
-            border-color: ${error ? theme.colors.error.main : theme.colors.border.secondary};
+            border-color: ${$error ? theme.colors.error.main : theme.colors.border.secondary};
           }
         `
     }
   }}
   
-  ${({ size, theme }) => {
-    switch (size) {
+  ${({ $size, theme }) => {
+    switch ($size) {
       case 'sm':
         return css`
           padding: ${theme.spacing.component.input.sm};
@@ -112,9 +112,9 @@ const InputWrapper = styled.div<{
 
 // Input styled
 const StyledInput = styled.input<{
-  hasLeftIcon?: boolean
-  hasRightIcon?: boolean
-  size?: InputProps['size']
+  $hasLeftIcon?: boolean
+  $hasRightIcon?: boolean
+  $size?: InputProps['size']
 }>`
   flex: 1;
   border: none;
@@ -123,25 +123,25 @@ const StyledInput = styled.input<{
   font-family: ${({ theme }) => theme.typography.fontFamily.primary};
   color: ${({ theme }) => theme.colors.text.primary};
   
-  ${({ size, theme, hasLeftIcon, hasRightIcon }) => {
-    switch (size) {
+  ${({ $size, theme, $hasLeftIcon, $hasRightIcon }) => {
+    switch ($size) {
       case 'sm':
         return css`
           font-size: ${theme.typography.fontSize.sm};
-          padding-left: ${hasLeftIcon ? theme.spacing[6] : '0'};
-          padding-right: ${hasRightIcon ? theme.spacing[6] : '0'};
+          padding-left: ${$hasLeftIcon ? theme.spacing[6] : '0'};
+          padding-right: ${$hasRightIcon ? theme.spacing[6] : '0'};
         `
       case 'lg':
         return css`
           font-size: ${theme.typography.fontSize.lg};
-          padding-left: ${hasLeftIcon ? theme.spacing[8] : '0'};
-          padding-right: ${hasRightIcon ? theme.spacing[8] : '0'};
+          padding-left: ${$hasLeftIcon ? theme.spacing[8] : '0'};
+          padding-right: ${$hasRightIcon ? theme.spacing[8] : '0'};
         `
       default: // md
         return css`
           font-size: ${theme.typography.fontSize.base};
-          padding-left: ${hasLeftIcon ? theme.spacing[7] : '0'};
-          padding-right: ${hasRightIcon ? theme.spacing[7] : '0'};
+          padding-left: ${$hasLeftIcon ? theme.spacing[7] : '0'};
+          padding-right: ${$hasRightIcon ? theme.spacing[7] : '0'};
         `
     }
   }}
@@ -158,8 +158,8 @@ const StyledInput = styled.input<{
 
 // Container para ícones
 const IconContainer = styled.div<{
-  position: 'left' | 'right'
-  size?: InputProps['size']
+  $position: 'left' | 'right'
+  $size?: InputProps['size']
 }>`
   position: absolute;
   display: flex;
@@ -169,23 +169,23 @@ const IconContainer = styled.div<{
   pointer-events: none;
   z-index: 1;
   
-  ${({ position, size, theme }) => {
-    const iconSize = size === 'sm' ? theme.spacing[4] : size === 'lg' ? theme.spacing[6] : theme.spacing[5]
-    const offset = size === 'sm' ? theme.spacing[2] : size === 'lg' ? theme.spacing[3] : theme.spacing[3]
+  ${({ $position, $size, theme }) => {
+    const iconSize = $size === 'sm' ? theme.spacing[4] : $size === 'lg' ? theme.spacing[6] : theme.spacing[5]
+    const offset = $size === 'sm' ? theme.spacing[2] : $size === 'lg' ? theme.spacing[3] : theme.spacing[3]
 
     return css`
       width: ${iconSize};
       height: ${iconSize};
-      ${position}: ${offset};
+      ${$position}: ${offset};
     `
   }}
 `
 
 // Texto de ajuda/erro
-const HelperText = styled.div<{ error?: boolean }>`
+const HelperText = styled.div<{ $error?: boolean }>`
   font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  color: ${({ theme, error }) =>
-    error ? theme.colors.error.main : theme.colors.text.secondary
+  color: ${({ theme, $error }) =>
+    $error ? theme.colors.error.main : theme.colors.text.secondary
   };
   line-height: ${({ theme }) => theme.typography.lineHeight.normal};
 `
@@ -208,43 +208,43 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   const displayHelperText = error ? errorMessage : helperText
 
   return (
-    <InputContainer fullWidth={fullWidth}>
+    <InputContainer $fullWidth={fullWidth}>
       {label && (
-        <InputLabel error={error} htmlFor={props.id}>
+        <InputLabel $error={error} htmlFor={props.id}>
           {label}
         </InputLabel>
       )}
 
       <InputWrapper
-        variant={variant}
-        size={size}
-        error={error}
-        hasLeftIcon={hasLeftIcon}
-        hasRightIcon={hasRightIcon}
+        $variant={variant}
+        $size={size}
+        $error={error}
+        $hasLeftIcon={hasLeftIcon}
+        $hasRightIcon={hasRightIcon}
       >
         {leftIcon && (
-          <IconContainer position="left" size={size}>
+          <IconContainer $position="left" $size={size}>
             {leftIcon}
           </IconContainer>
         )}
 
         <StyledInput
           ref={ref}
-          size={size}
-          hasLeftIcon={hasLeftIcon}
-          hasRightIcon={hasRightIcon}
+          $size={size}
+          $hasLeftIcon={hasLeftIcon}
+          $hasRightIcon={hasRightIcon}
           {...props}
         />
 
         {rightIcon && (
-          <IconContainer position="right" size={size}>
+          <IconContainer $position="right" $size={size}>
             {rightIcon}
           </IconContainer>
         )}
       </InputWrapper>
 
       {displayHelperText && (
-        <HelperText error={error}>
+        <HelperText $error={error}>
           {displayHelperText}
         </HelperText>
       )}
