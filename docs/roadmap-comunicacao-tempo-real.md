@@ -1,0 +1,119 @@
+# Roadmap — Comunicação em Tempo Real, WhatsApp/Telegram e IA (Fase 3)
+
+Este documento detalha o plano para implementar chat em tempo real com clientes, integrações com WhatsApp (Evolution API, WaTicket ou WhatsApp Cloud API), Telegram, widget para site da empresa e recursos de IA opcional (prioridade de tickets e previsão de falhas).
+
+## Objetivos
+- Entregar chat em tempo real (web) com persistência, anexos e presença.
+- Integrar canais externos (WhatsApp e Telegram) via webhooks e workers.
+- Disponibilizar widget embutível para o site da empresa.
+- Implementar observabilidade, segurança e escalabilidade.
+- Adicionar IA opcional para priorização de tickets e previsão de falhas.
+
+## Arquitetura
+- Backend atual (Express + Prisma + Postgres) com incrementos:
+  - Tempo real: WebSocket com Socket.IO.
+  - Cache/Fila: Redis + BullMQ para processamento assíncrono.
+  - Storage: S3 compatível (MinIO/local) para anexos.
+  - Observabilidade: logs estruturados, métricas Prometheus, tracing OpenTelemetry.
+- Modelagem (alto nível / Prisma):
+  - Channel, IntegrationAccount, Conversation, Participant, Message, Attachment, WebhookEvent, OutboundQueue.
+
+## Endpoints e Eventos (base)
+- REST
+  - `GET /chat/conversations`, `POST /chat/conversations`
+  - `GET /chat/conversations/:id/messages`
+  - `POST /chat/messages` (texto/mídia)
+- Webhooks
+  - WhatsApp: `POST /integrations/whatsapp/webhook`
+  - Telegram: `POST /integrations/telegram/webhook`
+- Outbound
+  - WhatsApp: `POST /integrations/whatsapp/messages`
+  - Telegram: `POST /integrations/telegram/messages`
+- Socket.IO
+  - `conversation:join`, `conversation:leave`, `message:new`, `message:delivered`, `message:read`, `typing`, `presence`
+
+## Variáveis de Ambiente
+- `WHATSAPP_BASE_URL`, `WHATSAPP_TOKEN`
+- `TELEGRAM_BOT_TOKEN`
+- `CHAT_WEBHOOK_SECRET`
+- `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`
+
+## Plano por Fases e Checklist
+
+### Fase 3.1 — Fundamentos de Comunicação
+- [x] Definir requisitos funcionais e SLAs do chat.
+- [x] Atualizar `docker-compose.yml` para incluir `worker` (BullMQ) e MinIO (opcional).
+- [x] Criar modelos Prisma: Channel, IntegrationAccount, Conversation, Participant, Message, Attachment, WebhookEvent, OutboundQueue.
+ - [x] Autenticação do WebSocket via JWT (namespaces por provider/tenant).
+
+#### Requisitos Funcionais e SLAs do Chat
+
+- Funcionalidades
+  - Mensagens em tempo real com confirmações: `queued`, `sent`, `delivered`, `read`.
+  - Presença e `typing` por conversa; histórico persistente e busca básica.
+  - Suporte a anexos (imagem, PDF, texto) com limites e validações.
+  - Conversas 1:1 e por grupo, isolamento por `provider` (tenant).
+  - Integração de canais externos (WhatsApp/Telegram) via webhooks + workers.
+  - Auditoria: idempotência de webhooks, rastreabilidade de mensagens/eventos.
+
+- Requisitos não-funcionais
+  - Segurança: JWT, CORS, redaction de PII e políticas de retenção.
+  - Observabilidade: logs estruturados, métricas (latência, erros, filas), tracing.
+  - Escalabilidade: Redis + BullMQ; horizontalização de worker e WebSockets.
+
+- SLAs (ambiente de produção, mesma região)
+  - Latência de entrega (WS): p50 ≤ 250 ms; p95 ≤ 800 ms.
+  - Criação/consulta de mensagens (REST): p95 ≤ 500 ms.
+  - Disponibilidade mensal do núcleo de chat: ≥ 99.9%.
+  - Enfileiramento outbound (WhatsApp/Telegram): tempo médio na fila ≤ 5 s.
+  - Retries outbound: até 5 tentativas com backoff exponencial (máx. 2 min).
+  - Retenção: mensagens ≥ 30 dias; anexos ≥ 90 dias (configurável).
+
+### Fase 3.2 — Chat Interno (Web)
+- [x] Implementar endpoints REST de conversas e mensagens.
+- [x] Implementar eventos Socket.IO (join, new, delivered, read, typing, presence).
+- [x] Upload de anexos com S3/MinIO e validação básica de arquivos.
+- [x] Página interna de chat no frontend (lista, histórico e envio).
+
+### Fase 3.3 — Integração WhatsApp
+- [x] Escolher provedor principal (Evolution API como padrão; WaTicket opcional) e documentar riscos/compliance.
+- [x] Webhook receiver e normalização de payload para `Message`.
+- [x] Worker BullMQ para envio outbound, retries e DLQ.
+- [x] Suporte a mídia: download, armazenamento, expurgo.
+
+### Fase 3.4 — Integração Telegram
+- [x] Registrar webhook do bot; mapear `chat_id` para `Conversation`.
+- [x] Implementar envio/recebimento de mensagens e anexos.
+
+### Fase 3.5 — Widget para Site
+- [ ] Implementar `chat-widget.js` (Vite) com configuração via `data-*`.
+- [ ] Endpoint `GET /chat/widget-config` para bootstrap.
+- [ ] CORS, rate limiting e fallback SSE.
+
+### Fase 3.6 — IA Opcional
+- [ ] Sugestão de prioridade de tickets (baseline heurístico; evolução para ML offline).
+- [ ] Previsão de falhas (correlação de eventos e histórico; baseline inicial).
+
+### Fase 3.7 — Observabilidade e Segurança
+- [ ] Logs estruturados e redaction de PII.
+- [ ] Métricas (latência, entregas, erros, filas).
+- [ ] Tracing distribuído (OpenTelemetry).
+- [ ] LGPD/GDPR: retenção configurável, consentimento, DSRs.
+- [ ] Backups e políticas de expurgo.
+
+## Entregáveis
+- Chat em tempo real funcional (envio/recebimento, presença, typing, anexos).
+- WhatsApp/Telegram inbound/outbound com status e mídia.
+- Widget instalável via `<script>` com personalização básica.
+- Observabilidade ativa e segurança aplicada.
+
+## Riscos e Mitigações
+- WhatsApp não-oficial: considerar Cloud API (Meta) para produção.
+- Entrega de mídia: limites, tipos suportados e expurgo periódico.
+- Escala: sharding de Redis e horizontalização do worker; balanceamento de WebSockets.
+
+## Próximos Passos
+- [ ] Decidir provedor WhatsApp principal (Evolution API, WaTicket ou Cloud API).
+- [ ] Iniciar Fase 3.3 — WhatsApp: webhook receiver e normalização de payload.
+- [ ] Implementar worker BullMQ para outbound, retries e DLQ.
+- [ ] Definir política de mídia (download, armazenamento, expurgo).

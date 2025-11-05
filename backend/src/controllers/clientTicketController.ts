@@ -1,11 +1,11 @@
 import { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { ClientAuthenticatedRequest } from '../types/customer.types';
 import { TicketRepository } from '../repositories/ticketRepository';
 import { CommentRepository } from '../repositories/commentRepository';
 import { clientCreateTicketSchema, clientListTicketsSchema, clientCommentSchema } from '../validators/clientValidator';
 
-const prisma = new PrismaClient();
+// use shared prisma instance
 
 export class ClientTicketController {
   private ticketRepo: TicketRepository;

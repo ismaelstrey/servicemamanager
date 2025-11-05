@@ -17,6 +17,7 @@ const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
 const RegisterPage = lazy(() => import('./pages/register'))
 const DashboardPage = lazy(() => import('./pages/dashboard'))
+const ChatPage = lazy(() => import('./pages/chat/ChatPage'))
 const TicketsListPage = lazy(() => import('./pages/tickets/TicketsListPage').then(m => ({ default: m.TicketsListPage })))
 const CreateTicketPage = lazy(() => import('./pages/tickets/CreateTicketPage'))
 const TicketDetailsPage = lazy(() => import('./pages/tickets/TicketDetailsPage').then(m => ({ default: m.TicketDetailsPage })))
@@ -158,6 +159,16 @@ const App: React.FC = () => {
                <ProtectedRoute>
                   <Layout>
                     <DashboardPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+               <ProtectedRoute>
+                  <Layout>
+                    <ChatPage />
                   </Layout>
                 </ProtectedRoute>
               }

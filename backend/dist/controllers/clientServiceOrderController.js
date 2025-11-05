@@ -4,7 +4,7 @@ exports.ClientServiceOrderController = void 0;
 const serviceOrderRepository_1 = require("../repositories/serviceOrderRepository");
 const commentRepository_1 = require("../repositories/commentRepository");
 const clientValidator_1 = require("../validators/clientValidator");
-const client_1 = require("@prisma/client");
+// Usar strings para valores padrão de enums de OS
 class ClientServiceOrderController {
     constructor() {
         this.serviceOrderRepo = new serviceOrderRepository_1.ServiceOrderRepository();
@@ -78,8 +78,8 @@ class ClientServiceOrderController {
             const created = await this.serviceOrderRepo.create({
                 title: data.title,
                 description: data.description,
-                status: client_1.ServiceOrderStatus.pending,
-                priority: client_1.ServiceOrderPriority.medium,
+                status: 'pending',
+                priority: 'medium',
                 scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : undefined,
                 estimatedHours: data.estimatedHours,
                 notes: data.notes,

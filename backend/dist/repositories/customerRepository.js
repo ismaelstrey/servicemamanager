@@ -1,11 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomerRepository = void 0;
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const prisma_1 = require("../lib/prisma");
 class CustomerRepository {
     async findByEmail(email) {
-        const customer = await prisma.customer.findUnique({
+        const customer = await prisma_1.prisma.customer.findUnique({
             where: { email },
             select: {
                 id: true,
@@ -19,7 +18,7 @@ class CustomerRepository {
         return customer;
     }
     async findById(id) {
-        const customer = await prisma.customer.findUnique({
+        const customer = await prisma_1.prisma.customer.findUnique({
             where: { id },
             select: {
                 id: true,
@@ -34,7 +33,7 @@ class CustomerRepository {
         return customer;
     }
     async create(data) {
-        const created = await prisma.customer.create({
+        const created = await prisma_1.prisma.customer.create({
             data,
             select: {
                 id: true,
@@ -47,13 +46,13 @@ class CustomerRepository {
         return created;
     }
     async setResetToken(email, token, expiresAt) {
-        await prisma.customer.update({
+        await prisma_1.prisma.customer.update({
             where: { email },
             data: { resetToken: token, resetTokenExpires: expiresAt }
         });
     }
     async findByResetToken(token) {
-        const customer = await prisma.customer.findFirst({
+        const customer = await prisma_1.prisma.customer.findFirst({
             where: { resetToken: token },
             select: {
                 id: true,
@@ -68,13 +67,13 @@ class CustomerRepository {
         return customer;
     }
     async updatePasswordAndClearToken(customerId, passwordHash) {
-        await prisma.customer.update({
+        await prisma_1.prisma.customer.update({
             where: { id: customerId },
             data: { password: passwordHash, resetToken: null, resetTokenExpires: null }
         });
     }
     async updateProfile(customerId, data) {
-        const updated = await prisma.customer.update({
+        const updated = await prisma_1.prisma.customer.update({
             where: { id: customerId },
             data,
             select: {

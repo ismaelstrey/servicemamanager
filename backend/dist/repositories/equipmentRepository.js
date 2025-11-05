@@ -2,11 +2,11 @@
 // Repositório para acesso aos dados de Equipamentos
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EquipmentRepository = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../lib/prisma");
 const paginationHelper_1 = require("../utils/paginationHelper");
 class EquipmentRepository {
     constructor() {
-        this.prisma = new client_1.PrismaClient();
+        this.prisma = prisma_1.prisma;
     }
     /**
      * Criar equipamento

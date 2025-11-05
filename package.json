@@ -2,7 +2,7 @@
   "name": "telecomai-root",
   "private": true,
   "version": "0.1.0",
-  "packageManager": "pnpm@9.12.0",
+  "packageManager": "pnpm@10.20.0",
   "scripts": {
     "dev": "pnpm -r dev",
     "build": "pnpm -r build",
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@types/express": "^4.17.21",
+    "backend": "^0.0.0",
     "express": "^4.21.2"
   },
   "devDependencies": {

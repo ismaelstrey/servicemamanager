@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.faultPredictionService = exports.FaultPredictionService = void 0;
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const prisma_1 = require("../lib/prisma");
 class FaultPredictionService {
     constructor() {
         this.predictionModels = new Map();
@@ -113,7 +112,7 @@ class FaultPredictionService {
      */
     async calculateEquipmentHealth(equipment) {
         const historicalData = await this.getEquipmentHistory(equipment.id);
-        const recentTickets = historicalData.filter(ticket => {
+        const recentTickets = historicalData.filter((ticket) => {
             const ticketDate = new Date(ticket.createdAt);
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -121,7 +120,7 @@ class FaultPredictionService {
         });
         // Calcular métricas
         const avgTicketsPerMonth = historicalData.length / 12; // Assumindo dados de 1 ano
-        const criticalTicketsCount = recentTickets.filter(t => t.priority === 'critical').length;
+        const criticalTicketsCount = recentTickets.filter((t) => t.priority === 'critical').length;
         const daysSinceLastMaintenance = this.calculateDaysSinceLastMaintenance(equipment);
         // Calcular score de saúde (0-100)
         let healthScore = 100;
@@ -167,7 +166,7 @@ class FaultPredictionService {
      * Busca equipamentos de um provedor
      */
     async getProviderEquipments(providerId) {
-        return await prisma.equipment.findMany({
+        return await prisma_1.prisma.equipment.findMany({
             where: { providerId },
             select: {
                 id: true,
@@ -184,7 +183,7 @@ class FaultPredictionService {
      * Busca detalhes de um equipamento
      */
     async getEquipmentDetails(equipmentId) {
-        return await prisma.equipment.findUnique({
+        return await prisma_1.prisma.equipment.findUnique({
             where: { id: equipmentId },
             include: {
                 provider: true
@@ -201,7 +200,7 @@ class FaultPredictionService {
         const equipment = await this.getEquipmentDetails(equipmentId);
         if (!equipment)
             return [];
-        return await prisma.ticket.findMany({
+        return await prisma_1.prisma.ticket.findMany({
             where: {
                 providerId: equipment.providerId,
                 OR: [
@@ -249,7 +248,7 @@ class FaultPredictionService {
     async getRecentTickets(providerId, days) {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
-        return await prisma.ticket.findMany({
+        return await prisma_1.prisma.ticket.findMany({
             where: {
                 providerId,
                 createdAt: { gte: startDate }
@@ -530,7 +529,7 @@ class FaultPredictionService {
         const anomalies = [];
         for (const equipment of equipments) {
             const recentHistory = await this.getEquipmentHistory(equipment.id);
-            const recentTickets = recentHistory.filter(ticket => {
+            const recentTickets = recentHistory.filter((ticket) => {
                 const ticketDate = new Date(ticket.createdAt);
                 const sevenDaysAgo = new Date();
                 sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);

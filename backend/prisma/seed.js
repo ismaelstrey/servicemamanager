@@ -1,4 +1,5 @@
 const { PrismaClient, $Enums } = require('@prisma/client');
+require('dotenv').config();
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
@@ -78,6 +79,76 @@ async function main() {
     });
     console.log(`⚙️  Equipment upsert: ${created.label} (${created.type}) serial=${created.serial}`);
   }
+
+  // ===== COMUNICAÇÃO: Channels e IntegrationAccounts =====
+  console.log('📡 Criando canais de comunicação e contas de integração...');
+
+  const whatsappChannel = await prisma.channel.upsert({
+    where: { id: 1 },
+    update: { type: $Enums.ChannelType.whatsapp, name: 'WhatsApp', isActive: true },
+    create: { type: $Enums.ChannelType.whatsapp, name: 'WhatsApp', description: 'Canal WhatsApp', isActive: true }
+  });
+
+  const telegramChannel = await prisma.channel.upsert({
+    where: { id: 2 },
+    update: { type: $Enums.ChannelType.telegram, name: 'Telegram', isActive: true },
+    create: { type: $Enums.ChannelType.telegram, name: 'Telegram', description: 'Canal Telegram', isActive: true }
+  });
+
+  const evolutionAccount = await prisma.integrationAccount.upsert({
+    where: { id: 1 },
+    update: {
+      channelId: whatsappChannel.id,
+      baseUrl: process.env.EVOLUTION_BASE_URL || 'https://evolution.example.local',
+      token: process.env.EVOLUTION_SESSION_TOKEN || null,
+      isActive: true
+    },
+    create: {
+      channelId: whatsappChannel.id,
+      baseUrl: process.env.EVOLUTION_BASE_URL || 'https://evolution.example.local',
+      token: process.env.EVOLUTION_SESSION_TOKEN || null,
+      sessionId: 'seed-session',
+      isActive: true,
+      metadata: { provider: 'evolution' }
+    }
+  });
+
+  const watiicketAccount = await prisma.integrationAccount.upsert({
+    where: { id: 2 },
+    update: {
+      channelId: whatsappChannel.id,
+      baseUrl: process.env.WATIICKET_BASE_URL || 'https://watiicket.example.local',
+      token: process.env.WATIICKET_API_KEY || null,
+      isActive: true
+    },
+    create: {
+      channelId: whatsappChannel.id,
+      baseUrl: process.env.WATIICKET_BASE_URL || 'https://watiicket.example.local',
+      token: process.env.WATIICKET_API_KEY || null,
+      isActive: true,
+      metadata: { provider: 'watiicket' }
+    }
+  });
+
+  const telegramAccount = await prisma.integrationAccount.upsert({
+    where: { id: 3 },
+    update: {
+      channelId: telegramChannel.id,
+      baseUrl: 'https://api.telegram.org',
+      token: process.env.TELEGRAM_BOT_TOKEN || null,
+      isActive: true
+    },
+    create: {
+      channelId: telegramChannel.id,
+      baseUrl: 'https://api.telegram.org',
+      token: process.env.TELEGRAM_BOT_TOKEN || null,
+      isActive: true,
+      metadata: { provider: 'telegram' }
+    }
+  });
+
+  console.log('✅ Channels criados:', { whatsappChannel: whatsappChannel.id, telegramChannel: telegramChannel.id });
+  console.log('✅ IntegrationAccounts criadas:', { evolutionAccount: evolutionAccount.id, watiicketAccount: watiicketAccount.id, telegramAccount: telegramAccount.id });
 
   console.log('✅ Seed concluído com sucesso.');
 }

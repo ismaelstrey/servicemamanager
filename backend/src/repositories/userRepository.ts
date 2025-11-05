@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 
 // Repositório de usuários para acesso ao banco
-const prisma = new PrismaClient();
 
 export class UserRepository {
   // Cria usuário

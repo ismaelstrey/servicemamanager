@@ -4,11 +4,11 @@ exports.AuthService = void 0;
 const userRepository_1 = require("../repositories/userRepository");
 const passwordUtils_1 = require("../utils/passwordUtils");
 const jwtUtils_1 = require("../utils/jwtUtils");
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../lib/prisma");
 class AuthService {
     constructor() {
         this.userRepository = new userRepository_1.UserRepository();
-        this.prisma = new client_1.PrismaClient();
+        this.prisma = prisma_1.prisma;
     }
     async register(name, email, password) {
         const passwordHash = await (0, passwordUtils_1.hashPassword)(password);

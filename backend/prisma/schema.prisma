@@ -380,3 +380,177 @@ model Customer {
   @@index([providerId, email])
   @@map("customers")
 }
+
+// ===== COMUNICAÇÃO EM TEMPO REAL E INTEGRAÇÕES (Fase 3) =====
+
+enum ChannelType {
+  whatsapp
+  telegram
+  site
+}
+
+enum ConversationStatus {
+  open
+  active
+  closed
+}
+
+enum MessageDirection {
+  inbound
+  outbound
+}
+
+enum MessageStatus {
+  queued
+  sent
+  delivered
+  read
+  failed
+}
+
+enum QueueStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+model Channel {
+  id          Int         @id @default(autoincrement())
+  type        ChannelType
+  name        String
+  description String?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  conversations Conversation[]
+  integrationAccounts IntegrationAccount[]
+
+  @@index([type, isActive])
+  @@map("channels")
+}
+
+model IntegrationAccount {
+  id          Int       @id @default(autoincrement())
+  channel     Channel   @relation(fields: [channelId], references: [id])
+  channelId   Int
+  baseUrl     String?
+  token       String?
+  sessionId   String?
+  isActive    Boolean   @default(true)
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  webhookEvents WebhookEvent[]
+  outboundQueue OutboundQueue[]
+  conversations Conversation[]
+
+  @@index([channelId, isActive])
+  @@map("integration_accounts")
+}
+
+model Conversation {
+  id          Int                @id @default(autoincrement())
+  channel     Channel            @relation(fields: [channelId], references: [id])
+  channelId   Int
+  integration IntegrationAccount? @relation(fields: [integrationAccountId], references: [id])
+  integrationAccountId Int?
+  externalId  String?
+  title       String?
+  status      ConversationStatus @default(open)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  participants Participant[]
+  messages     Message[]
+  outboundQueue OutboundQueue[]
+
+  @@index([channelId, status])
+  @@map("conversations")
+}
+
+model Participant {
+  id             Int          @id @default(autoincrement())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId Int
+  role           String       // 'agent' | 'customer'
+  displayName    String?
+  externalId     String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  messages       Message[]
+
+  @@index([conversationId, role])
+  @@map("participants")
+}
+
+model Message {
+  id             Int             @id @default(autoincrement())
+  conversation   Conversation    @relation(fields: [conversationId], references: [id])
+  conversationId Int
+  participant    Participant?    @relation(fields: [participantId], references: [id])
+  participantId  Int?
+  direction      MessageDirection
+  content        String
+  mediaUrl       String?
+  mimeType       String?
+  status         MessageStatus   @default(queued)
+  errorMessage   String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  attachments    Attachment[]
+
+  @@index([conversationId, createdAt])
+  @@index([status])
+  @@map("messages")
+}
+
+model Attachment {
+  id        Int     @id @default(autoincrement())
+  message   Message @relation(fields: [messageId], references: [id])
+  messageId Int
+  url       String
+  mimeType  String
+  size      Int?
+  createdAt DateTime @default(now())
+
+  @@index([messageId])
+  @@map("attachments")
+}
+
+model WebhookEvent {
+  id                 Int               @id @default(autoincrement())
+  integration        IntegrationAccount @relation(fields: [integrationAccountId], references: [id])
+  integrationAccountId Int
+  externalEventId    String            @unique
+  payload            Json
+  processed          Boolean           @default(false)
+  errorMessage       String?
+  createdAt          DateTime          @default(now())
+  processedAt        DateTime?
+
+  @@index([integrationAccountId, processed])
+  @@map("webhook_events")
+}
+
+model OutboundQueue {
+  id                 Int               @id @default(autoincrement())
+  integration        IntegrationAccount @relation(fields: [integrationAccountId], references: [id])
+  integrationAccountId Int
+  conversation       Conversation      @relation(fields: [conversationId], references: [id])
+  conversationId     Int
+  payload            Json
+  status             QueueStatus       @default(pending)
+  retries            Int               @default(0)
+  lastError          String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([integrationAccountId, status])
+  @@index([conversationId, status])
+  @@map("outbound_queue")
+}

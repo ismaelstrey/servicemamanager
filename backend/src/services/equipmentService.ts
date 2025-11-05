@@ -2,7 +2,7 @@ import { AuthUser } from '../types/auth.types';
 import { PaginationMeta } from '../types/common.types';
 import { ProviderService } from './providerService';
 import { EquipmentRepository, CreateEquipmentData, ListEquipmentsQuery, EquipmentRecord, UpdateEquipmentData } from '../repositories/equipmentRepository';
-import { $Enums } from '@prisma/client';
+// Removed Prisma $Enums import; use string-based typing in repository
 import { ChangeHistoryService } from './changeHistoryService';
 import { logEquipmentAudit } from '../utils/auditLogger';
 import { invalidateProviderCache, invalidateResourceCache } from '../middleware/cacheMiddleware';
@@ -145,7 +145,7 @@ export class EquipmentService {
     return true;
   }
 
-  async getStats(providerId: number, user: AuthUser): Promise<{ total: number; byType: Record<$Enums.EquipmentType, number>; }> {
+  async getStats(providerId: number, user: AuthUser): Promise<{ total: number; byType: Record<string, number>; }> {
     await this.assertAccess(user, providerId);
     return this.repository.getStatsByProvider(providerId);
   }

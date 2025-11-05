@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EquipmentService = void 0;
 const providerService_1 = require("./providerService");
 const equipmentRepository_1 = require("../repositories/equipmentRepository");
+// Removed Prisma $Enums import; use string-based typing in repository
 const changeHistoryService_1 = require("./changeHistoryService");
 const auditLogger_1 = require("../utils/auditLogger");
 const cacheMiddleware_1 = require("../middleware/cacheMiddleware");

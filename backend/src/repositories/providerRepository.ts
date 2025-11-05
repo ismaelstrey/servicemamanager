@@ -1,6 +1,6 @@
 // Repository para acesso aos dados dos provedores
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import {
   Provider,
   CreateProviderDto,
@@ -15,10 +15,10 @@ import {
 import { PaginationMeta } from '../types/common.types';
 
 export class ProviderRepository {
-  private prisma: PrismaClient;
+  private prisma: any;
 
   constructor() {
-    this.prisma = new PrismaClient();
+    this.prisma = prisma;
   }
 
   /**

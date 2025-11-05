@@ -1,8 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { TicketStatus } from '../types/ticket.types';
 import { Priority } from '../types/common.types';
 
-const prisma = new PrismaClient();
+// usar prisma centralizado
 
 export interface TicketAnalysisResult {
   suggestedPriority: Priority;
@@ -329,7 +329,7 @@ export class AIService {
 
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const recentTickets = relatedTickets.filter(ticket => ticket.createdAt >= thirtyDaysAgo);
+    const recentTickets = relatedTickets.filter((ticket: any) => ticket.createdAt >= thirtyDaysAgo);
 
     // Calcular fatores de risco
     const ageInDays = Math.floor((now.getTime() - equipment.createdAt.getTime()) / (1000 * 60 * 60 * 24));

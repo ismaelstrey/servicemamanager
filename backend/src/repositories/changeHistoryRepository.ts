@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 
 export interface CreateChangeHistoryData {
   entityType: 'ticket' | 'service_order' | string;
@@ -25,10 +25,10 @@ export interface ChangeHistoryRecord {
 }
 
 export class ChangeHistoryRepository {
-  private prisma: PrismaClient;
+  private prisma: any;
 
   constructor() {
-    this.prisma = new PrismaClient();
+    this.prisma = prisma;
   }
 
   async create(data: CreateChangeHistoryData): Promise<ChangeHistoryRecord> {

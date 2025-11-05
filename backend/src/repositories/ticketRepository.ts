@@ -1,6 +1,6 @@
 // Repositório para acesso aos dados de Tickets
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { PaginationMeta } from '../types/common.types';
 import { calculatePagination, createPaginationMeta } from '../utils/paginationHelper';
 
@@ -71,10 +71,10 @@ export interface KanbanColumnItem {
 export type KanbanBoard = Record<TicketStatus, KanbanColumnItem[]>;
 
 export class TicketRepository {
-  private prisma: PrismaClient;
+  private prisma: any;
 
   constructor() {
-    this.prisma = new PrismaClient();
+    this.prisma = prisma;
   }
 
   async create(providerId: number, data: CreateTicketData): Promise<TicketRecord> {

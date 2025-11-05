@@ -2,11 +2,11 @@
 // Repositório para acesso aos dados de Tickets
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TicketRepository = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../lib/prisma");
 const paginationHelper_1 = require("../utils/paginationHelper");
 class TicketRepository {
     constructor() {
-        this.prisma = new client_1.PrismaClient();
+        this.prisma = prisma_1.prisma;
     }
     async create(providerId, data) {
         try {
@@ -223,13 +223,17 @@ class TicketRepository {
             });
             const byStatus = {
                 open: 0,
+                assigned: 0,
                 in_progress: 0,
-                waiting_client: 0,
+                pending: 0,
                 resolved: 0,
-                closed: 0
+                closed: 0,
+                cancelled: 0,
+                waiting_client: 0 // legado, será somado em pending abaixo
             };
             for (const g of statusGroups) {
-                byStatus[g.status] = g._count._all;
+                const key = (g.status === 'waiting_client' ? 'pending' : g.status);
+                byStatus[key] = (byStatus[key] || 0) + g._count._all;
             }
             const byPriority = { low: 0, medium: 0, high: 0, critical: 0 };
             for (const g of priorityGroups) {
@@ -251,13 +255,18 @@ class TicketRepository {
             });
             const board = {
                 open: [],
+                assigned: [],
                 in_progress: [],
-                waiting_client: [],
+                pending: [],
                 resolved: [],
-                closed: []
+                closed: [],
+                cancelled: [],
+                waiting_client: [] // mantém chave legado apenas para compatibilidade de tipo
             };
             for (const t of items) {
-                const col = t.status;
+                // Normalizar status legado para novo padrão
+                const statusRaw = t.status;
+                const col = (statusRaw === 'waiting_client' ? 'pending' : statusRaw);
                 if (!board[col])
                     continue;
                 board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt });
@@ -282,13 +291,17 @@ class TicketRepository {
             });
             const board = {
                 open: [],
+                assigned: [],
                 in_progress: [],
-                waiting_client: [],
+                pending: [],
                 resolved: [],
-                closed: []
+                closed: [],
+                cancelled: [],
+                waiting_client: [] // mantém chave legado apenas para compatibilidade de tipo
             };
             for (const t of items) {
-                const col = t.status;
+                const statusRaw = t.status;
+                const col = (statusRaw === 'waiting_client' ? 'pending' : statusRaw);
                 if (!board[col])
                     continue;
                 board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt });

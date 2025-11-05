@@ -1,7 +1,8 @@
 import { ServiceOrderRepository } from '../repositories/serviceOrderRepository';
 import { ProviderService } from './providerService';
 import { AuthUser } from '../types/auth.types';
-import { ServiceOrderStatus, ServiceOrderPriority } from '@prisma/client';
+// Evitar dependência de enums de @prisma/client
+import { ServiceOrderStatus, ServiceOrderPriority } from '../types/serviceOrder.types';
 import { NotificationService } from './notificationService';
 import { ChangeHistoryService } from './changeHistoryService';
 import { logServiceOrderAudit } from '../utils/auditLogger';
@@ -74,9 +75,9 @@ export class ServiceOrderService {
     const updateData = { ...data } as UpdateServiceOrderData;
     
     if (data.status) {
-      if (data.status === ServiceOrderStatus.in_progress && !existingServiceOrder.startedAt) {
+      if (data.status === 'in_progress' && !existingServiceOrder.startedAt) {
         updateData.startedAt = new Date();
-      } else if (data.status === ServiceOrderStatus.completed && !existingServiceOrder.completedAt) {
+      } else if (data.status === 'completed' && !existingServiceOrder.completedAt) {
         updateData.completedAt = new Date();
       }
     }
@@ -210,8 +211,8 @@ export class ServiceOrderService {
     const serviceOrderData = {
       title: data.title,
       description: data.description,
-      status: data.status || ServiceOrderStatus.pending,
-      priority: data.priority || ServiceOrderPriority.medium,
+      status: data.status || 'pending',
+      priority: data.priority || 'medium',
       scheduledDate: data.scheduledDate,
       estimatedHours: data.estimatedHours,
       cost: data.cost,
@@ -273,7 +274,7 @@ export class ServiceOrderService {
       this.serviceOrderRepository.findMany({
         where: {
           ...whereClause,
-          status: ServiceOrderStatus.completed,
+          status: 'completed',
           startedAt: { not: null },
           completedAt: { not: null }
         }
@@ -310,8 +311,8 @@ export class ServiceOrderService {
     }
 
     // Build status counts
-    const byStatus = Object.values(ServiceOrderStatus).reduce((acc, status) => {
-      acc[status] = 0;
+    const byStatus = ['pending','in_progress','waiting_parts','waiting_client','completed','cancelled'].reduce((acc, status) => {
+      acc[status as ServiceOrderStatus] = 0;
       return acc;
     }, {} as Record<ServiceOrderStatus, number>);
 
@@ -320,8 +321,8 @@ export class ServiceOrderService {
     });
 
     // Build priority counts
-    const byPriority = Object.values(ServiceOrderPriority).reduce((acc, priority) => {
-      acc[priority] = 0;
+    const byPriority = ['low','medium','high','urgent'].reduce((acc, priority) => {
+      acc[priority as ServiceOrderPriority] = 0;
       return acc;
     }, {} as Record<ServiceOrderPriority, number>);
 
@@ -334,7 +335,7 @@ export class ServiceOrderService {
       where: {
         ...whereClause,
         status: {
-          in: [ServiceOrderStatus.pending, ServiceOrderStatus.in_progress]
+          in: ['pending', 'in_progress']
         }
       },
       _sum: {

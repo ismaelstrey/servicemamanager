@@ -6,12 +6,14 @@ const providerValidator_1 = require("./providerValidator");
 Object.defineProperty(exports, "validateSchema", { enumerable: true, get: function () { return providerValidator_1.validateSchema; } });
 Object.defineProperty(exports, "validateParams", { enumerable: true, get: function () { return providerValidator_1.validateParams; } });
 Object.defineProperty(exports, "validateQuery", { enumerable: true, get: function () { return providerValidator_1.validateQuery; } });
-const client_1 = require("@prisma/client");
+// Usar enums explícitos para validação sem depender de @prisma/client
+const SERVICE_ORDER_STATUSES = ['pending', 'in_progress', 'waiting_parts', 'waiting_client', 'completed', 'cancelled'];
+const SERVICE_ORDER_PRIORITIES = ['low', 'medium', 'high', 'urgent'];
 // Enums for service orders
-exports.serviceOrderStatusSchema = zod_1.z.nativeEnum(client_1.ServiceOrderStatus, {
+exports.serviceOrderStatusSchema = zod_1.z.enum(SERVICE_ORDER_STATUSES, {
     errorMap: () => ({ message: 'Status inválido' })
 });
-exports.serviceOrderPrioritySchema = zod_1.z.nativeEnum(client_1.ServiceOrderPriority, {
+exports.serviceOrderPrioritySchema = zod_1.z.enum(SERVICE_ORDER_PRIORITIES, {
     errorMap: () => ({ message: 'Prioridade inválida' })
 });
 // Schema for creating service order

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 
 export interface CreateNotificationData {
   type: string;
@@ -36,10 +36,10 @@ export interface NotificationRecord {
 }
 
 export class NotificationRepository {
-  private prisma: PrismaClient;
+  private prisma: any;
 
   constructor() {
-    this.prisma = new PrismaClient();
+    this.prisma = prisma;
   }
 
   async create(data: CreateNotificationData): Promise<NotificationRecord> {

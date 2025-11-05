@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.aiService = exports.AIService = void 0;
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const prisma_1 = require("../lib/prisma");
 class AIService {
     /**
      * Analisa um ticket e sugere prioridade baseada em dados históricos
@@ -50,7 +49,7 @@ class AIService {
      */
     async predictEquipmentFailures(providerId) {
         try {
-            const equipments = await prisma.equipment.findMany({
+            const equipments = await prisma_1.prisma.equipment.findMany({
                 where: { providerId }
             });
             const predictions = [];
@@ -78,7 +77,7 @@ class AIService {
         // Extrair palavras-chave principais
         const keywords = this.extractKeywords(title + ' ' + description);
         // Buscar tickets com palavras-chave similares (removendo filtro por categoria já que não existe no schema)
-        const tickets = await prisma.ticket.findMany({
+        const tickets = await prisma_1.prisma.ticket.findMany({
             where: {
                 providerId,
                 status: { in: ['resolved', 'closed'] },
@@ -235,7 +234,7 @@ class AIService {
      */
     async analyzeEquipmentRisk(equipment) {
         // Buscar tickets relacionados ao equipamento através do provider
-        const relatedTickets = await prisma.ticket.findMany({
+        const relatedTickets = await prisma_1.prisma.ticket.findMany({
             where: {
                 providerId: equipment.providerId,
                 // Assumindo que tickets podem estar relacionados ao equipamento por descrição ou título
@@ -251,7 +250,7 @@ class AIService {
         });
         const now = new Date();
         const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        const recentTickets = relatedTickets.filter(ticket => ticket.createdAt >= thirtyDaysAgo);
+        const recentTickets = relatedTickets.filter((ticket) => ticket.createdAt >= thirtyDaysAgo);
         // Calcular fatores de risco
         const ageInDays = Math.floor((now.getTime() - equipment.createdAt.getTime()) / (1000 * 60 * 60 * 24));
         const recentTicketCount = recentTickets.length;

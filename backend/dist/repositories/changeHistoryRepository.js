@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChangeHistoryRepository = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../lib/prisma");
 class ChangeHistoryRepository {
     constructor() {
-        this.prisma = new client_1.PrismaClient();
+        this.prisma = prisma_1.prisma;
     }
     async create(data) {
         const entry = await this.prisma.changeHistory.create({

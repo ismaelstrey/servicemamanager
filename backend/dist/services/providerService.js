@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProviderService = void 0;
 const providerRepository_1 = require("../repositories/providerRepository");
-const uuid_1 = require("uuid");
+const crypto_1 = require("crypto");
 class ProviderService {
     constructor() {
         this.providerRepository = new providerRepository_1.ProviderRepository();
@@ -282,12 +282,12 @@ class ProviderService {
             }
             // Criar o convite
             const invite = {
-                id: (0, uuid_1.v4)(), // Gerar UUID para o convite
+                id: (0, crypto_1.randomUUID)(), // Gerar UUID para o convite
                 providerId,
                 email: data.email,
                 role: data.role,
                 invitedBy: invitedBy,
-                token: (0, uuid_1.v4)(), // Token único para o convite
+                token: (0, crypto_1.randomUUID)(), // Token único para o convite
                 expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias
                 status: 'pending',
                 createdAt: new Date(),

@@ -3,7 +3,7 @@ import { ClientAuthenticatedRequest } from '../types/customer.types';
 import { ServiceOrderRepository } from '../repositories/serviceOrderRepository';
 import { CommentRepository } from '../repositories/commentRepository';
 import { clientCreateServiceOrderSchema, clientListServiceOrdersSchema, clientCommentSchema, clientQualificationSchema, clientUpdateServiceOrderSchema } from '../validators/clientValidator';
-import { ServiceOrderStatus, ServiceOrderPriority } from '@prisma/client';
+// Usar strings para valores padrão de enums de OS
 
 export class ClientServiceOrderController {
   private serviceOrderRepo: ServiceOrderRepository;
@@ -30,7 +30,7 @@ export class ClientServiceOrderController {
         providerId: req.customer.providerId,
         customerId: req.customer.id
       };
-      if (status) where.status = status as ServiceOrderStatus;
+      if (status) where.status = status as any;
       const skip = (page - 1) * limit;
       const [items, total] = await Promise.all([
         this.serviceOrderRepo.findMany({ where, skip, take: limit, orderBy: { createdAt: 'desc' } }),
@@ -81,8 +81,8 @@ export class ClientServiceOrderController {
       const created = await this.serviceOrderRepo.create({
         title: data.title,
         description: data.description,
-        status: ServiceOrderStatus.pending,
-        priority: ServiceOrderPriority.medium,
+        status: 'pending',
+        priority: 'medium',
         scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : undefined,
         estimatedHours: data.estimatedHours,
         notes: data.notes,

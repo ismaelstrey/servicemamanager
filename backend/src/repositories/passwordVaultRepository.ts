@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { PaginationMeta } from '../types/common.types';
 
 export interface CreatePasswordVaultData {
@@ -38,10 +38,10 @@ export interface PasswordVaultRecord {
 }
 
 export class PasswordVaultRepository {
-  private prisma: PrismaClient;
+  private prisma: any;
 
   constructor() {
-    this.prisma = new PrismaClient();
+    this.prisma = prisma;
   }
 
   async create(providerId: number, data: CreatePasswordVaultData): Promise<PasswordVaultRecord> {
@@ -84,7 +84,7 @@ export class PasswordVaultRepository {
         orderBy: { createdAt: 'desc' }
       });
 
-      const items = rows.map((r) => {
+      const items = rows.map((r: any) => {
         const m = this.mapFromPrisma(r);
         const { password, ...rest } = m;
         return rest;

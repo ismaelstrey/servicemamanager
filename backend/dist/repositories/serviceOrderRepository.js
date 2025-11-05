@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServiceOrderRepository = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../lib/prisma");
 class ServiceOrderRepository {
     constructor() {
-        this.prisma = new client_1.PrismaClient();
+        this.prisma = prisma_1.prisma;
     }
     async findMany(params) {
         return await this.prisma.serviceOrder.findMany(params);

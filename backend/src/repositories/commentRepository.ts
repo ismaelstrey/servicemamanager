@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { Comment, CreateCommentData, UpdateCommentData, CommentFilters } from '../types/comment.types';
 
-const prisma = new PrismaClient();
+// use shared prisma instance from lib
 
 export class CommentRepository {
   async create(data: CreateCommentData): Promise<Comment> {

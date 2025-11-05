@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mlService = exports.MLService = void 0;
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const prisma_1 = require("../lib/prisma");
 class MLService {
     constructor() {
         this.classificationModel = null;
@@ -107,7 +106,7 @@ class MLService {
     async getHistoricalTicketData(providerId, days) {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
-        return await prisma.ticket.findMany({
+        return await prisma_1.prisma.ticket.findMany({
             where: {
                 providerId,
                 createdAt: { gte: startDate },

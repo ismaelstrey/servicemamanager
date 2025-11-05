@@ -2,7 +2,6 @@ import { Response } from 'express';
 import { EquipmentService } from '../services/equipmentService';
 import { AuthenticatedRequest } from '../types/api.types';
 import { CreateEquipmentData, ListEquipmentsQuery, UpdateEquipmentData } from '../repositories/equipmentRepository';
-import { $Enums } from '@prisma/client'
 import { calculatePagination } from '../utils/paginationHelper';
 
 export class EquipmentController {
@@ -28,8 +27,8 @@ export class EquipmentController {
         page: parseInt(req.query.page as string) || 1,
         limit: parseInt(req.query.limit as string) || 10,
         search: (req.query.search as string) || undefined,
-        type: (req.query.type as $Enums.EquipmentType) || undefined,
-        status: (req.query.status as $Enums.EquipmentStatus) || undefined
+        type: (req.query.type as string) || undefined,
+        status: (req.query.status as string) || undefined
       };
 
       const result = await this.equipmentService.list(providerId, query, req.user!);

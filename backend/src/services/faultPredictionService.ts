@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 export interface EquipmentHealthMetrics {
   equipmentId: number;
@@ -186,7 +184,7 @@ export class FaultPredictionService {
    */
   private async calculateEquipmentHealth(equipment: any): Promise<EquipmentHealthMetrics> {
     const historicalData = await this.getEquipmentHistory(equipment.id);
-    const recentTickets = historicalData.filter(ticket => {
+    const recentTickets = historicalData.filter((ticket: any) => {
       const ticketDate = new Date(ticket.createdAt);
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -195,7 +193,7 @@ export class FaultPredictionService {
 
     // Calcular métricas
     const avgTicketsPerMonth = historicalData.length / 12; // Assumindo dados de 1 ano
-    const criticalTicketsCount = recentTickets.filter(t => t.priority === 'critical').length;
+    const criticalTicketsCount = recentTickets.filter((t: any) => t.priority === 'critical').length;
     const daysSinceLastMaintenance = this.calculateDaysSinceLastMaintenance(equipment);
     
     // Calcular score de saúde (0-100)
@@ -663,7 +661,7 @@ export class FaultPredictionService {
     
     for (const equipment of equipments) {
       const recentHistory = await this.getEquipmentHistory(equipment.id);
-      const recentTickets = recentHistory.filter(ticket => {
+      const recentTickets = recentHistory.filter((ticket: any) => {
         const ticketDate = new Date(ticket.createdAt);
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);

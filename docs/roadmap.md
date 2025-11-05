@@ -5,15 +5,15 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
 ## Roadmap Detalhado
 
 ### Fase 1 — Fundamentos e Infra
-- [ ] Estrutura monorepo (pnpm workspaces)
-- [ ] Configuração de lint (ESLint TS)
-- [ ] Backend Express + TS (camadas: controllers, routes, services, repositories, middlewares, utils, validators, docs, server.ts)
-- [ ] Prisma + PostgreSQL (schema, migrações)
-- [ ] Autenticação JWT + bcrypt
-- [ ] Swagger (swagger-ui-express)
-- [ ] Frontend React + Vite + TS
-- [ ] styled-components, react-router-dom, framer-motion
-- [ ] Hooks para API (useApi), autenticação (useAuth)
+- [x] Estrutura monorepo (pnpm workspaces)
+- [x] Configuração de lint (ESLint TS)
+- [x] Backend Express + TS (camadas: controllers, routes, services, repositories, middlewares, utils, validators, docs, server.ts)
+- [x] Prisma + PostgreSQL (schema, migrações)
+- [x] Autenticação JWT + bcrypt
+- [x] Swagger (swagger-ui-express)
+- [x] Frontend React + Vite + TS
+- [x] styled-components, react-router-dom, framer-motion
+- [x] Hooks para API (useApi), autenticação (useAuth)
 
 ### Fase 2 — Domínio
 - [ ] Provedores (CRUD)
@@ -25,9 +25,16 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
 - [ ] Visualizações OS: lista, grade, Kanban
 
 ### Fase 3 — IA Opcional
-- [ ] Sugestão de prioridade de tickets (histórico)
-- [ ] Previsão de falhas em equipamentos
-- [ ] Chat inteligente de suporte interno
+- [ ] Fundamentos de comunicação em tempo real (Socket.IO, Redis, BullMQ)
+- [ ] Chat interno (conversas, mensagens, anexos, presença)
+- [ ] Integração WhatsApp (webhook, envio, mídia, retries)
+- [ ] Integração Telegram (webhook, envio, mídia)
+- [ ] Widget para site (script embutível, CORS, rate limit)
+- [ ] IA: sugestão de prioridade de tickets (baseline)
+- [ ] IA: previsão de falhas (baseline)
+- [ ] Observabilidade, segurança e compliance
+
+Detalhamento: consulte `docs/roadmap-comunicacao-tempo-real.md`.
 
 ## Arquitetura em Camadas (Backend)
 - src/controllers
@@ -118,7 +125,7 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
 ## Roadmap Detalhado do Frontend (Styled-Components & Design System)
 
 ### Fase 1 — Design System e Fundamentos
-- [ ] **Design System Base**
+- [x] **Design System Base**
   - [x] `src/styles/theme/` — sistema de temas com tokens de design
   - [x] `src/styles/tokens/` — tokens de cores, tipografia, espaçamentos, shadows
   - [x] `src/styles/breakpoints/` — sistema de breakpoints responsivos
@@ -126,7 +133,7 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
   - [x] `src/styles/mixins/` — mixins reutilizáveis para styled-components
   - [x] `src/styles/globalStyles.ts` — estilos globais com styled-components
 
-- [ ] **Estrutura de Pastas Profissional**
+- [x] **Estrutura de Pastas Profissional**
   - [x] `src/components/ui/` — componentes de interface básicos (atoms)
   - [x] `src/components/composite/` — componentes compostos (molecules)
   - [x] `src/components/layout/` — componentes de layout (organisms)
@@ -139,16 +146,16 @@ Este documento descreve o roadmap detalhado, arquitetura em camadas, convençõe
   - [x] `src/utils/` — funções utilitárias
   - [x] `src/contexts/` — contextos React (Auth, Theme)
 
-- [ ] **Configuração Base**
+- [x] **Configuração Base**
   - [x] ThemeProvider configurado com styled-components
-  - [ ] Sistema de temas (light/dark) com Context API
+  - [x] Sistema de temas (light/dark) com Context API
   - [x] Configurar axios interceptors para autenticação
-  - [ ] Implementar hook `useApi` para requisições
+  - [x] Implementar hook `useApi` para requisições
   - [x] Configurar roteamento protegido
   - [x] Sistema de breakpoints responsivos
 
 ### Fase 2 — Design Tokens e Tipagem
-- [ ] **Design Tokens**
+- [x] **Design Tokens**
   - [x] Paleta de cores primárias, secundárias e neutras
   - [x] Sistema tipográfico (font-family, sizes, weights, line-heights)
   - [x] Espaçamentos padronizados (4px, 8px, 16px, 24px, 32px, etc.)

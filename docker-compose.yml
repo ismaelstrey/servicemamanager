@@ -54,6 +54,11 @@ services:
       REDIS_ENABLED: ${REDIS_ENABLED:-true}
       REDIS_URL: redis://redis:6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-localdevredis}
+      # Storage S3/MinIO (opcional)
+      S3_ENDPOINT: ${S3_ENDPOINT:-http://minio:9000}
+      S3_BUCKET: ${S3_BUCKET:-attachments}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,6 +73,46 @@ services:
       retries: 5
       start_period: 30s
 
+  # Worker BullMQ (placeholder até implementar processamento)
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: telecomai-worker
+    init: true
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      REDIS_URL: redis://redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-localdevredis}
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: ["sh", "-c", "echo 'Worker BullMQ placeholder ativo' && sleep infinity"]
+
+  # MinIO (S3 compatível) — opcional
+  minio:
+    image: minio/minio:latest
+    container_name: telecomai-minio
+    init: true
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-minioadmin}
+    command: ["server", "/data", "--console-address", ":9001"]
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
 volumes:
   postgres_data:
   redis_data:
+  minio_data:

@@ -1,19 +1,22 @@
-import { PrismaClient, ServiceOrder, Prisma, ServiceOrderStatus, ServiceOrderPriority } from '@prisma/client';
-import { ServiceOrderKanbanBoard } from '../types/serviceOrder.types'
+import { prisma } from '../lib/prisma';
+// Avoid importing Prisma types that may not be exported; use any and local types
+type ServiceOrder = any;
+type Prisma = any;
+import { ServiceOrderKanbanBoard, ServiceOrderStatus } from '../types/serviceOrder.types'
 
 export class ServiceOrderRepository {
-  private prisma: PrismaClient;
+  private prisma: any;
 
   constructor() {
-    this.prisma = new PrismaClient();
+    this.prisma = prisma;
   }
 
   async findMany(params: {
-    where?: Prisma.ServiceOrderWhereInput;
+    where?: any;
     skip?: number;
     take?: number;
-    include?: Prisma.ServiceOrderInclude;
-    orderBy?: Prisma.ServiceOrderOrderByWithRelationInput;
+    include?: any;
+    orderBy?: any;
   }): Promise<ServiceOrder[]> {
     return await this.prisma.serviceOrder.findMany(params);
   }
@@ -21,7 +24,7 @@ export class ServiceOrderRepository {
   async findById(
     id: number,
     params?: {
-      include?: Prisma.ServiceOrderInclude;
+      include?: any;
     }
   ): Promise<ServiceOrder | null> {
     return await this.prisma.serviceOrder.findUnique({
@@ -30,7 +33,7 @@ export class ServiceOrderRepository {
     });
   }
 
-  async create(data: Prisma.ServiceOrderCreateInput): Promise<ServiceOrder> {
+  async create(data: any): Promise<ServiceOrder> {
     return await this.prisma.serviceOrder.create({
       data,
       include: {
@@ -42,7 +45,7 @@ export class ServiceOrderRepository {
 
   async update(
     id: number,
-    data: Prisma.ServiceOrderUpdateInput
+    data: any
   ): Promise<ServiceOrder> {
     return await this.prisma.serviceOrder.update({
       where: { id },
@@ -61,7 +64,7 @@ export class ServiceOrderRepository {
   }
 
   async count(params: {
-    where?: Prisma.ServiceOrderWhereInput;
+    where?: any;
   }): Promise<number> {
     return await this.prisma.serviceOrder.count(params);
   }
@@ -79,8 +82,8 @@ export class ServiceOrderRepository {
     params?: {
       skip?: number;
       take?: number;
-      include?: Prisma.ServiceOrderInclude;
-      orderBy?: Prisma.ServiceOrderOrderByWithRelationInput;
+      include?: any;
+      orderBy?: any;
     }
   ): Promise<ServiceOrder[]> {
     return await this.prisma.serviceOrder.findMany({
@@ -92,7 +95,7 @@ export class ServiceOrderRepository {
   async findByTicket(
     ticketId: number,
     params?: {
-      include?: Prisma.ServiceOrderInclude;
+      include?: any;
     }
   ): Promise<ServiceOrder[]> {
     return await this.prisma.serviceOrder.findMany({
@@ -106,8 +109,8 @@ export class ServiceOrderRepository {
     params?: {
       skip?: number;
       take?: number;
-      include?: Prisma.ServiceOrderInclude;
-      orderBy?: Prisma.ServiceOrderOrderByWithRelationInput;
+      include?: any;
+      orderBy?: any;
     }
   ): Promise<ServiceOrder[]> {
     return await this.prisma.serviceOrder.findMany({
@@ -122,8 +125,8 @@ export class ServiceOrderRepository {
     params?: {
       skip?: number;
       take?: number;
-      include?: Prisma.ServiceOrderInclude;
-      orderBy?: Prisma.ServiceOrderOrderByWithRelationInput;
+      include?: any;
+      orderBy?: any;
     }
   ): Promise<ServiceOrder[]> {
     return await this.prisma.serviceOrder.findMany({

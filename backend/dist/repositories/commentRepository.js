@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CommentRepository = void 0;
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const prisma_1 = require("../lib/prisma");
+// use shared prisma instance from lib
 class CommentRepository {
     async create(data) {
         const commentData = {
@@ -21,7 +21,7 @@ class CommentRepository {
         else if (data.resourceType === 'service_order') {
             commentData.serviceOrderId = data.resourceId;
         }
-        const result = await prisma.comment.create({
+        const result = await prisma_1.prisma.comment.create({
             data: commentData,
             include: {
                 user: {
@@ -49,7 +49,7 @@ class CommentRepository {
         return result;
     }
     async findById(id) {
-        const result = await prisma.comment.findUnique({
+        const result = await prisma_1.prisma.comment.findUnique({
             where: { id },
             include: {
                 user: {
@@ -100,7 +100,7 @@ class CommentRepository {
         }
         const skip = (page - 1) * limit;
         const [comments, total] = await Promise.all([
-            prisma.comment.findMany({
+            prisma_1.prisma.comment.findMany({
                 where,
                 include: {
                     user: {
@@ -128,7 +128,7 @@ class CommentRepository {
                 skip,
                 take: limit
             }),
-            prisma.comment.count({ where })
+            prisma_1.prisma.comment.count({ where })
         ]);
         return {
             comments: comments,
@@ -146,7 +146,7 @@ class CommentRepository {
         if (!includeInternal) {
             where.isInternal = false;
         }
-        const result = await prisma.comment.findMany({
+        const result = await prisma_1.prisma.comment.findMany({
             where,
             include: {
                 user: {
@@ -180,7 +180,7 @@ class CommentRepository {
             updateData.isEdited = true;
             updateData.editedAt = new Date();
         }
-        const result = await prisma.comment.update({
+        const result = await prisma_1.prisma.comment.update({
             where: { id },
             data: updateData,
             include: {
@@ -210,7 +210,7 @@ class CommentRepository {
     }
     async delete(id) {
         try {
-            await prisma.comment.delete({
+            await prisma_1.prisma.comment.delete({
                 where: { id }
             });
             return true;
@@ -220,7 +220,7 @@ class CommentRepository {
         }
     }
     async countByResource(resourceType, resourceId) {
-        return await prisma.comment.count({
+        return await prisma_1.prisma.comment.count({
             where: {
                 resourceType,
                 resourceId
@@ -228,7 +228,7 @@ class CommentRepository {
         });
     }
     async findRecentByProvider(providerId, limit = 10) {
-        const result = await prisma.comment.findMany({
+        const result = await prisma_1.prisma.comment.findMany({
             where: { providerId },
             include: {
                 user: {
@@ -246,7 +246,7 @@ class CommentRepository {
     }
     async validateResourceExists(resourceType, resourceId, providerId) {
         if (resourceType === 'ticket') {
-            const ticket = await prisma.ticket.findFirst({
+            const ticket = await prisma_1.prisma.ticket.findFirst({
                 where: {
                     id: resourceId,
                     providerId
@@ -255,7 +255,7 @@ class CommentRepository {
             return !!ticket;
         }
         else if (resourceType === 'service_order') {
-            const serviceOrder = await prisma.serviceOrder.findFirst({
+            const serviceOrder = await prisma_1.prisma.serviceOrder.findFirst({
                 where: {
                     id: resourceId,
                     providerId

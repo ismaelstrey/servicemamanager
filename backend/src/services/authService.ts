@@ -1,15 +1,15 @@
 import { UserRepository } from '../repositories/userRepository';
 import { hashPassword, comparePassword } from '../utils/passwordUtils';
 import { signToken } from '../utils/jwtUtils';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 
 export class AuthService {
   private userRepository: UserRepository;
-  private prisma: PrismaClient;
+  private prisma: any;
 
   constructor() {
     this.userRepository = new UserRepository();
-    this.prisma = new PrismaClient();
+    this.prisma = prisma;
   }
 
   async register(name: string, email: string, password: string) {

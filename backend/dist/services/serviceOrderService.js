@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServiceOrderService = void 0;
 const serviceOrderRepository_1 = require("../repositories/serviceOrderRepository");
 const providerService_1 = require("./providerService");
-const client_1 = require("@prisma/client");
 const notificationService_1 = require("./notificationService");
 const changeHistoryService_1 = require("./changeHistoryService");
 const auditLogger_1 = require("../utils/auditLogger");
@@ -23,10 +22,10 @@ class ServiceOrderService {
         // Auto-set timestamps based on status changes
         const updateData = { ...data };
         if (data.status) {
-            if (data.status === client_1.ServiceOrderStatus.in_progress && !existingServiceOrder.startedAt) {
+            if (data.status === 'in_progress' && !existingServiceOrder.startedAt) {
                 updateData.startedAt = new Date();
             }
-            else if (data.status === client_1.ServiceOrderStatus.completed && !existingServiceOrder.completedAt) {
+            else if (data.status === 'completed' && !existingServiceOrder.completedAt) {
                 updateData.completedAt = new Date();
             }
         }
@@ -127,8 +126,8 @@ class ServiceOrderService {
         const serviceOrderData = {
             title: data.title,
             description: data.description,
-            status: data.status || client_1.ServiceOrderStatus.pending,
-            priority: data.priority || client_1.ServiceOrderPriority.medium,
+            status: data.status || 'pending',
+            priority: data.priority || 'medium',
             scheduledDate: data.scheduledDate,
             estimatedHours: data.estimatedHours,
             cost: data.cost,
@@ -177,7 +176,7 @@ class ServiceOrderService {
             this.serviceOrderRepository.findMany({
                 where: {
                     ...whereClause,
-                    status: client_1.ServiceOrderStatus.completed,
+                    status: 'completed',
                     startedAt: { not: null },
                     completedAt: { not: null }
                 }
@@ -210,7 +209,7 @@ class ServiceOrderService {
             averageCompletionTime = totalTime / completedOrders.length / (1000 * 60 * 60); // Convert to hours
         }
         // Build status counts
-        const byStatus = Object.values(client_1.ServiceOrderStatus).reduce((acc, status) => {
+        const byStatus = ['pending', 'in_progress', 'waiting_parts', 'waiting_client', 'completed', 'cancelled'].reduce((acc, status) => {
             acc[status] = 0;
             return acc;
         }, {});
@@ -218,7 +217,7 @@ class ServiceOrderService {
             byStatus[status] = statusCounts[status];
         });
         // Build priority counts
-        const byPriority = Object.values(client_1.ServiceOrderPriority).reduce((acc, priority) => {
+        const byPriority = ['low', 'medium', 'high', 'urgent'].reduce((acc, priority) => {
             acc[priority] = 0;
             return acc;
         }, {});
@@ -230,7 +229,7 @@ class ServiceOrderService {
             where: {
                 ...whereClause,
                 status: {
-                    in: [client_1.ServiceOrderStatus.pending, client_1.ServiceOrderStatus.in_progress]
+                    in: ['pending', 'in_progress']
                 }
             },
             _sum: {

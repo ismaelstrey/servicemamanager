@@ -20,7 +20,7 @@ import {
 } from '../types';
 import { PaginationMeta } from '../types/common.types';
 import bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export class ProviderService {
   private providerRepository: ProviderRepository;
@@ -325,12 +325,12 @@ export class ProviderService {
 
       // Criar o convite
       const invite: ProviderInvite = {
-        id: uuidv4(), // Gerar UUID para o convite
+        id: randomUUID(), // Gerar UUID para o convite
         providerId,
         email: data.email,
         role: data.role,
         invitedBy: invitedBy,
-        token: uuidv4(), // Token único para o convite
+        token: randomUUID(), // Token único para o convite
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias
         status: 'pending',
         createdAt: new Date(),

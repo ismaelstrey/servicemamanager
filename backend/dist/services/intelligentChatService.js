@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.intelligentChatService = exports.IntelligentChatService = void 0;
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const prisma_1 = require("../lib/prisma");
 class IntelligentChatService {
     constructor() {
         this.activeSessions = new Map();
@@ -367,7 +366,7 @@ class IntelligentChatService {
         }).slice(0, 5);
     }
     async findSimilarResolvedTickets(problem, equipmentType) {
-        return await prisma.ticket.findMany({
+        return await prisma_1.prisma.ticket.findMany({
             where: {
                 status: 'resolved',
                 OR: [
@@ -424,19 +423,19 @@ class IntelligentChatService {
     }
     // Métodos de persistência e busca de dados
     async getTicketInfo(ticketId) {
-        return await prisma.ticket.findUnique({
+        return await prisma_1.prisma.ticket.findUnique({
             where: { id: ticketId },
             include: { provider: true }
         });
     }
     async getEquipmentInfo(equipmentId) {
-        return await prisma.equipment.findUnique({
+        return await prisma_1.prisma.equipment.findUnique({
             where: { id: equipmentId },
             include: { provider: true }
         });
     }
     async findSimilarTickets(providerId, intent) {
-        return await prisma.ticket.findMany({
+        return await prisma_1.prisma.ticket.findMany({
             where: { providerId },
             take: 3,
             orderBy: { createdAt: 'desc' }

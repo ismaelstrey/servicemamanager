@@ -1,47 +1,47 @@
 // Repositório para acesso aos dados de Equipamentos
 
-import { PrismaClient, $Enums } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { PaginationMeta } from '../types/common.types';
 import { calculatePagination, createPaginationMeta } from '../utils/paginationHelper';
 
 export interface CreateEquipmentData {
   label: string;
-  type: $Enums.EquipmentType;
+  type: string;
   serial: string;
-  status?: $Enums.EquipmentStatus; // active | inactive | maintenance
+  status?: string; // active | inactive | maintenance
 }
 
 export interface UpdateEquipmentData {
   label?: string;
-  type?: $Enums.EquipmentType;
+  type?: string;
   serial?: string;
-  status?: $Enums.EquipmentStatus; // active | inactive | maintenance
+  status?: string; // active | inactive | maintenance
 }
 
 export interface ListEquipmentsQuery {
   page?: number;
   limit?: number;
   search?: string;
-  type?: $Enums.EquipmentType;
-  status?: $Enums.EquipmentStatus;
+  type?: string;
+  status?: string;
 }
 
 export interface EquipmentRecord {
   id: number;
   label: string;
-  type: $Enums.EquipmentType;
+  type: string;
   serial: string;
-  status: $Enums.EquipmentStatus;
+  status: string;
   providerId: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export class EquipmentRepository {
-  private prisma: PrismaClient;
+  private prisma: any;
 
   constructor() {
-    this.prisma = new PrismaClient();
+    this.prisma = prisma;
   }
 
   /**
@@ -123,7 +123,7 @@ export class EquipmentRepository {
         })
       ]);
 
-      const equipments = items.map((e) => this.mapFromPrisma(e));
+      const equipments = items.map((e: any) => this.mapFromPrisma(e));
       const pagination = createPaginationMeta(
         paginationParams.page,
         paginationParams.limit,
@@ -198,7 +198,7 @@ export class EquipmentRepository {
     };
   }
 
-  async getStatsByProvider(providerId: number): Promise<{ total: number; byType: Record<$Enums.EquipmentType, number>; }> {
+  async getStatsByProvider(providerId: number): Promise<{ total: number; byType: Record<string, number>; }> {
     try {
       const total = await this.prisma.equipment.count({ where: { providerId } });
       const groups = await this.prisma.equipment.groupBy({
@@ -206,8 +206,8 @@ export class EquipmentRepository {
         where: { providerId },
         _count: { _all: true }
       });
-      const byType: Record<$Enums.EquipmentType, number> = {} as Record<$Enums.EquipmentType, number>;
-      for (const g of groups as Array<{ type: $Enums.EquipmentType; _count: { _all: number } }>) {
+      const byType: Record<string, number> = {} as Record<string, number>;
+      for (const g of groups as Array<{ type: string; _count: { _all: number } }>) {
         byType[g.type] = g._count._all;
       }
       return { total, byType };

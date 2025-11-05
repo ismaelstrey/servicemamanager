@@ -11,8 +11,8 @@ Object.defineProperty(exports, "validateQuery", { enumerable: true, get: functio
 exports.ticketStatusSchema = zod_1.z.enum(['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed', 'cancelled'], {
     errorMap: () => ({ message: 'Status deve ser open, assigned, in_progress, pending, resolved, closed ou cancelled' })
 });
-exports.ticketPrioritySchema = zod_1.z.enum(['low', 'medium', 'high', 'critical'], {
-    errorMap: () => ({ message: 'Prioridade deve ser low, medium, high ou critical' })
+exports.ticketPrioritySchema = zod_1.z.enum(['low', 'medium', 'high', 'urgent'], {
+    errorMap: () => ({ message: 'Prioridade deve ser low, medium, high ou urgent' })
 });
 exports.ticketCategorySchema = zod_1.z.enum(['technical', 'billing', 'commercial', 'installation', 'maintenance', 'complaint', 'request', 'incident', 'change', 'other'], {
     errorMap: () => ({ message: 'Categoria deve ser technical, billing, commercial, installation, maintenance, complaint, request, incident, change ou other' })

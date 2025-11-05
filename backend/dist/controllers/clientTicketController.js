@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ClientTicketController = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../lib/prisma");
 const ticketRepository_1 = require("../repositories/ticketRepository");
 const commentRepository_1 = require("../repositories/commentRepository");
 const clientValidator_1 = require("../validators/clientValidator");
-const prisma = new client_1.PrismaClient();
+// use shared prisma instance
 class ClientTicketController {
     constructor() {
         this.ticketRepo = new ticketRepository_1.TicketRepository();
@@ -39,13 +39,13 @@ class ClientTicketController {
             }
             const skip = (page - 1) * limit;
             const [tickets, total] = await Promise.all([
-                prisma.ticket.findMany({
+                prisma_1.prisma.ticket.findMany({
                     where,
                     orderBy: { createdAt: 'desc' },
                     skip,
                     take: limit
                 }),
-                prisma.ticket.count({ where })
+                prisma_1.prisma.ticket.count({ where })
             ]);
             res.json({
                 success: true,

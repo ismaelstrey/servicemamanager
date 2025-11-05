@@ -1,13 +1,15 @@
 import { z } from 'zod';
 import { validateSchema, validateParams, validateQuery } from './providerValidator';
-import { ServiceOrderStatus, ServiceOrderPriority } from '@prisma/client';
+// Usar enums explícitos para validação sem depender de @prisma/client
+const SERVICE_ORDER_STATUSES = ['pending','in_progress','waiting_parts','waiting_client','completed','cancelled'] as const;
+const SERVICE_ORDER_PRIORITIES = ['low','medium','high','urgent'] as const;
 
 // Enums for service orders
-export const serviceOrderStatusSchema = z.nativeEnum(ServiceOrderStatus, {
+export const serviceOrderStatusSchema = z.enum(SERVICE_ORDER_STATUSES, {
   errorMap: () => ({ message: 'Status inválido' })
 });
 
-export const serviceOrderPrioritySchema = z.nativeEnum(ServiceOrderPriority, {
+export const serviceOrderPrioritySchema = z.enum(SERVICE_ORDER_PRIORITIES, {
   errorMap: () => ({ message: 'Prioridade inválida' })
 });
 

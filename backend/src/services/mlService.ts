@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { Priority } from '../types/common.types';
 
-const prisma = new PrismaClient();
+// use shared prisma instance
 
 export interface MLTicketPattern {
   pattern: string;
