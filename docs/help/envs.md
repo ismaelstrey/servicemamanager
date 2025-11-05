@@ -1,0 +1,17 @@
+# Variáveis de Ambiente
+
+Lista de variáveis relevantes para backend e frontend.
+
+## Backend
+- `WHATSAPP_PROVIDER=evolution|watiicket|cloud`
+- `WEBHOOK_PROCESSOR_ENABLED=true|false`
+- `OUTBOUND_SENDER_ENABLED=true|false`
+- `OUTBOUND_BULLMQ_ENABLED=true|false`
+- `REDIS_ENABLED=true|false`, `REDIS_URL`, `REDIS_PASSWORD`
+- `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`
+- `MEDIA_DOWNLOAD_ENABLED`, `MEDIA_PURGE_ENABLED`, `MEDIA_PURGE_DAYS`
+- `OTEL_ENABLED`, `OTEL_SERVICE_NAME`, `OTEL_EXPORTER_OTLP_ENDPOINT`
+- `PORT`, `NODE_ENV`, `JWT_SECRET`, `DATABASE_URL`
+
+## Frontend
+- `VITE_API_URL`

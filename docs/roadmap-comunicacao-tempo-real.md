@@ -113,7 +113,19 @@ Este documento detalha o plano para implementar chat em tempo real com clientes,
 - Escala: sharding de Redis e horizontalização do worker; balanceamento de WebSockets.
 
 ## Próximos Passos
-- [ ] Decidir provedor WhatsApp principal (Evolution API, WaTicket ou Cloud API).
-- [ ] Iniciar Fase 3.3 — WhatsApp: webhook receiver e normalização de payload.
-- [ ] Implementar worker BullMQ para outbound, retries e DLQ.
-- [ ] Definir política de mídia (download, armazenamento, expurgo).
+- [x] Decidir provedor WhatsApp principal (Evolution API, WaTicket ou Cloud API).
+  - Decisão: utilizar `Evolution API` como provedor principal em desenvolvimento/staging, com plano de fallback para `Cloud API (Meta)` em produção quando necessário (evitar banimentos e garantir conformidade).
+  - Justificativa: modelo de eventos simples, webhooks robustos, menor atrito de integração inicial; Cloud API permanece opção para números oficiais e compliance; WaTicket avaliado como alternativa secundária.
+  - Configuração: defina `WHATSAPP_PROVIDER=evolution` no backend.
+- [x] Iniciar Fase 3.3 — WhatsApp: webhook receiver e normalização de payload.
+  - Endpoints: `POST /api/integrations/webhooks/whatsapp/evolution` e `POST /api/integrations/webhooks/whatsapp/waticket` (rota disponível para WaTicket).
+  - Normalização: `backend/src/integrations/whatsapp/normalizers.ts` e processamento: `backend/src/services/integrationProcessingService.ts`.
+  - Worker: `WEBHOOK_PROCESSOR_ENABLED=true` com ciclo configurável via `WEBHOOK_PROCESSOR_INTERVAL_MS`.
+- [x] Implementar worker BullMQ para outbound, retries e DLQ.
+  - Fila: `outbound` com `attempts=5` e `backoff` exponencial; DLQ: `outbound_dlq`.
+  - Habilitar: `OUTBOUND_BULLMQ_ENABLED=true` e `REDIS_URL` (e credenciais quando necessário).
+  - Arquivos: `backend/src/queues/outboundQueue.ts` e `backend/src/workers/outboundBullWorker.ts`.
+- [x] Definir política de mídia (download, armazenamento, expurgo).
+  - Download inbound: `MEDIA_DOWNLOAD_ENABLED=true` salva em MinIO/S3 (`S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`).
+  - Expurgo: `MEDIA_PURGE_ENABLED=true` com retenção `MEDIA_RETENTION_DAYS` e intervalo `MEDIA_PURGE_INTERVAL_MS`.
+  - Implementação: `backend/src/services/storageService.ts` e `backend/src/workers/mediaPurge.ts`.

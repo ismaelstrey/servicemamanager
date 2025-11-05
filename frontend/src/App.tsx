@@ -28,6 +28,7 @@ const ServiceOrderDetailsPage = lazy(() => import('./pages/service-orders/Servic
 const CreateServiceOrderPage = lazy(() => import('./pages/service-orders/CreateServiceOrderPage'))
 const ServiceOrdersCalendarPage = lazy(() => import('./pages/service-orders/ServiceOrdersCalendarPage'))
 const ServiceOrdersSlaReportsPage = lazy(() => import('./pages/service-orders/ServiceOrdersReportsPage'))
+const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
@@ -230,6 +231,17 @@ const App: React.FC = () => {
                 <ProtectedRoute>
                   <Layout>
                     <SettingsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Reports */}
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ReportsPage />
                   </Layout>
                 </ProtectedRoute>
               }

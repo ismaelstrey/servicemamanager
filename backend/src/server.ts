@@ -22,6 +22,7 @@ import clientTicketRoutes from './routes/clientTicketRoutes';
 import integrationRoutes from './routes/integrationRoutes';
 import debugRoutes from './routes/debugRoutes';
 import widgetRoutes from './routes/widgetRoutes';
+import reportRoutes from './routes/reportRoutes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger';
 import { generalRateLimit, authRateLimit, aiRateLimit, createResourceRateLimit } from './middleware/rateLimitMiddleware';
@@ -82,6 +83,7 @@ app.use('/api', ticketRoutes);
 app.use('/api/providers', passwordVaultRoutes);
 app.use('/api/providers', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/reports', reportRoutes);
 app.use('/api/client/profile', clientProfileRoutes);
 app.use('/api/integrations', integrationRoutes);
 // Rotas de privacidade (consentimento e solicitação de eliminação de dados)

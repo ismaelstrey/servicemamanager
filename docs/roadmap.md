@@ -329,6 +329,84 @@ Detalhamento: consulte `docs/roadmap-comunicacao-tempo-real.md`.
   - [x] PWA com offline support
   - [x] Integração com calendários externos
 
+### Fase 14 — Relatórios (/reports)
+- [x] Planejar escopo de relatórios (tickets, OS, desempenho, SLA)
+- [x] Backend: controllers, services, repositories, routes, validators
+  - [x] `src/controllers/reportController.ts`
+  - [x] `src/services/reportService.ts`
+  - [x] `src/repositories/reportRepository.ts`
+  - [x] `src/routes/reportRoutes.ts` (`/api/reports/...`)
+  - [x] `src/validators/reportValidator.ts`
+  - [x] Documentar no Swagger (`/api/docs`) com schemas e exemplos
+- [x] Endpoints: `GET /api/reports/summary`, `GET /api/reports/tickets`, `GET /api/reports/service-orders`
+- [ ] Filtros: tags, responsável, cliente (query params tipados)
+  - [x] Filtros: período, status
+- [ ] Exportação: `GET /api/reports/export?type=tickets&format=csv|pdf|xlsx`
+  - [x] CSV (tickets e ordens de serviço)
+  - [ ] PDF
+  - [ ] XLSX
+- [x] Cache adaptativo (habilitar via `REDIS_ENABLED=true` quando aplicável)
+  - [x] Sumário com cache de estatísticas
+- [x] Frontend: página `/reports` com visualizações e filtros
+  - [x] `frontend/src/pages/reports/ReportsPage.tsx`
+  - [x] `useReports` (hook para acessar API conforme padrão do projeto)
+  - [ ] Tabela, gráficos (Recharts/Chart.js), KPIs e exportar
+  - [x] Proteção de rotas (`react-router-dom`) e RBAC (admin/gestor)
+  - [x] Animações leves (`framer-motion`) e layout com styled-components
+
+### Fase 15 — Gerência de Usuários (/users)
+- [ ] Definir modelo de usuário com perfis/roles e estados (ativo/inativo)
+- [ ] Backend: CRUD com validações, reset de senha, alteração de role
+  - [ ] `src/controllers/userController.ts`
+  - [ ] `src/services/userService.ts` (hash `bcrypt`, regras de negócio)
+  - [ ] `src/repositories/userRepository.ts` (Prisma)
+  - [ ] `src/routes/userRoutes.ts` (`/api/users`)
+  - [ ] `src/validators/userValidators.ts`
+  - [ ] JWT + middleware de autorização por role
+  - [ ] Documentar no Swagger com exemplos de payload e respostas
+- [ ] Frontend: `/users`
+  - [ ] `frontend/src/pages/users/UsersListPage.tsx`
+  - [ ] `frontend/src/pages/users/UserFormPage.tsx`
+  - [ ] `useUsers` (hook para listar, criar, editar, desativar)
+  - [ ] Formulários tipados (TypeScript), comentários em pt-BR
+  - [ ] Proteção de rota e verificação de role (admin)
+
+### Fase 16 — Configurações do Sistema (/settings)
+- [ ] Mapear categorias: gerais, notificações, integrações, segurança
+- [ ] Backend: entidade de configurações e endpoints
+  - [ ] Atualizar `prisma/schema.prisma` com `SystemSetting` (chave, valor, tipo)
+  - [ ] `src/controllers/settingController.ts`
+  - [ ] `src/services/settingService.ts`
+  - [ ] `src/repositories/settingRepository.ts`
+  - [ ] `src/routes/settingRoutes.ts` (`/api/settings`)
+  - [ ] `src/validators/settingValidators.ts`
+  - [ ] Regras: somente admin pode alterar, validações por tipo
+  - [ ] Documentar no Swagger e sincronizar com `.env` quando aplicável
+- [ ] Frontend: `/settings`
+  - [ ] `frontend/src/pages/settings/SettingsPage.tsx`
+  - [ ] `useSettings` (hook para carregar/salvar configurações)
+  - [ ] UI com seções, inputs tipados, feedback visual, acessibilidade
+  - [ ] Suporte a tema, estados de carregamento e erros padronizados
+
+### Fase 17 — Documentação do Sistema e Help (/help)
+- [ ] Estruturar pasta de documentação acessível por tópicos
+  - [ ] `docs/help/` com arquivos Markdown por tópico (camelCase)
+  - [ ] Exemplos: `overview.md`, `auth.md`, `tickets.md`, `serviceOrders.md`, `reports.md`, `users.md`, `settings.md`, `integrations.md`, `envs.md`, `deploy.md`, `pm2.md`, `swagger.md`
+  - [ ] `docs/help/index.md` com sumário e navegação
+- [ ] Backend: servir documentação (opcional) ou referenciar repositório
+  - [ ] Expor estáticos em `/api/help` quando necessário
+  - [ ] Segurança: público somente leitura
+- [ ] Frontend: página `/help` para leitura dos Docs
+  - [ ] `frontend/src/pages/help/HelpPage.tsx`
+  - [ ] Navegação por tópicos, busca, leitura de Markdown
+  - [ ] `useHelpDocs` (hook para carregar tópicos)
+  - [ ] Acessibilidade e UX simples com styled-components
+- [ ] Padrões do projeto
+  - [ ] TypeScript estrito (sem `any`), camelCase para arquivos, funções e variáveis
+  - [ ] Comentários explicativos em pt-BR
+  - [ ] Hooks para acesso à API (`padrao de acesso a api`)
+  - [ ] ESLint ativo, Swagger atualizado e `.env` versionado via exemplo
+
 ## Arquitetura do Frontend (Styled-Components)
 
 ### Estrutura de Pastas Profissional
