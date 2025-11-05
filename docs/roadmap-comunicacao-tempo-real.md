@@ -86,20 +86,20 @@ Este documento detalha o plano para implementar chat em tempo real com clientes,
 - [x] Implementar envio/recebimento de mensagens e anexos.
 
 ### Fase 3.5 — Widget para Site
-- [ ] Implementar `chat-widget.js` (Vite) com configuração via `data-*`.
-- [ ] Endpoint `GET /chat/widget-config` para bootstrap.
-- [ ] CORS, rate limiting e fallback SSE.
+- [x] Implementar `chat-widget.js` (Vite) com configuração via `data-*`.
+- [x] Endpoint `GET /chat/widget-config` para bootstrap.
+- [x] CORS, rate limiting e fallback SSE.
 
 ### Fase 3.6 — IA Opcional
-- [ ] Sugestão de prioridade de tickets (baseline heurístico; evolução para ML offline).
-- [ ] Previsão de falhas (correlação de eventos e histórico; baseline inicial).
+- [x] Sugestão de prioridade de tickets (baseline heurístico; evolução para ML offline). Endpoint: `POST /api/ai/analyze-ticket`.
+- [x] Previsão de falhas (correlação de eventos e histórico; baseline inicial). Endpoint: `GET /api/ai/predict-failures/:providerId`.
 
 ### Fase 3.7 — Observabilidade e Segurança
-- [ ] Logs estruturados e redaction de PII.
-- [ ] Métricas (latência, entregas, erros, filas).
-- [ ] Tracing distribuído (OpenTelemetry).
-- [ ] LGPD/GDPR: retenção configurável, consentimento, DSRs.
-- [ ] Backups e políticas de expurgo.
+- [x] Logs estruturados e redaction de PII (winston + auditMiddleware com redaction de campos sensíveis).
+- [x] Métricas (latência, entregas, erros, filas) via Prometheus. Endpoint: `GET /metrics`.
+- [x] Tracing distribuído (OpenTelemetry) habilitado via `OTEL_ENABLED=true` e exportador OTLP.
+- [x] LGPD/GDPR: retenção configurável (worker de expurgo de mídia), consentimento e DSRs. Endpoints: `POST /api/privacy/consent`, `POST /api/privacy/request-erasure`.
+- [x] Backups e políticas de expurgo (worker de backup com retenção). Config: `BACKUP_ENABLED`, `BACKUP_INTERVAL_MS`, `BACKUP_RETENTION_DAYS`.
 
 ## Entregáveis
 - Chat em tempo real funcional (envio/recebimento, presença, typing, anexos).

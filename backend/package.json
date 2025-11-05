@@ -15,6 +15,11 @@
     "test:telegram": "ts-node-dev --transpile-only src/tests/telegramNormalizer.test.ts && ts-node-dev --transpile-only src/tests/telegramSender.test.ts"
   },
   "dependencies": {
+    "@opentelemetry/auto-instrumentations-node": "^0.54.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.54.0",
+    "@opentelemetry/resources": "^1.23.0",
+    "@opentelemetry/sdk-node": "^0.54.2",
+    "@opentelemetry/semantic-conventions": "^1.37.0",
     "@prisma/client": "^6.17.1",
     "@types/joi": "^17.2.2",
     "@types/redis": "^4.0.10",
@@ -30,6 +35,7 @@
     "jsonwebtoken": "^9.0.2",
     "minio": "^8.0.6",
     "multer": "^2.0.2",
+    "prom-client": "^14.2.0",
     "redis": "^5.9.0",
     "socket.io": "^4.7.5",
     "swagger-jsdoc": "^6.2.8",

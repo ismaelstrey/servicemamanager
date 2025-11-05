@@ -72,7 +72,7 @@ export function useChat(options: UseChatOptions = {}) {
     try {
       setLoading(true);
       const res = await ChatService.listMessages(conversationId);
-      const list = (res.data?.data ?? []) as unknown as { data?: Message[]; pagination?: any };
+      // const list = (res.data?.data ?? []) as unknown as { data?: Message[]; pagination?: any };
       // normalizeApiResponse embrulha, então res.data contém envelope; acessa direta
       const msgs = (res.data as any).data as Message[];
       setMessages(msgs);

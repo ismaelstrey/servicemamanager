@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
-import type { Socket } from 'socket.io';
+import type { Socket, DisconnectReason } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes';
@@ -21,22 +21,30 @@ import clientServiceOrderRoutes from './routes/clientServiceOrderRoutes';
 import clientTicketRoutes from './routes/clientTicketRoutes';
 import integrationRoutes from './routes/integrationRoutes';
 import debugRoutes from './routes/debugRoutes';
+import widgetRoutes from './routes/widgetRoutes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger';
 import { generalRateLimit, authRateLimit, aiRateLimit, createResourceRateLimit } from './middleware/rateLimitMiddleware';
 import { corsMiddleware, restrictiveCorsMiddleware, publicCorsMiddleware, validateCorsConfig } from './middleware/corsMiddleware';
 import { redisClient } from './config/redis';
 import { requestLogger } from './middleware/requestLogger';
+import { metricsMiddleware, metricsRouteHandler } from './middleware/metricsMiddleware';
 import { verifyToken } from './utils/jwtUtils';
 import { prisma } from './lib/prisma';
 import { startWebhookProcessor } from './workers/webhookProcessor';
 import { startOutboundSender } from './workers/outboundSender';
 import { startOutboundBullWorker } from './workers/outboundBullWorker';
 import { startMediaPurge } from './workers/mediaPurge';
+import { startBackupWorker } from './workers/backupWorker';
 import { setProviderNamespace } from './events/socketPublisher';
+import privacyRoutes from './routes/privacyRoutes';
+import { startTracing } from './lib/tracing';
 
 // Configura variáveis de ambiente
 dotenv.config();
+
+// Inicializa tracing (OpenTelemetry) se habilitado
+startTracing();
 
 const app = express();
 const server = http.createServer(app);
@@ -54,6 +62,8 @@ app.use('/api', corsMiddleware);
 app.use(express.json());
 // Log de requisições (apenas em desenvolvimento)
 app.use('/api', requestLogger);
+// Métricas HTTP (Prometheus)
+app.use('/api', metricsMiddleware);
 
 // Rate limiting geral para todas as rotas da API
 app.use('/api', generalRateLimit);
@@ -74,10 +84,14 @@ app.use('/api/providers', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/client/profile', clientProfileRoutes);
 app.use('/api/integrations', integrationRoutes);
+// Rotas de privacidade (consentimento e solicitação de eliminação de dados)
+app.use('/api/privacy', privacyRoutes);
 // Rotas de debug (habilitar via ENABLE_DEBUG_ROUTES=true)
 app.use('/api/debug', debugRoutes);
 // Chat interno (Fase 3.2)
 app.use('/api/chat', chatRoutes);
+// Rotas públicas do widget de chat (sem auth)
+app.use('/chat', widgetRoutes);
 
 // Rate limiting específico para criação de recursos
 app.use('/api/service-orders', createResourceRateLimit);
@@ -101,6 +115,9 @@ app.get('/health', publicCorsMiddleware, (_req: Request, res: Response) => {
   // Retorna status do servidor
   res.json({ status: 'ok' });
 });
+
+// Rota de métricas para Prometheus
+app.get('/metrics', metricsRouteHandler);
 
 // TODO: Registrar rotas em src/routes
 
@@ -277,7 +294,7 @@ providerNs.on('connection', (socket: Socket) => {
     }
   });
 
-  socket.on('disconnect', (reason) => {
+  socket.on('disconnect', (reason: DisconnectReason) => {
     console.log(`[WS] Desconectado de ${nsName} — socket ${socket.id}, reason=${reason}`);
   });
 });
@@ -302,6 +319,9 @@ server.listen(port, async () => {
 
   // Inicializa expurgo de mídia
   await startMediaPurge();
+
+  // Inicializa worker de backup
+  await startBackupWorker();
 
   // Disponibiliza namespace para publicadores de eventos
   setProviderNamespace(providerNs);
