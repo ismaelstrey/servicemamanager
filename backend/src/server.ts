@@ -19,10 +19,12 @@ import clientProfileRoutes from './routes/clientProfileRoutes';
 import customerAuthRoutes from './routes/customerAuthRoutes';
 import clientServiceOrderRoutes from './routes/clientServiceOrderRoutes';
 import clientTicketRoutes from './routes/clientTicketRoutes';
+import clientNotificationRoutes from './routes/clientNotificationRoutes';
 import integrationRoutes from './routes/integrationRoutes';
 import debugRoutes from './routes/debugRoutes';
 import widgetRoutes from './routes/widgetRoutes';
 import reportRoutes from './routes/reportRoutes';
+import customerRoutes from './routes/customerRoutes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger';
 import { generalRateLimit, authRateLimit, aiRateLimit, createResourceRateLimit } from './middleware/rateLimitMiddleware';
@@ -84,6 +86,7 @@ app.use('/api/providers', passwordVaultRoutes);
 app.use('/api/providers', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/customers', customerRoutes);
 app.use('/api/client/profile', clientProfileRoutes);
 app.use('/api/integrations', integrationRoutes);
 // Rotas de privacidade (consentimento e solicitação de eliminação de dados)
@@ -101,6 +104,7 @@ app.use('/api/service-orders', serviceOrderRoutes);
 app.use('/api/client/service-orders', createResourceRateLimit);
 app.use('/api/client/service-orders', clientServiceOrderRoutes);
 app.use('/api/client/tickets', clientTicketRoutes);
+app.use('/api/client/notifications', clientNotificationRoutes);
 
 // Rotas de comentários
 app.use('/api/comments', commentRoutes);

@@ -164,6 +164,71 @@ export class TicketRepository {
     }
   }
 
+  async listByProviderAndCustomer(providerId: number, customerId: number, query: ListTicketsQuery): Promise<{ tickets: TicketRecord[]; pagination: PaginationMeta; }> {
+    try {
+      const { search, status, priority } = query;
+
+      const paginationParams = calculatePagination({
+        page: query.page,
+        limit: query.limit,
+        maxLimit: 100,
+        defaultLimit: 10
+      });
+
+      const where: any = { providerId, comments: { some: { customerId } } };
+      if (search) {
+        where.OR = [
+          { title: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } }
+        ];
+      }
+      if (status) {
+        where.status = { equals: status };
+      }
+      if (priority) {
+        where.priority = { equals: priority };
+      }
+      if (query.startDate || query.endDate) {
+        where.createdAt = {};
+        if (query.startDate) where.createdAt.gte = query.startDate;
+        if (query.endDate) where.createdAt.lte = query.endDate;
+      }
+
+      const [total, items] = await Promise.all([
+        this.prisma.ticket.count({ where }),
+        this.prisma.ticket.findMany({
+          where,
+          skip: paginationParams.skip,
+          take: paginationParams.take,
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            status: true,
+            priority: true,
+            source: true,
+            providerId: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        })
+      ]);
+
+      const tickets = items.map(this.mapFromPrisma);
+      const pagination = createPaginationMeta(
+        paginationParams.page,
+        paginationParams.limit,
+        total
+      );
+
+      return { tickets, pagination };
+    } catch (error) {
+      console.error('Erro no TicketRepository.listByProviderAndCustomer:', error);
+      throw new Error(`Erro ao listar tickets: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
+  }
+
   async listAll(query: ListTicketsQuery): Promise<{ tickets: TicketRecord[]; pagination: PaginationMeta; }> {
     try {
       const { search, status, priority } = query;

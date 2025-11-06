@@ -9,6 +9,7 @@ export class CustomerRepository {
         name: true,
         email: true,
         password: true,
+        role: true,
         providerId: true,
         isActive: true
       }
@@ -23,6 +24,7 @@ export class CustomerRepository {
         id: true,
         name: true,
         email: true,
+        role: true,
         providerId: true,
         isActive: true,
         createdAt: true,
@@ -37,6 +39,7 @@ export class CustomerRepository {
     email: string;
     password: string;
     providerId: number;
+    role?: string;
     phone?: string;
     document?: string;
     address?: any;
@@ -47,6 +50,7 @@ export class CustomerRepository {
         id: true,
         name: true,
         email: true,
+        role: true,
         providerId: true,
         isActive: true
       }
@@ -92,6 +96,7 @@ export class CustomerRepository {
         id: true,
         name: true,
         email: true,
+        role: true,
         phone: true,
         document: true,
         address: true,
@@ -100,5 +105,34 @@ export class CustomerRepository {
       },
     });
     return updated;
+  }
+
+  async list(params: { providerId: number; search?: string; page?: number; limit?: number }) {
+    const { providerId, search, page = 1, limit = 10 } = params;
+    const where: any = {
+      providerId,
+      isActive: true,
+    };
+    if (search && search.trim().length > 0) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search, mode: 'insensitive' } },
+        { document: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      prisma.customer.findMany({
+        where,
+        select: { id: true, name: true, email: true, phone: true, document: true },
+        orderBy: { name: 'asc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.customer.count({ where }),
+    ]);
+
+    return { items, total, page, limit };
   }
 }

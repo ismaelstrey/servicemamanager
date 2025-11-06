@@ -12,7 +12,7 @@ export function clientAuthMiddleware(req: ClientAuthenticatedRequest, res: Respo
   try {
     const payload = verifyToken<{ customerId: number; email?: string; providerId?: number; role?: string }>(token);
 
-    req.customer = { id: payload.customerId, email: payload.email!, providerId: payload.providerId } as any;
+    req.customer = { id: payload.customerId, email: payload.email!, providerId: payload.providerId!, role: payload.role } as any;
 
     next();
   } catch (error) {

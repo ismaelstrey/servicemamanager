@@ -14,6 +14,8 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
 
     // Anexa usuário autenticado com id, role e providerId para controle de acesso
     req.user = { id: payload.userId, role: payload.role, providerId: payload.providerId } as any;
+    // Também propaga providerId diretamente no request para compatibilidade com AuthenticatedRequest
+    req.providerId = payload.providerId;
 
     next();
   } catch (error) {

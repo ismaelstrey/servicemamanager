@@ -360,6 +360,7 @@ model Customer {
   name        String
   email       String   @unique
   password    String
+  role        String   @default("customer_user") // customer_admin, customer_user
   phone       String?
   document    String?  // CPF/CNPJ
   address     Json?

@@ -4,8 +4,9 @@ import { reportRepository, ReportFilter, ReportsSummary } from '../repositories/
 
 export const reportService = {
   // Comentário: Sumário com agregações básicas
-  async getSummary(providerId: number, startDate?: string, endDate?: string): Promise<ReportsSummary> {
-    return reportRepository.getSummary(providerId, startDate, endDate);
+  async getSummary(providerId: number, filter: Pick<ReportFilter, 'startDate' | 'endDate' | 'status'> & { tag?: string }): Promise<ReportsSummary> {
+    // Nota: 'tag' ainda não é suportado no schema do banco; aceitamos para compat.
+    return reportRepository.getSummary(providerId, filter.startDate, filter.endDate, filter.status);
   },
 
   // Comentário: Tickets report

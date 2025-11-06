@@ -45,4 +45,12 @@ export class NotificationService {
   async markAllReadByProvider(providerId: number) {
     return await this.repo.markAllReadByProvider(providerId);
   }
+
+  async listByCustomer(customerId: number, providerId: number | undefined, query: ListNotificationsQuery) {
+    return await this.repo.listByCustomer(customerId, providerId, query);
+  }
+
+  async markReadForCustomer(id: number, customerId: number) {
+    return await this.repo.markReadForCustomer(id, customerId);
+  }
 }

@@ -92,6 +92,34 @@ export class ServiceOrderRepository {
     });
   }
 
+  async findByProviderAndCustomer(
+    providerId: number,
+    customerId: number,
+    params?: {
+      skip?: number;
+      take?: number;
+      include?: any;
+      orderBy?: any;
+    }
+  ): Promise<ServiceOrder[]> {
+    return await this.prisma.serviceOrder.findMany({
+      where: { providerId, customerId },
+      ...params
+    });
+  }
+
+  async findByIdScoped(
+    id: number,
+    providerId: number,
+    customerId?: number,
+    params?: { include?: any }
+  ): Promise<ServiceOrder | null> {
+    return await this.prisma.serviceOrder.findFirst({
+      where: { id, providerId, ...(typeof customerId === 'number' ? { customerId } : {}) },
+      ...params
+    });
+  }
+
   async findByTicket(
     ticketId: number,
     params?: {

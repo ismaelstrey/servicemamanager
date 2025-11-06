@@ -339,12 +339,12 @@ Detalhamento: consulte `docs/roadmap-comunicacao-tempo-real.md`.
   - [x] `src/validators/reportValidator.ts`
   - [x] Documentar no Swagger (`/api/docs`) com schemas e exemplos
 - [x] Endpoints: `GET /api/reports/summary`, `GET /api/reports/tickets`, `GET /api/reports/service-orders`
-- [ ] Filtros: tags, responsável, cliente (query params tipados)
+- [x] Filtros: tags, responsável, cliente (query params tipados)
   - [x] Filtros: período, status
 - [ ] Exportação: `GET /api/reports/export?type=tickets&format=csv|pdf|xlsx`
   - [x] CSV (tickets e ordens de serviço)
-  - [ ] PDF
-  - [ ] XLSX
+  - [x] PDF
+  - [x] XLSX
 - [x] Cache adaptativo (habilitar via `REDIS_ENABLED=true` quando aplicável)
   - [x] Sumário com cache de estatísticas
 - [x] Frontend: página `/reports` com visualizações e filtros

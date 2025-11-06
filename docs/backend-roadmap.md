@@ -416,25 +416,25 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
   - [x] GET /api/client/tickets (listar)
   - [x] GET /api/client/tickets/:id (detalhes)
   - [x] POST /api/client/tickets/:id/comments (comentar)
-  - [ ] POST /api/client/tickets/:id/attachments (upload de anexos)
-- [ ] ClientNotificationController
-  - [ ] GET /api/client/notifications (listar notificações)
-  - [ ] PUT /api/client/notifications/:id/read (marcar como lida)
+  - [x] POST /api/client/tickets/:id/attachments (upload de anexos)
+- [x] ClientNotificationController
+  - [x] GET /api/client/notifications (listar notificações)
+  - [x] PUT /api/client/notifications/:id/read (marcar como lida)
 
 ### 🟢 Validação (sem testes automatizados)
 - [x] Smoke test manual: login, abrir OS, listar, detalhar, atualizar, comentar e qualificar
 
 ### 🟡 Segurança e Acesso
 - [x] Autenticação JWT dedicada (`clientAuth`) com escopo de cliente
-- [ ] RBAC por provedor e perfil de cliente (`customer_admin`, `customer_user`)
+- [x] RBAC por provedor e perfil de cliente (`customer_admin`, `customer_user`)
 - [x] Rate limiting específico para rotas de cliente
-- [ ] Auditoria completa das ações (abrir OS, comentar, anexar, qualificar)
+- [x] Auditoria completa das ações (abrir OS, comentar, anexar, qualificar)
 
 ### 🟡 Services e Repositories
-- [ ] ClientAuthService, ClientProfileService
-- [ ] ClientServiceOrderService, ClientTicketService
-- [ ] ClientNotificationService
-- [ ] Repositórios com filtros e escopo por `providerId` e `customerId`
+- [x] ClientAuthService, ClientProfileService
+- [x] ClientServiceOrderService, ClientTicketService
+- [x] ClientNotificationService
+- [x] Repositórios com filtros e escopo por `providerId` e `customerId`
 
 ### 🟢 Rotas e Middlewares
 - [x] `clientRoutes` registradas em `/api/client`
@@ -444,8 +444,8 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 ### 🟡 Funcionalidades Específicas
 - [x] Comentários
 - [x] Qualificação de atendimentos com nota e feedback
-- [ ] Linha do tempo e histórico de atividades de OS/tickets
-- [ ] SLA, prazos e status visíveis para o cliente
+- [x] Linha do tempo e histórico de atividades de OS/tickets
+- [x] SLA, prazos e status visíveis para o cliente
 - [ ] Preferências do cliente (canal de contato, horários, notificações)
 - [ ] Consulta opcional aos equipamentos do cliente
 - [ ] Visualização em Kanban para o cliente
@@ -517,3 +517,64 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
 
 *Roadmap atualizado em: Janeiro 2025*
 *Status: 90% concluído - Todas as funcionalidades principais implementadas: Autenticação, Provedores, Equipamentos, Tickets, Cofre de Senhas, Dashboard, Ordens de Serviço e **Funcionalidades com IA** (análise inteligente, previsão de falhas, chat inteligente, machine learning). Implementadas também: Paginação otimizada, Documentação Swagger/OpenAPI completa e Validação rigorosa de entrada. Foco agora em funcionalidades avançadas e otimizações finais.*
+
+---
+
+## ✅ Checklist de Rotas — Relatórios e Clientes (Backend)
+
+Este checklist orienta a criação, validação e documentação das rotas de relatórios e listagem de clientes, garantindo consistência de autenticação, escopo por provedor e paginação.
+
+### Rotas Alvo
+- GET `/api/reports/summary`
+- GET `/api/reports/tickets`
+- GET `/api/reports/service-orders`
+- GET `/api/customers` (lista paginada, com busca)
+
+Observação importante: evitar duplicação de prefixos nas chamadas do frontend (por exemplo, `.../api/api/...`). Se o cliente HTTP já inclui o prefixo `/api` na base URL, os serviços do frontend devem usar caminhos relativos sem repetir `/api` (ex.: usar `'/customers'` ao invés de `'/api/customers'`).
+
+### Itens de Implementação (aplicar por rota)
+- [ ] Controller: método implementado e retornos padronizados
+- [ ] Service: regras de negócio aplicadas (escopo por `providerId`)
+- [ ] Repository: consultas Prisma otimizadas e seguras
+- [ ] Validator (Zod): validação de `query` e sanitização
+- [x] Middleware: `authMiddleware` aplicado e verificação de acesso
+- [x] Cache (opcional): integração com Redis para listas/relatórios
+- [x] Paginação: `calculatePagination` e `createPaginationMeta` nas listas
+- [x] Filtros: datas, status, prioridade, `customerId` quando aplicável
+- [x] Swagger/OpenAPI: esquema, exemplos de requests/responses
+- [ ] Logs/Auditoria: eventos relevantes registrados (quando aplicável)
+- [ ] Testes manuais: smoke test via `curl`/REST client (200/404/401/422)
+- [ ] Frontend: serviços consumindo os endpoints sem duplicar `/api`
+
+### Requisitos Específicos por Rota
+
+1) GET `/api/reports/summary`
+- [x] Controller: `getSummary`
+- [x] Validator: filtros opcionais (`startDate`, `endDate`, `tag`, `status`)
+- [x] Repository/Service: agregações por status/prioridade
+- [x] Swagger: documentação de filtros e resposta agregada
+
+2) GET `/api/reports/tickets`
+- [x] Controller: `getTickets`
+- [x] Validator: filtros (`startDate`, `endDate`, `status`, `priority`, `tag`)
+- [x] Repository/Service: seleção de campos e ordenação
+- [ ] Swagger: exemplos de resposta e paginação
+
+3) GET `/api/reports/service-orders`
+- [x] Controller: `getServiceOrders`
+- [x] Validator: filtros (`startDate`, `endDate`, `status`, `priority`, `customerId`)
+- [ ] Repository/Service: seleção de `priority`, `customer`, `ticket` opcional
+- [ ] Swagger: filtros atualizados e exemplos
+
+4) GET `/api/customers`
+- [x] Controller: `list` com busca e paginação
+- [x] Validator: `search`, `page`, `limit` opcionais
+- [x] Repository/Service: escopo por `providerId`, busca em nome/email/telefone/documento
+- [x] Swagger: parâmetros de query e resposta paginada
+- [ ] Frontend: componente `SearchableSelect` consumindo `/customers` sem duplicar `/api`
+
+### Verificações de Integração
+- [ ] Server: rotas registradas com `app.use('/api', ...)`
+- [ ] CORS: origem do frontend incluída (`http://localhost:5173` ou porta em uso)
+- [ ] Rate limiting: aplicado conforme políticas do projeto
+- [ ] Preview local: validar listagem de clientes e filtros de relatórios

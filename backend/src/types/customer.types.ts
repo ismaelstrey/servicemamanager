@@ -5,6 +5,7 @@ export interface Customer {
   name: string;
   email: string;
   providerId: number;
+  role?: string;
 }
 
 export interface ClientAuthenticatedRequest extends Request {

@@ -13,6 +13,7 @@ export const reportFilterSchema = z.object({
   tag: z.string().min(1).optional(),
   assigneeId: z.coerce.number().int().min(1).optional(),
   customerId: z.coerce.number().int().min(1).optional(),
+  priority: z.enum(['low','medium','high','urgent']).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 }).refine((data) => {
@@ -29,6 +30,8 @@ export const exportReportSchema = z.object({
   startDate: dateSchema.optional(),
   endDate: dateSchema.optional(),
   status: z.string().min(1).optional(),
+  priority: z.enum(['low','medium','high','urgent']).optional(),
+  customerId: z.coerce.number().int().min(1).optional(),
 });
 
 // Utilitário de validação de query (seguindo padrão do projeto)

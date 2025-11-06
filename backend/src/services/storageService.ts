@@ -1,6 +1,7 @@
 import { Client } from 'minio';
 
 const endpoint = process.env.S3_ENDPOINT || '';
+const publicEndpoint = process.env.S3_PUBLIC_ENDPOINT || '';
 const accessKey = process.env.S3_ACCESS_KEY || '';
 const secretKey = process.env.S3_SECRET_KEY || '';
 const bucket = process.env.S3_BUCKET || '';
@@ -47,13 +48,15 @@ export async function uploadBuffer(
     'Content-Type': mimeType,
   });
 
-  const base = endpoint.endsWith('/') ? endpoint.slice(0, -1) : endpoint;
+  const baseRaw = publicEndpoint || endpoint;
+  const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
   const url = `${base}/${bucket}/${encodeURIComponent(key)}`;
   return { url, key };
 }
 
 export function getPublicUrl(key: string): string {
-  const base = endpoint.endsWith('/') ? endpoint.slice(0, -1) : endpoint;
+  const baseRaw = publicEndpoint || endpoint;
+  const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
   return `${base}/${bucket}/${encodeURIComponent(key)}`;
 }
 

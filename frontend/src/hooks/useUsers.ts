@@ -1,7 +1,6 @@
 // Hook para gerência de usuários: listar, obter, criar, atualizar e desativar.
 // Garante tipagem e comentários em português para clareza.
-
-const apiUrl: string = import.meta.env.VITE_API_URL || 'http://localhost:4002';
+import { ApiService } from '../services/api';
 
 export interface UserListItem {
   id: number;
@@ -27,43 +26,28 @@ export interface UpdateUserInput {
 }
 
 async function listUsers(): Promise<UserListItem[]> {
-  const res = await fetch(`${apiUrl}/api/users`);
-  if (!res.ok) throw new Error('Falha ao listar usuários');
-  return res.json();
+  const res = await ApiService.get<UserListItem[]>('/users');
+  return res.data;
 }
 
 async function getUser(id: number): Promise<UserListItem> {
-  const res = await fetch(`${apiUrl}/api/users/${id}`);
-  if (!res.ok) throw new Error('Falha ao obter usuário');
-  return res.json();
+  const res = await ApiService.get<UserListItem>(`/users/${id}`);
+  return res.data;
 }
 
 async function createUser(input: CreateUserInput): Promise<UserListItem> {
-  const res = await fetch(`${apiUrl}/api/users`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  });
-  if (!res.ok) throw new Error('Falha ao criar usuário');
-  return res.json();
+  const res = await ApiService.post<UserListItem>('/users', input);
+  return res.data;
 }
 
 async function updateUser(id: number, input: UpdateUserInput): Promise<UserListItem> {
-  const res = await fetch(`${apiUrl}/api/users/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  });
-  if (!res.ok) throw new Error('Falha ao atualizar usuário');
-  return res.json();
+  const res = await ApiService.put<UserListItem>(`/users/${id}`, input);
+  return res.data;
 }
 
 async function disableUser(id: number): Promise<UserListItem> {
-  const res = await fetch(`${apiUrl}/api/users/${id}/disable`, {
-    method: 'POST',
-  });
-  if (!res.ok) throw new Error('Falha ao desativar usuário');
-  return res.json();
+  const res = await ApiService.post<UserListItem>(`/users/${id}/disable`);
+  return res.data;
 }
 
 export function useUsers() {

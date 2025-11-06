@@ -35,7 +35,13 @@ api.interceptors.request.use(
     const tokenKey = isClientEndpoint ? 'clientToken' : 'token';
     const token = localStorage.getItem(tokenKey);
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      // Garante que o header Authorization seja corretamente aplicado
+      // Funciona tanto com AxiosHeaders quanto com objeto literal
+      const currentHeaders = (config.headers ?? {}) as Record<string, unknown>;
+      config.headers = {
+        ...currentHeaders,
+        Authorization: `Bearer ${token}`,
+      } as any;
     }
     return config;
   },

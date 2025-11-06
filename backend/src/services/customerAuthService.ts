@@ -23,7 +23,7 @@ export class CustomerAuthService {
       throw new Error('Credenciais inválidas');
     }
 
-    const token = signToken({ customerId: customer.id, email: customer.email, providerId: customer.providerId, role: 'customer' });
+    const token = signToken({ customerId: customer.id, email: customer.email, providerId: customer.providerId, role: customer.role || 'customer_user' });
 
     return {
       token,
@@ -31,22 +31,23 @@ export class CustomerAuthService {
     };
   }
 
-  async register(data: { name: string; email: string; password: string; providerId: number; phone?: string; document?: string }) {
+  async register(data: { name: string; email: string; password: string; providerId: number; role?: string; phone?: string; document?: string }) {
     const passwordHash = await hashPassword(data.password);
     const created = await this.repo.create({
       name: data.name,
       email: data.email,
       password: passwordHash,
       providerId: data.providerId,
+      role: data.role || 'customer_user',
       phone: data.phone,
       document: data.document
     });
 
-    const token = signToken({ customerId: created.id, email: created.email, providerId: created.providerId, role: 'customer' });
+    const token = signToken({ customerId: created.id, email: created.email, providerId: created.providerId, role: created.role || 'customer_user' });
 
     return {
       token,
-      customer: { id: created.id, name: created.name, email: created.email, providerId: created.providerId }
+      customer: { id: created.id, name: created.name, email: created.email, providerId: created.providerId, role: created.role }
     };
   }
 

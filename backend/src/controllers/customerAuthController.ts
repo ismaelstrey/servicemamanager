@@ -13,6 +13,7 @@ const registerSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Senha deve ter ao menos 6 caracteres'),
   providerId: z.coerce.number().int().positive('providerId inválido'),
+  role: z.enum(['customer_admin', 'customer_user']).optional(),
   phone: z.string().optional(),
   document: z.string().optional()
 });

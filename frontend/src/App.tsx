@@ -38,6 +38,8 @@ const ProvidersListPage = lazy(() => import('./pages/providers/ProvidersListPage
 const ProviderDetailsPage = lazy(() => import('./pages/providers/ProviderDetailsPage'))
 const ClientLoginPage = lazy(() => import('./pages/client/LoginPage'))
 const ClientDashboardPage = lazy(() => import('./pages/client/DashboardPage'))
+const ClientTicketDetailsPage = lazy(() => import('./pages/client/TicketDetailsPage'))
+const ClientServiceOrderDetailsPage = lazy(() => import('./pages/client/ServiceOrderDetailsPage'))
 const TemplateShowcase = lazy(() => import('./pages/templates/TemplateShowcase'))
 const ResponsiveLayoutShowcase = lazy(() => import('./pages/layout/ResponsiveLayoutShowcase'))
 const EquipmentsPage = lazy(() => import('./pages/equipments').then(m => ({ default: m.EquipmentsPage })))
@@ -221,6 +223,26 @@ const App: React.FC = () => {
                 <ClientProtectedRoute>
                   <Layout>
                     <ClientDashboardPage />
+                  </Layout>
+                </ClientProtectedRoute>
+              }
+            />
+            <Route
+              path="/client/tickets/:id"
+              element={
+                <ClientProtectedRoute>
+                  <Layout>
+                    <ClientTicketDetailsPage />
+                  </Layout>
+                </ClientProtectedRoute>
+              }
+            />
+            <Route
+              path="/client/service-orders/:id"
+              element={
+                <ClientProtectedRoute>
+                  <Layout>
+                    <ClientServiceOrderDetailsPage />
                   </Layout>
                 </ClientProtectedRoute>
               }

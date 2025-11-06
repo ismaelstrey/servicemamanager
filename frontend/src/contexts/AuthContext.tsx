@@ -1,5 +1,5 @@
 import { createContext, useReducer, useEffect, type ReactNode } from 'react';
-import { ApiService } from '../services/api';
+import api, { ApiService } from '../services/api';
 
 // Importando tipos diretamente
 import type {
@@ -113,6 +113,9 @@ function AuthProvider({ children }: AuthProviderProps) {
         localStorage.setItem('refreshToken', refreshToken);
       }
 
+      // Atualiza header default imediatamente
+      api.defaults.headers.common.Authorization = `Bearer ${token}`;
+
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: { user, token, refreshToken },
@@ -143,6 +146,9 @@ function AuthProvider({ children }: AuthProviderProps) {
         if (refreshToken) {
           localStorage.setItem('refreshToken', refreshToken);
         }
+
+        // Atualiza header default imediatamente
+        api.defaults.headers.common.Authorization = `Bearer ${token}`;
 
         dispatch({
           type: 'AUTH_SUCCESS',
@@ -237,6 +243,9 @@ function AuthProvider({ children }: AuthProviderProps) {
         // Aceita sessão mesmo sem refreshToken (compatível com backend atual)
         if (token && userStr) {
           const user = JSON.parse(userStr);
+          // Atualiza header default se já houver sessão armazenada
+          api.defaults.headers.common.Authorization = `Bearer ${token}`;
+
           dispatch({
             type: 'AUTH_SUCCESS',
             payload: {

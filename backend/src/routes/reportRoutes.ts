@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { reportController } from '../controllers/reportController';
-import { verifyToken } from '../middlewares/authMiddleware';
+import { authMiddleware } from '../middlewares/authMiddleware';
 import { validateQuery, reportFilterSchema, exportReportSchema } from '../validators/reportValidator';
 import { statsCacheMiddleware } from '../middleware/cacheMiddleware';
 
@@ -34,11 +34,101 @@ const router = Router();
  *         schema:
  *           type: string
  *           format: date-time
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: tag
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Sumário retornado com sucesso
- */
-router.get('/summary', verifyToken, statsCacheMiddleware(), validateQuery(reportFilterSchema.partial()), (req, res) => reportController.getSummary(req as any, res));
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totals:
+ *                   type: object
+ *                   properties:
+ *                     tickets:
+ *                       type: integer
+ *                     openTickets:
+ *                       type: integer
+ *                     serviceOrders:
+ *                       type: integer
+ *                     pendingServiceOrders:
+ *                       type: integer
+ *                 byStatus:
+ *                   type: object
+ *                   properties:
+ *                     tickets:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: integer
+ *                     serviceOrders:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: integer
+ *                 byPriority:
+ *                   type: object
+ *                   properties:
+ *                     tickets:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: integer
+ *                     serviceOrders:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: integer
+ *                 kpis:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       label:
+ *                         type: string
+ *                       value:
+ *                         type: integer
+ *             examples:
+ *               default:
+ *                 value:
+ *                   totals:
+ *                     tickets: 120
+ *                     openTickets: 35
+ *                     serviceOrders: 80
+ *                     pendingServiceOrders: 22
+ *                   byStatus:
+ *                     tickets:
+ *                       open: 35
+ *                       in_progress: 20
+ *                       resolved: 40
+ *                       closed: 15
+ *                     serviceOrders:
+ *                       pending: 22
+ *                       in_progress: 30
+ *                       completed: 25
+ *                       cancelled: 3
+ *                   byPriority:
+ *                     tickets:
+ *                       urgent: 10
+ *                       high: 30
+ *                       medium: 50
+ *                       low: 30
+ *                     serviceOrders:
+ *                       urgent: 8
+ *                       high: 22
+ *                       medium: 32
+ *                       low: 18
+ *                   kpis:
+ *                     - { label: 'Tickets', value: 120 }
+ *                     - { label: 'Tickets em aberto', value: 35 }
+ *                     - { label: 'Ordens de Serviço', value: 80 }
+ *                     - { label: 'OS pendentes', value: 22 }
+*/
+router.get('/summary', authMiddleware, statsCacheMiddleware(), validateQuery(reportFilterSchema), (req, res) => reportController.getSummary(req as any, res));
 
 /**
  * @swagger
@@ -64,6 +154,22 @@ router.get('/summary', verifyToken, statsCacheMiddleware(), validateQuery(report
  *         schema:
  *           type: string
  *       - in: query
+ *         name: tag
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: assigneeId
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: customerId
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *       - in: query
  *         name: page
  *         schema:
  *           type: integer
@@ -75,7 +181,7 @@ router.get('/summary', verifyToken, statsCacheMiddleware(), validateQuery(report
  *       200:
  *         description: Lista de tickets do relatório
  */
-router.get('/tickets', verifyToken, validateQuery(reportFilterSchema), (req, res) => reportController.getTickets(req as any, res));
+router.get('/tickets', authMiddleware, validateQuery(reportFilterSchema), (req, res) => reportController.getTickets(req as any, res));
 
 /**
  * @swagger
@@ -101,6 +207,14 @@ router.get('/tickets', verifyToken, validateQuery(reportFilterSchema), (req, res
  *         schema:
  *           type: string
  *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: customerId
+ *         schema:
+ *           type: integer
+ *       - in: query
  *         name: page
  *         schema:
  *           type: integer
@@ -112,7 +226,7 @@ router.get('/tickets', verifyToken, validateQuery(reportFilterSchema), (req, res
  *       200:
  *         description: Lista de ordens de serviço do relatório
  */
-router.get('/service-orders', verifyToken, validateQuery(reportFilterSchema), (req, res) => reportController.getServiceOrders(req as any, res));
+router.get('/service-orders', authMiddleware, validateQuery(reportFilterSchema), (req, res) => reportController.getServiceOrders(req as any, res));
 
 /**
  * @swagger
@@ -151,6 +265,6 @@ router.get('/service-orders', verifyToken, validateQuery(reportFilterSchema), (r
  *       200:
  *         description: Arquivo exportado
  */
-router.get('/export', verifyToken, validateQuery(exportReportSchema), (req, res) => reportController.exportReport(req as any, res));
+router.get('/export', authMiddleware, validateQuery(exportReportSchema), (req, res) => reportController.exportReport(req as any, res));
 
 export default router;
