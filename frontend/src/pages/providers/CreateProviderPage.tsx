@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ApiService } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -123,115 +125,149 @@ export default function CreateProviderPage() {
   };
 
   return (
-    <div style={{ maxWidth: 640, margin: '40px auto', padding: 24 }}>
-      <h1 style={{ marginBottom: 16 }}>Criar Provedor</h1>
-      <p style={{ marginBottom: 24, color: '#666' }}>
-        Crie seu provedor para acessar o dashboard e gerenciar seus recursos.
-      </p>
+    <Page initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+      <Title>Criar Provedor</Title>
+      <Subtitle>Crie seu provedor para acessar o dashboard e gerenciar seus recursos.</Subtitle>
 
-      {error && (
-        <div style={{ marginBottom: 16, padding: 12, background: '#ffe7e7', color: '#b00000', borderRadius: 8 }}>
-          {error}
-        </div>
-      )}
+      <AnimatePresence>{error && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <ErrorBox>{error}</ErrorBox>
+        </motion.div>
+      )}</AnimatePresence>
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ display: 'grid', gap: 12 }}>
-          <label style={{ display: 'grid', gap: 8 }}>
-            <span>Nome do Provedor *</span>
-            <input
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Ex: NetFiber Telecom"
-              required
-              style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
-            />
-            {fieldErrors.name && (
-              <span style={{ color: 'crimson', fontSize: 12 }}>{fieldErrors.name}</span>
-            )}
-          </label>
+      <Form onSubmit={handleSubmit}>
+        <Field>
+          <label>Nome do Provedor *</label>
+          <InputText
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder="Ex: NetFiber Telecom"
+            required
+          />
+          {fieldErrors.name && (
+            <FieldError>{fieldErrors.name}</FieldError>
+          )}
+        </Field>
 
-          <label style={{ display: 'grid', gap: 8 }}>
-            <span>CNPJ *</span>
-            <input
-              type="text"
-              name="cnpj"
-              value={form.cnpj}
-              onChange={handleChange}
-              placeholder="00.000.000/0000-00"
-              required
-              style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
-            />
-            {fieldErrors.cnpj && (
-              <span style={{ color: 'crimson', fontSize: 12 }}>{fieldErrors.cnpj}</span>
-            )}
-          </label>
+        <Field>
+          <label>CNPJ *</label>
+          <InputText
+            type="text"
+            name="cnpj"
+            value={form.cnpj}
+            onChange={handleChange}
+            placeholder="00.000.000/0000-00"
+            required
+          />
+          {fieldErrors.cnpj && (
+            <FieldError>{fieldErrors.cnpj}</FieldError>
+          )}
+        </Field>
 
-          <label style={{ display: 'grid', gap: 8 }}>
-            <span>E-mail *</span>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="contato@seuprovedor.com"
-              required
-              style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
-            />
-            {fieldErrors.email && (
-              <span style={{ color: 'crimson', fontSize: 12 }}>{fieldErrors.email}</span>
-            )}
-          </label>
+        <Field>
+          <label>E-mail *</label>
+          <InputText
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="contato@seuprovedor.com"
+            required
+          />
+          {fieldErrors.email && (
+            <FieldError>{fieldErrors.email}</FieldError>
+          )}
+        </Field>
 
-          <label style={{ display: 'grid', gap: 8 }}>
-            <span>Workspace (opcional)</span>
-            <input
-              type="text"
-              name="workspace"
-              value={form.workspace}
-              onChange={handleChange}
-              placeholder="slug-do-workspace (ex: netfiber)"
-              style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
-            />
-            {fieldErrors.workspace && (
-              <span style={{ color: 'crimson', fontSize: 12 }}>{fieldErrors.workspace}</span>
-            )}
-          </label>
+        <Field>
+          <label>Workspace (opcional)</label>
+          <InputText
+            type="text"
+            name="workspace"
+            value={form.workspace}
+            onChange={handleChange}
+            placeholder="slug-do-workspace (ex: netfiber)"
+          />
+          {fieldErrors.workspace && (
+            <FieldError>{fieldErrors.workspace}</FieldError>
+          )}
+        </Field>
 
-          <label style={{ display: 'grid', gap: 8 }}>
-            <span>Telefone (opcional)</span>
-            <input
-              type="text"
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="(00) 00000-0000"
-              style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}
-            />
-            {fieldErrors.phone && (
-              <span style={{ color: 'crimson', fontSize: 12 }}>{fieldErrors.phone}</span>
-            )}
-          </label>
+        <Field>
+          <label>Telefone (opcional)</label>
+          <InputText
+            type="text"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            placeholder="(00) 00000-0000"
+          />
+          {fieldErrors.phone && (
+            <FieldError>{fieldErrors.phone}</FieldError>
+          )}
+        </Field>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
-              marginTop: 8,
-              padding: '10px 14px',
-              borderRadius: 8,
-              border: 'none',
-              background: submitting ? '#999' : '#2563eb',
-              color: '#fff',
-              cursor: submitting ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {submitting ? 'Criando...' : 'Criar Provedor'}
-          </button>
-        </div>
-      </form>
-    </div>
+        <Submit type="submit" disabled={submitting} $submitting={submitting}>
+          {submitting ? 'Criando...' : 'Criar Provedor'}
+        </Submit>
+      </Form>
+    </Page>
   );
 }
+
+// styled-components
+const Page = styled(motion.div)`
+  max-width: 640px;
+  margin: 40px auto;
+  padding: 24px;
+`;
+
+const Title = styled.h1`
+  margin-bottom: 16px;
+`;
+
+const Subtitle = styled.p`
+  margin-bottom: 24px;
+  color: #666;
+`;
+
+const ErrorBox = styled.div`
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #ffe7e7;
+  color: #b00000;
+  border-radius: 8px;
+`;
+
+const Form = styled.form`
+  display: grid;
+  gap: 12px;
+`;
+
+const Field = styled.label`
+  display: grid;
+  gap: 8px;
+`;
+
+const InputText = styled.input`
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+`;
+
+const FieldError = styled.span`
+  color: crimson;
+  font-size: 12px;
+`;
+
+const Submit = styled.button<{ $submitting?: boolean }>`
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  background: ${({ $submitting }) => ($submitting ? '#999' : '#2563eb')};
+  color: #fff;
+  cursor: ${({ $submitting }) => ($submitting ? 'not-allowed' : 'pointer')};
+`;

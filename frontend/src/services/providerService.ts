@@ -30,6 +30,11 @@ export class ProviderService {
     const res = await ApiService.get<ProviderDetails>(`/providers/${id}`);
     return res.data;
   }
+
+  static async updateSettings(id: number, settings: any): Promise<any> {
+    const res = await ApiService.put<any>(`/providers/${id}/settings`, settings);
+    return res.data;
+  }
 }
 
 export default ProviderService;

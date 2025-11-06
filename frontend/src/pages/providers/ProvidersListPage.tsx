@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Card, 
   Button, 
@@ -85,116 +87,168 @@ const ProvidersListPage: React.FC = () => {
   };
 
   return (
-    <div className="providers-page" style={{ display: 'grid', gap: 16 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ margin: 0 }}>Provedores</h1>
-        <Button variant="primary" onClick={() => navigate('/providers/create')}>
-          Criar Provedor
-        </Button>
-      </div>
+    <Page
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+    >
+      <Header>
+        <Title>Provedores</Title>
+        <Button onClick={() => navigate('/providers/create')}>Criar Provedor</Button>
+      </Header>
 
-      <Card variant="elevated">
-        <div className="table-toolbar">
-          <form onSubmit={handleSearchSubmit} className="table-toolbar__filters">
-            <Input
-              placeholder="Buscar por nome ou workspace"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              fullWidth
-            />
-            <Button type="submit">Buscar</Button>
-          </form>
-          <Select placeholder="Status" value={statusFilter} onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}>
-            <option value="">Todos status</option>
-            <option value="active">Ativo</option>
-            <option value="inactive">Inativo</option>
-            <option value="suspended">Suspenso</option>
-            <option value="pending">Pendente</option>
-          </Select>
-          <Select placeholder="Plano" value={planFilter} onChange={(e) => { setPage(1); setPlanFilter(e.target.value); }}>
-            <option value="">Todos planos</option>
-            <option value="basic">Basic</option>
-            <option value="standard">Standard</option>
-            <option value="premium">Premium</option>
-            <option value="enterprise">Enterprise</option>
-          </Select>
-          <Button variant="primary" onClick={() => navigate('/providers/create')}>Criar Provedor</Button>
-        </div>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <Card>
+          <Toolbar>
+            <Filters onSubmit={handleSearchSubmit}>
+              <Input
+                placeholder="Buscar por nome ou workspace"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                fullWidth
+              />
+              <Button type="submit">Buscar</Button>
+            </Filters>
+            <Select value={statusFilter} onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}>
+              <option value="">Todos status</option>
+              <option value="active">Ativo</option>
+              <option value="inactive">Inativo</option>
+              <option value="suspended">Suspenso</option>
+              <option value="pending">Pendente</option>
+            </Select>
+            <Select value={planFilter} onChange={(e) => { setPage(1); setPlanFilter(e.target.value); }}>
+              <option value="">Todos planos</option>
+              <option value="basic">Basic</option>
+              <option value="standard">Standard</option>
+              <option value="premium">Premium</option>
+              <option value="enterprise">Enterprise</option>
+            </Select>
+            <Button onClick={() => navigate('/providers/create')}>Criar Provedor</Button>
+          </Toolbar>
 
-        {error && (
-          <div style={{ padding: 16 }}>
-            <Alert variant="error" title="Erro">
-              {error}
-            </Alert>
-          </div>
-        )}
+          <AnimatePresence>{error && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <Pad>
+                <Alert variant="error">{error}</Alert>
+              </Pad>
+            </motion.div>
+          )}</AnimatePresence>
 
-        {loading ? (
-          <div style={{ padding: 24, display: 'flex', justifyContent: 'center' }}>
-            <Spinner size="md" label="Carregando provedores..." />
-          </div>
-        ) : (
-          <div>
-            <Table variant="striped" hoverable responsive className="table--sticky-header">
-              <TableHeader>
-                <TableRow>
-                  <TableHeaderCell scope="col">Nome</TableHeaderCell>
-                  <TableHeaderCell scope="col">Workspace</TableHeaderCell>
-                  <TableHeaderCell scope="col">E-mail</TableHeaderCell>
-                  <TableHeaderCell scope="col">Plano</TableHeaderCell>
-                  <TableHeaderCell scope="col">Status</TableHeaderCell>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {providers.length === 0 ? (
+          {loading ? (
+            <Centered>
+              <Spinner size="md" label="Carregando provedores..." />
+            </Centered>
+          ) : (
+            <div>
+              <Table variant="striped" hoverable responsive className="table--sticky-header">
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={5}>
-                      <div style={{ padding: 16, textAlign: 'center', color: '#666' }}>
-                        Nenhum provedor encontrado
-                      </div>
-                    </TableCell>
+                    <TableHeaderCell scope="col">Nome</TableHeaderCell>
+                    <TableHeaderCell scope="col">Workspace</TableHeaderCell>
+                    <TableHeaderCell scope="col">E-mail</TableHeaderCell>
+                    <TableHeaderCell scope="col">Plano</TableHeaderCell>
+                    <TableHeaderCell scope="col">Status</TableHeaderCell>
                   </TableRow>
-                ) : (
-                  providers.map((p) => (
-                    <TableRow key={p.id} onClick={() => navigate(`/providers/${p.id}`)}>
-                      <TableCell>{p.name}</TableCell>
-                      <TableCell>{p.workspace}</TableCell>
-                      <TableCell>{p.email || '-'}</TableCell>
-                      <TableCell>
-                        {p.plan ? (
-                          <Badge variant="info">{p.plan}</Badge>
-                        ) : (
-                          '-'
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {p.status ? (
-                          <Badge variant={p.status === 'active' ? 'success' : 'warning'}>{p.status}</Badge>
-                        ) : (
-                          '-'
-                        )}
+                </TableHeader>
+                <TableBody>
+                  {providers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5}>
+                        <Empty>Nenhum provedor encontrado</Empty>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    providers.map((p) => (
+                      <TableRow key={p.id} onClick={() => navigate(`/providers/${p.id}`)}>
+                        <TableCell>{p.name}</TableCell>
+                        <TableCell>{p.workspace}</TableCell>
+                        <TableCell>{p.email || '-'}</TableCell>
+                        <TableCell>
+                          {p.plan ? (
+                            <Badge variant="info">{p.plan}</Badge>
+                          ) : (
+                            '-'
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {p.status ? (
+                            <Badge variant={p.status === 'active' ? 'success' : 'warning'}>{p.status}</Badge>
+                          ) : (
+                            '-'
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
 
-            <div style={{ padding: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ color: '#666' }}>
-                Total: {total} {total === 1 ? 'registro' : 'registros'}
-              </div>
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={setPage}
-              />
+              <Footer>
+                <Muted>Total: {total} {total === 1 ? 'registro' : 'registros'}</Muted>
+                <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+              </Footer>
             </div>
-          </div>
-        )}
-      </Card>
-    </div>
+          )}
+        </Card>
+      </motion.div>
+    </Page>
   );
 };
 
 export default ProvidersListPage;
+
+// styled-components
+const Page = styled(motion.div)`
+  display: grid;
+  gap: 16px;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const Title = styled.h1`
+  margin: 0;
+`;
+
+const Toolbar = styled.div`
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+`;
+
+const Filters = styled.form`
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+`;
+
+const Pad = styled.div`
+  padding: 16px;
+`;
+
+const Centered = styled.div`
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+`;
+
+const Empty = styled.div`
+  padding: 16px;
+  text-align: center;
+  color: #666;
+`;
+
+const Footer = styled.div`
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const Muted = styled.div`
+  color: #666;
+`;

@@ -36,6 +36,7 @@ const TestPage = lazy(() => import('./pages/TestPage'))
 const CreateProviderPage = lazy(() => import('./pages/providers/CreateProviderPage'))
 const ProvidersListPage = lazy(() => import('./pages/providers/ProvidersListPage'))
 const ProviderDetailsPage = lazy(() => import('./pages/providers/ProviderDetailsPage'))
+const ProviderSettingsPage = lazy(() => import('./pages/providers/ProviderSettingsPage'))
 const ClientLoginPage = lazy(() => import('./pages/client/LoginPage'))
 const ClientDashboardPage = lazy(() => import('./pages/client/DashboardPage'))
 const ClientTicketDetailsPage = lazy(() => import('./pages/client/TicketDetailsPage'))
@@ -192,6 +193,16 @@ const App: React.FC = () => {
                <ProtectedRoute>
                    <Layout>
                      <ProviderDetailsPage />
+                   </Layout>
+                 </ProtectedRoute>
+               }
+             />
+            <Route
+              path="/providers/:id/settings"
+              element={
+               <ProtectedRoute>
+                   <Layout>
+                     <ProviderSettingsPage />
                    </Layout>
                  </ProtectedRoute>
                }
