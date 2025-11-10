@@ -28,6 +28,7 @@ const TicketsInlineBar: React.FC<{ data: any }> = ({ data }) => {
 import ServiceOrderStatusChart from '../../components/dashboard/charts/ServiceOrderStatusChart';
 import { useCustomers } from '../../hooks/useCustomers';
 import SearchableSelect from '../../components/SearchableSelect';
+import { useAuth } from '../../hooks/useAuth';
 
 // Página de Relatórios (/reports)
 // Exibe KPIs, gráficos e opções de exportação.
@@ -35,6 +36,8 @@ import SearchableSelect from '../../components/SearchableSelect';
 export function ReportsPage(): React.ReactElement {
   const { getReportsSummary, getTicketsReport, getServiceOrdersReport, exportReport } = useReports();
   const { searchCustomers } = useCustomers();
+  const { user } = useAuth();
+  const providerId = user?.providerId;
 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +58,7 @@ export function ReportsPage(): React.ReactElement {
       setLoading(true);
       setError(null);
       try {
+        // Comentário: Monta filtros e inclui providerId do contexto do usuário quando disponível
         const filter = {
           startDate: startDate || undefined,
           endDate: endDate || undefined,
@@ -63,6 +67,8 @@ export function ReportsPage(): React.ReactElement {
           assigneeId: assigneeId ? Number(assigneeId) : undefined,
           customerId: customerId ? Number(customerId) : undefined,
           priority: priority || undefined,
+          // providerId é aceito via query pelo backend como fallback ao token
+          providerId: providerId || undefined,
         };
         const [s, t, so] = await Promise.all([
           getReportsSummary(filter),

@@ -410,7 +410,7 @@ Sistema backend para gerenciamento de provedores de internet com workspaces dedi
   - [x] PUT /api/client/service-orders/:id (atualizar campos do cliente; validação Zod; auth: clientAuthMiddleware)
   - [x] POST /api/client/service-orders/:id/comments (comentar; body: content; auth: clientAuthMiddleware; validação Zod)
   - [x] POST /api/client/service-orders/:id/qualification (qualificar atendimento; body: rating 1-5, feedback opcional; auth: clientAuthMiddleware; validação Zod)
-  - [ ] POST /api/client/service-orders/:id/attachments (upload de anexos; multipart/form-data; validação de tipo/tamanho; auth: clientAuthMiddleware)
+  - [x] POST /api/client/service-orders/:id/attachments (upload de anexos; multipart/form-data; validação de tipo/tamanho; auth: clientAuthMiddleware)
 - [x] ClientTicketController
   - [x] POST /api/client/tickets (abrir ticket)
   - [x] GET /api/client/tickets (listar)
@@ -533,10 +533,10 @@ Este checklist orienta a criação, validação e documentação das rotas de re
 Observação importante: evitar duplicação de prefixos nas chamadas do frontend (por exemplo, `.../api/api/...`). Se o cliente HTTP já inclui o prefixo `/api` na base URL, os serviços do frontend devem usar caminhos relativos sem repetir `/api` (ex.: usar `'/customers'` ao invés de `'/api/customers'`).
 
 ### Itens de Implementação (aplicar por rota)
-- [ ] Controller: método implementado e retornos padronizados
-- [ ] Service: regras de negócio aplicadas (escopo por `providerId`)
-- [ ] Repository: consultas Prisma otimizadas e seguras
-- [ ] Validator (Zod): validação de `query` e sanitização
+- [x] Controller: método implementado e retornos padronizados
+- [x] Service: regras de negócio aplicadas (escopo por `providerId`)
+- [x] Repository: consultas Prisma implementadas com seleção segura
+- [x] Validator (Zod): validação de `query` e sanitização
 - [x] Middleware: `authMiddleware` aplicado e verificação de acesso
 - [x] Cache (opcional): integração com Redis para listas/relatórios
 - [x] Paginação: `calculatePagination` e `createPaginationMeta` nas listas
@@ -558,13 +558,13 @@ Observação importante: evitar duplicação de prefixos nas chamadas do fronten
 - [x] Controller: `getTickets`
 - [x] Validator: filtros (`startDate`, `endDate`, `status`, `priority`, `tag`)
 - [x] Repository/Service: seleção de campos e ordenação
-- [ ] Swagger: exemplos de resposta e paginação
+- [x] Swagger: exemplos de resposta e paginação
 
 3) GET `/api/reports/service-orders`
 - [x] Controller: `getServiceOrders`
 - [x] Validator: filtros (`startDate`, `endDate`, `status`, `priority`, `customerId`)
-- [ ] Repository/Service: seleção de `priority`, `customer`, `ticket` opcional
-- [ ] Swagger: filtros atualizados e exemplos
+- [x] Repository/Service: seleção de `priority`, `customer`, `ticket` opcional
+- [x] Swagger: filtros atualizados e exemplos
 
 4) GET `/api/customers`
 - [x] Controller: `list` com busca e paginação
@@ -574,7 +574,7 @@ Observação importante: evitar duplicação de prefixos nas chamadas do fronten
 - [ ] Frontend: componente `SearchableSelect` consumindo `/customers` sem duplicar `/api`
 
 ### Verificações de Integração
-- [ ] Server: rotas registradas com `app.use('/api', ...)`
-- [ ] CORS: origem do frontend incluída (`http://localhost:5173` ou porta em uso)
-- [ ] Rate limiting: aplicado conforme políticas do projeto
+- [x] Server: rotas registradas com `app.use('/api', ...)`
+- [x] CORS: origem do frontend incluída (`http://localhost:5173` ou porta em uso)
+- [x] Rate limiting: aplicado conforme políticas do projeto
 - [ ] Preview local: validar listagem de clientes e filtros de relatórios

@@ -8,7 +8,8 @@ import { AuthenticatedRequest } from '../types/api.types';
 export const reportController = {
   // Comentário: Sumário de relatórios (KPIs)
   async getSummary(req: AuthenticatedRequest, res: Response) {
-    const providerId = req.providerId;
+    // Permite providerId via token ou fallback por query para compatibilidade
+    const providerId = req.providerId ?? (req.query && Number((req.query as any).providerId));
     if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
 
     // Aceita filtros opcionais conforme roadmap (startDate, endDate, status, tag)
@@ -19,7 +20,7 @@ export const reportController = {
 
   // Comentário: Relatório de tickets com paginação
   async getTickets(req: AuthenticatedRequest, res: Response) {
-    const providerId = req.providerId;
+    const providerId = req.providerId ?? (req.query && Number((req.query as any).providerId));
     if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
 
     const filter = reportFilterSchema.parse(req.query);
@@ -29,7 +30,7 @@ export const reportController = {
 
   // Comentário: Relatório de ordens de serviço com paginação
   async getServiceOrders(req: AuthenticatedRequest, res: Response) {
-    const providerId = req.providerId;
+    const providerId = req.providerId ?? (req.query && Number((req.query as any).providerId));
     if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
 
     const filter = reportFilterSchema.parse(req.query);
@@ -39,7 +40,7 @@ export const reportController = {
 
   // Comentário: Exportação de relatório em CSV/XLSX/PDF
   async exportReport(req: AuthenticatedRequest, res: Response) {
-    const providerId = req.providerId;
+    const providerId = req.providerId ?? (req.query && Number((req.query as any).providerId));
     if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
 
     const params = exportReportSchema.parse(req.query);
@@ -69,13 +70,15 @@ export const reportController = {
           priority: params.priority,
           customerId: params.customerId,
         });
-        const headers = ['id', 'status', 'priority', 'scheduledDate', 'createdAt'];
+        const headers = ['id', 'status', 'priority', 'scheduledDate', 'createdAt', 'ticketId', 'customerName'];
         const rows = items.map(i => [
           i.id,
           i.status,
           i.priority ?? '',
           i.scheduledDate ? new Date(i.scheduledDate).toISOString() : '',
           i.createdAt.toISOString(),
+          i.ticketId ?? '',
+          i.customer?.name ?? '',
         ]);
         return { headers, rows, filenameBase: 'service_orders_report' };
       }

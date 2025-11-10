@@ -177,9 +177,48 @@ router.get('/summary', authMiddleware, statsCacheMiddleware(), validateQuery(rep
  *         name: limit
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: providerId
+ *         schema:
+ *           type: integer
+ *         description: Opcional; usa token por padrão
  *     responses:
  *       200:
  *         description: Lista de tickets do relatório
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       status:
+ *                         type: string
+ *                       priority:
+ *                         type: string
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *             examples:
+ *               default:
+ *                 value:
+ *                   items:
+ *                     - { id: 1, status: 'open', priority: 'high', createdAt: '2025-01-10T12:00:00.000Z' }
+ *                     - { id: 2, status: 'in_progress', priority: 'medium', createdAt: '2025-01-09T10:30:00.000Z' }
+ *                   total: 2
+ *                   page: 1
+ *                   limit: 20
  */
 router.get('/tickets', authMiddleware, validateQuery(reportFilterSchema), (req, res) => reportController.getTickets(req as any, res));
 
@@ -222,9 +261,61 @@ router.get('/tickets', authMiddleware, validateQuery(reportFilterSchema), (req, 
  *         name: limit
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: providerId
+ *         schema:
+ *           type: integer
+ *         description: Opcional; usa token por padrão
  *     responses:
  *       200:
  *         description: Lista de ordens de serviço do relatório
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       status:
+ *                         type: string
+ *                       priority:
+ *                         type: string
+ *                       scheduledDate:
+ *                         type: string
+ *                         format: date-time
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       ticketId:
+ *                         type: integer
+ *                       customer:
+ *                         type: object
+ *                         nullable: true
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           name:
+ *                             type: string
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *             examples:
+ *               default:
+ *                 value:
+ *                   items:
+ *                     - { id: 10, status: 'pending', priority: 'urgent', scheduledDate: '2025-01-12T08:00:00.000Z', createdAt: '2025-01-10T12:00:00.000Z', ticketId: 2, customer: { id: 5, name: 'Cliente ACME' } }
+ *                     - { id: 11, status: 'completed', priority: 'medium', scheduledDate: null, createdAt: '2025-01-09T10:30:00.000Z', ticketId: null, customer: null }
+ *                   total: 2
+ *                   page: 1
+ *                   limit: 20
  */
 router.get('/service-orders', authMiddleware, validateQuery(reportFilterSchema), (req, res) => reportController.getServiceOrders(req as any, res));
 
@@ -261,6 +352,21 @@ router.get('/service-orders', authMiddleware, validateQuery(reportFilterSchema),
  *         name: status
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *           enum: [low, medium, high, urgent]
+ *       - in: query
+ *         name: customerId
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *       - in: query
+ *         name: providerId
+ *         schema:
+ *           type: integer
+ *         description: Opcional; usa token por padrão
  *     responses:
  *       200:
  *         description: Arquivo exportado

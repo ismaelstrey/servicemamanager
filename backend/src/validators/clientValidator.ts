@@ -93,6 +93,10 @@ export const clientListTicketsSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
   status: z.enum(['open','in_progress','waiting_client','resolved','closed']).optional(),
-  search: z.string().min(1).max(255).optional(),
+  // Aceitar `search` vazio e tratá-lo como undefined para evitar 400
+  search: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+    z.string().trim().min(1).max(255).optional()
+  ),
   priority: z.enum(['low','medium','high','critical']).optional()
 });

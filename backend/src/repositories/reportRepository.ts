@@ -28,6 +28,8 @@ export type ServiceOrdersReportItem = {
   priority?: string | null;
   scheduledDate?: Date | null;
   createdAt: Date;
+  ticketId?: number | null;
+  customer?: { id: number; name: string } | null;
 };
 
 export type ReportsSummary = {
@@ -137,7 +139,15 @@ export const reportRepository = {
     const [items, total] = await Promise.all([
       prisma.serviceOrder.findMany({
         where,
-        select: { id: true, status: true, priority: true, scheduledDate: true, createdAt: true },
+        select: {
+          id: true,
+          status: true,
+          priority: true,
+          scheduledDate: true,
+          createdAt: true,
+          ticketId: true,
+          customer: { select: { id: true, name: true } },
+        },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
