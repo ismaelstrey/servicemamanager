@@ -5,11 +5,46 @@ import { AuthenticatedRequest } from '../types/api.types';
 
 // Comentário: Controller de relatórios, expõe handlers de rotas e formata respostas
 
+// Helper: resolver providerId do token (req.providerId) ou da query (?providerId=)
+// Garante fallback quando req.providerId estiver 0/undefined/null
+function resolveProviderId(req: AuthenticatedRequest): number | null {
+  // Token primeiro, se válido (>0)
+  // Comentário: Logs de debug temporários para investigar providerId vindo do token e da query
+  console.log('[resolveProviderId] req.providerId =', req.providerId, 'typeof =', typeof req.providerId);
+  console.log('[resolveProviderId] raw req.query =', req.query, 'providerId =', (req.query as any)?.providerId, 'typeof =', typeof (req.query as any)?.providerId);
+  if (typeof req.providerId === 'number' && Number.isFinite(req.providerId) && req.providerId > 0) {
+    return Number(req.providerId);
+  }
+
+  // Fallback: query string (?providerId=)
+  const raw = (req.query as any)?.providerId;
+  let fromQuery: number | undefined;
+
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (/^\d+$/.test(trimmed)) {
+      const n = parseInt(trimmed, 10);
+      if (Number.isFinite(n) && n > 0) fromQuery = n;
+    }
+  } else if (typeof raw === 'number') {
+    if (Number.isFinite(raw) && raw > 0) fromQuery = Math.floor(raw);
+  } else if (Array.isArray(raw)) {
+    for (const item of raw) {
+      const n = parseInt(String(item).trim(), 10);
+      if (Number.isFinite(n) && n > 0) { fromQuery = n; break; }
+    }
+  }
+
+  return fromQuery ?? null;
+}
+
 export const reportController = {
   // Comentário: Sumário de relatórios (KPIs)
   async getSummary(req: AuthenticatedRequest, res: Response) {
+
+
     // Permite providerId via token ou fallback por query para compatibilidade
-    const providerId = req.providerId ?? (req.query && Number((req.query as any).providerId));
+    const providerId = resolveProviderId(req);
     if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
 
     // Aceita filtros opcionais conforme roadmap (startDate, endDate, status, tag)
@@ -20,17 +55,32 @@ export const reportController = {
 
   // Comentário: Relatório de tickets com paginação
   async getTickets(req: AuthenticatedRequest, res: Response) {
-    const providerId = req.providerId ?? (req.query && Number((req.query as any).providerId));
-    if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
+    console.log("Resposta da query", req)
+    // Comentário: try/catch temporário para diagnosticar erro 400 na rota de tickets
+    try {
+      const providerId = resolveProviderId(req);
+      console.log('[getTickets] providerId linha 61 =', providerId);
+      if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
 
-    const filter = reportFilterSchema.parse(req.query);
-    const report = await reportService.getTicketsReport(providerId, filter);
-    return res.json(report);
+      const filter = reportFilterSchema.parse(req.query);
+      console.log('[getTickets] providerId =', providerId, 'filter =', filter);
+      const report = await reportService.getTicketsReport(providerId, filter);
+      return res.json(report);
+    } catch (error) {
+      console.error('[getTickets] erro ao gerar relatório de tickets:', error);
+      const status = (error as any)?.status && Number.isInteger((error as any).status) ? (error as any).status : 500;
+      return res.status(status).json({ message: 'Falha ao obter relatório de tickets', error: (error as Error)?.message ?? 'Erro desconhecido' });
+    }
   },
 
   // Comentário: Relatório de ordens de serviço com paginação
   async getServiceOrders(req: AuthenticatedRequest, res: Response) {
-    const providerId = req.providerId ?? (req.query && Number((req.query as any).providerId));
+
+    const providerId = resolveProviderId(req);
+    // console.log("Resposta da query", await req.query, providerId)
+
+    // Log de debug enxuto (não vaza dados sensíveis)
+    // console.debug('Report getServiceOrders query:', req.query, 'providerId:', providerId);
     if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
 
     const filter = reportFilterSchema.parse(req.query);
@@ -40,11 +90,11 @@ export const reportController = {
 
   // Comentário: Exportação de relatório em CSV/XLSX/PDF
   async exportReport(req: AuthenticatedRequest, res: Response) {
-    const providerId = req.providerId ?? (req.query && Number((req.query as any).providerId));
+    const providerId = resolveProviderId(req);
     if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
 
     const params = exportReportSchema.parse(req.query);
-    
+
     // Helper para construir dataset e cabeçalhos por tipo
     const buildDataset = async () => {
       if (params.type === 'tickets') {

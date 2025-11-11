@@ -11,6 +11,7 @@ class CustomerRepository {
                 name: true,
                 email: true,
                 password: true,
+                role: true,
                 providerId: true,
                 isActive: true
             }
@@ -24,6 +25,7 @@ class CustomerRepository {
                 id: true,
                 name: true,
                 email: true,
+                role: true,
                 providerId: true,
                 isActive: true,
                 createdAt: true,
@@ -39,6 +41,7 @@ class CustomerRepository {
                 id: true,
                 name: true,
                 email: true,
+                role: true,
                 providerId: true,
                 isActive: true
             }
@@ -80,6 +83,7 @@ class CustomerRepository {
                 id: true,
                 name: true,
                 email: true,
+                role: true,
                 phone: true,
                 document: true,
                 address: true,
@@ -88,6 +92,35 @@ class CustomerRepository {
             },
         });
         return updated;
+    }
+    async list(params) {
+        const { providerId, search, page = 1, limit = 10 } = params;
+        const where = {
+            isActive: true,
+        };
+        // Se providerId for informado, filtra por ele; caso contrário, lista todos
+        if (typeof providerId === 'number' && providerId > 0) {
+            where.providerId = providerId;
+        }
+        if (search && search.trim().length > 0) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+                { phone: { contains: search, mode: 'insensitive' } },
+                { document: { contains: search, mode: 'insensitive' } },
+            ];
+        }
+        const [items, total] = await Promise.all([
+            prisma_1.prisma.customer.findMany({
+                where,
+                select: { id: true, name: true, email: true, phone: true, document: true },
+                orderBy: { name: 'asc' },
+                skip: (page - 1) * limit,
+                take: limit,
+            }),
+            prisma_1.prisma.customer.count({ where }),
+        ]);
+        return { items, total, page, limit };
     }
 }
 exports.CustomerRepository = CustomerRepository;

@@ -8,9 +8,10 @@ const repository = new CustomerRepository();
 
 export const customerController = {
   async list(req: AuthenticatedRequest, res: Response) {
+    console.log("Resposta da query customer list", req.query)
     const { search, page, limit, providerId: providerIdParam } = listCustomersSchema.parse(req.query);
+    console.log("Resposta da query customer list", search, page, limit, providerIdParam)
     const providerId = req.providerId ?? providerIdParam;
-    if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
 
     const result = await repository.list({ providerId, search, page, limit });
 

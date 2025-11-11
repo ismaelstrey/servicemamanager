@@ -107,12 +107,15 @@ export class CustomerRepository {
     return updated;
   }
 
-  async list(params: { providerId: number; search?: string; page?: number; limit?: number }) {
+  async list(params: { providerId?: number; search?: string; page?: number; limit?: number }) {
     const { providerId, search, page = 1, limit = 10 } = params;
     const where: any = {
-      providerId,
       isActive: true,
     };
+    // Se providerId for informado, filtra por ele; caso contrário, lista todos
+    if (typeof providerId === 'number' && providerId > 0) {
+      where.providerId = providerId;
+    }
     if (search && search.trim().length > 0) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },

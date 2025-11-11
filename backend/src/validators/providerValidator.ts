@@ -434,8 +434,11 @@ export const validateParams = (schema: z.ZodSchema) => {
 export const validateQuery = (schema: z.ZodSchema) => {
   return (req: any, res: any, next: any) => {
     try {
+      // Log de debug: ajuda a identificar o formato real de req.query e o tipo de providerId
+      // Comentário: estes logs são temporários para diagnosticar o erro de providerId na validação
+      console.log('[validateQuery] raw query =', req.query, 'providerId =', req.query?.providerId, 'typeof =', typeof req.query?.providerId);
       const result = schema.safeParse(req.query);
-      
+
       if (!result.success) {
         return res.status(400).json({
           success: false,

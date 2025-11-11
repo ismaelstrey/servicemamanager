@@ -32,6 +32,7 @@ const httpRequestDurationMs: Histogram = new client.Histogram({
 
 // Express middleware to measure HTTP metrics
 export function metricsMiddleware(req: Request, res: Response, next: NextFunction) {
+  console.log(req.query)
   const method = req.method;
   const route = (req as any).route?.path || req.originalUrl.split('?')[0] || 'unknown';
   const endTimer = httpRequestDurationMs.startTimer();

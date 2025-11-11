@@ -6,6 +6,7 @@ exports.getPublicUrl = getPublicUrl;
 exports.deleteByUrl = deleteByUrl;
 const minio_1 = require("minio");
 const endpoint = process.env.S3_ENDPOINT || '';
+const publicEndpoint = process.env.S3_PUBLIC_ENDPOINT || '';
 const accessKey = process.env.S3_ACCESS_KEY || '';
 const secretKey = process.env.S3_SECRET_KEY || '';
 const bucket = process.env.S3_BUCKET || '';
@@ -45,12 +46,14 @@ async function uploadBuffer(key, buffer, mimeType) {
     await client.putObject(bucket, key, buffer, buffer.length, {
         'Content-Type': mimeType,
     });
-    const base = endpoint.endsWith('/') ? endpoint.slice(0, -1) : endpoint;
+    const baseRaw = publicEndpoint || endpoint;
+    const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
     const url = `${base}/${bucket}/${encodeURIComponent(key)}`;
     return { url, key };
 }
 function getPublicUrl(key) {
-    const base = endpoint.endsWith('/') ? endpoint.slice(0, -1) : endpoint;
+    const baseRaw = publicEndpoint || endpoint;
+    const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
     return `${base}/${bucket}/${encodeURIComponent(key)}`;
 }
 async function deleteByUrl(url) {

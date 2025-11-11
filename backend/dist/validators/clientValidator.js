@@ -84,6 +84,7 @@ exports.clientListTicketsSchema = zod_1.z.object({
     page: zod_1.z.coerce.number().int().min(1).default(1),
     limit: zod_1.z.coerce.number().int().min(1).max(100).default(10),
     status: zod_1.z.enum(['open', 'in_progress', 'waiting_client', 'resolved', 'closed']).optional(),
-    search: zod_1.z.string().min(1).max(255).optional(),
+    // Aceitar `search` vazio e tratá-lo como undefined para evitar 400
+    search: zod_1.z.preprocess((val) => (typeof val === 'string' && val.trim() === '' ? undefined : val), zod_1.z.string().trim().min(1).max(255).optional()),
     priority: zod_1.z.enum(['low', 'medium', 'high', 'critical']).optional()
 });

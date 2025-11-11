@@ -24,7 +24,7 @@ class CustomerAuthService {
         if (!valid) {
             throw new Error('Credenciais inválidas');
         }
-        const token = (0, jwtUtils_1.signToken)({ customerId: customer.id, email: customer.email, providerId: customer.providerId, role: 'customer' });
+        const token = (0, jwtUtils_1.signToken)({ customerId: customer.id, email: customer.email, providerId: customer.providerId, role: customer.role || 'customer_user' });
         return {
             token,
             customer: { id: customer.id, name: customer.name, email: customer.email, providerId: customer.providerId }
@@ -37,13 +37,14 @@ class CustomerAuthService {
             email: data.email,
             password: passwordHash,
             providerId: data.providerId,
+            role: data.role || 'customer_user',
             phone: data.phone,
             document: data.document
         });
-        const token = (0, jwtUtils_1.signToken)({ customerId: created.id, email: created.email, providerId: created.providerId, role: 'customer' });
+        const token = (0, jwtUtils_1.signToken)({ customerId: created.id, email: created.email, providerId: created.providerId, role: created.role || 'customer_user' });
         return {
             token,
-            customer: { id: created.id, name: created.name, email: created.email, providerId: created.providerId }
+            customer: { id: created.id, name: created.name, email: created.email, providerId: created.providerId, role: created.role }
         };
     }
     async profile(customerId) {

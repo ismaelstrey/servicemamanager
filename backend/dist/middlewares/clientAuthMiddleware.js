@@ -10,7 +10,7 @@ function clientAuthMiddleware(req, res, next) {
     const token = authHeader.split(' ')[1];
     try {
         const payload = (0, jwtUtils_1.verifyToken)(token);
-        req.customer = { id: payload.customerId, email: payload.email, providerId: payload.providerId };
+        req.customer = { id: payload.customerId, email: payload.email, providerId: payload.providerId, role: payload.role };
         next();
     }
     catch (error) {

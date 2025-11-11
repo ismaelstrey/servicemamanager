@@ -31,5 +31,11 @@ class NotificationService {
     async markAllReadByProvider(providerId) {
         return await this.repo.markAllReadByProvider(providerId);
     }
+    async listByCustomer(customerId, providerId, query) {
+        return await this.repo.listByCustomer(customerId, providerId, query);
+    }
+    async markReadForCustomer(id, customerId) {
+        return await this.repo.markReadForCustomer(id, customerId);
+    }
 }
 exports.NotificationService = NotificationService;

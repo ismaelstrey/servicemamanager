@@ -5,7 +5,7 @@ import { AuthenticatedRequest } from '../types/api.types';
 // Rate limiter geral para todas as rotas
 export const generalRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // máximo 100 requests por IP por janela de tempo
+  max: parseInt(process.env.RATE_LIMIT || '100'), // máximo 100 requests por IP por janela de tempo
   message: {
     error: 'Muitas tentativas. Tente novamente em 15 minutos.',
     code: 'RATE_LIMIT_EXCEEDED'

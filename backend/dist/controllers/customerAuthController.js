@@ -12,6 +12,7 @@ const registerSchema = zod_1.z.object({
     email: zod_1.z.string().email('Email inválido'),
     password: zod_1.z.string().min(6, 'Senha deve ter ao menos 6 caracteres'),
     providerId: zod_1.z.coerce.number().int().positive('providerId inválido'),
+    role: zod_1.z.enum(['customer_admin', 'customer_user']).optional(),
     phone: zod_1.z.string().optional(),
     document: zod_1.z.string().optional()
 });

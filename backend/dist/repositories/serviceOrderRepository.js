@@ -54,6 +54,18 @@ class ServiceOrderRepository {
             ...params
         });
     }
+    async findByProviderAndCustomer(providerId, customerId, params) {
+        return await this.prisma.serviceOrder.findMany({
+            where: { providerId, customerId },
+            ...params
+        });
+    }
+    async findByIdScoped(id, providerId, customerId, params) {
+        return await this.prisma.serviceOrder.findFirst({
+            where: { id, providerId, ...(typeof customerId === 'number' ? { customerId } : {}) },
+            ...params
+        });
+    }
     async findByTicket(ticketId, params) {
         return await this.prisma.serviceOrder.findMany({
             where: { ticketId },

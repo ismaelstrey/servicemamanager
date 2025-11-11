@@ -12,6 +12,8 @@ function authMiddleware(req, res, next) {
         const payload = (0, jwtUtils_1.verifyToken)(token);
         // Anexa usuário autenticado com id, role e providerId para controle de acesso
         req.user = { id: payload.userId, role: payload.role, providerId: payload.providerId };
+        // Também propaga providerId diretamente no request para compatibilidade com AuthenticatedRequest
+        req.providerId = payload.providerId;
         next();
     }
     catch (error) {
