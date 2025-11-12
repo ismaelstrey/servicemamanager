@@ -4,14 +4,11 @@ import { exportReportSchema, reportFilterSchema } from '../validators/reportVali
 import { AuthenticatedRequest } from '../types/api.types';
 
 // Comentário: Controller de relatórios, expõe handlers de rotas e formata respostas
-
 // Helper: resolver providerId do token (req.providerId) ou da query (?providerId=)
 // Garante fallback quando req.providerId estiver 0/undefined/null
 function resolveProviderId(req: AuthenticatedRequest): number | null {
   // Token primeiro, se válido (>0)
   // Comentário: Logs de debug temporários para investigar providerId vindo do token e da query
-  console.log('[resolveProviderId] req.providerId =', req.providerId, 'typeof =', typeof req.providerId);
-  console.log('[resolveProviderId] raw req.query =', req.query, 'providerId =', (req.query as any)?.providerId, 'typeof =', typeof (req.query as any)?.providerId);
   if (typeof req.providerId === 'number' && Number.isFinite(req.providerId) && req.providerId > 0) {
     return Number(req.providerId);
   }
@@ -41,59 +38,42 @@ function resolveProviderId(req: AuthenticatedRequest): number | null {
 export const reportController = {
   // Comentário: Sumário de relatórios (KPIs)
   async getSummary(req: AuthenticatedRequest, res: Response) {
-
-
     // Permite providerId via token ou fallback por query para compatibilidade
     const providerId = resolveProviderId(req);
     if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
     // Normaliza providerId na query para evitar falhas de validação/coerção
     (req.query as any).providerId = providerId;
-
     // Aceita filtros opcionais conforme roadmap (startDate, endDate, status, tag)
     const { startDate, endDate, status, tag } = reportFilterSchema.parse(req.query);
     const summary = await reportService.getSummary(providerId, { startDate, endDate, status, tag });
     return res.json(summary);
   },
-
   // Comentário: Relatório de tickets com paginação
   async getTickets(req: AuthenticatedRequest, res: Response) {
-    console.log("Resposta da query", req)
     // Comentário: try/catch temporário para diagnosticar erro 400 na rota de tickets
     try {
       const providerId = resolveProviderId(req);
-      console.log('[getTickets] providerId linha 61 =', providerId);
       if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
       // Normaliza providerId na query para evitar falhas de validação/coerção
       (req.query as any).providerId = providerId;
-
       const filter = reportFilterSchema.parse(req.query);
-      console.log('[getTickets] providerId =', providerId, 'filter =', filter);
       const report = await reportService.getTicketsReport(providerId, filter);
       return res.json(report);
     } catch (error) {
-      console.error('[getTickets] erro ao gerar relatório de tickets:', error);
       const status = (error as any)?.status && Number.isInteger((error as any).status) ? (error as any).status : 500;
       return res.status(status).json({ message: 'Falha ao obter relatório de tickets', error: (error as Error)?.message ?? 'Erro desconhecido' });
     }
   },
-
   // Comentário: Relatório de ordens de serviço com paginação
   async getServiceOrders(req: AuthenticatedRequest, res: Response) {
-
     const providerId = resolveProviderId(req);
-    // console.log("Resposta da query", await req.query, providerId)
-
-    // Log de debug enxuto (não vaza dados sensíveis)
-    // console.debug('Report getServiceOrders query:', req.query, 'providerId:', providerId);
     if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
     // Normaliza providerId na query para evitar falhas de validação/coerção
     (req.query as any).providerId = providerId;
-
     const filter = reportFilterSchema.parse(req.query);
     const report = await reportService.getServiceOrdersReport(providerId, filter);
     return res.json(report);
   },
-
   // Comentário: Exportação de relatório em CSV/XLSX/PDF
   async exportReport(req: AuthenticatedRequest, res: Response) {
     const providerId = resolveProviderId(req);
@@ -206,7 +186,6 @@ export const reportController = {
         return res.status(500).json({ message: 'Falha ao gerar PDF', error: (err as Error).message });
       }
     }
-
     return res.status(400).json({ message: 'Formato de exportação não suportado' });
   },
 };

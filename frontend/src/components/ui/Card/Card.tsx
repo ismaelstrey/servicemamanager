@@ -10,6 +10,8 @@ export const Card: React.FC<CardProps> = ({
   onClick,
   hoverable = false,
   margin = 0,
+  marginX,
+  marginY,
   ...props
 }) => {
   return (
@@ -20,6 +22,8 @@ export const Card: React.FC<CardProps> = ({
       onClick={onClick}
       hoverable={hoverable}
       margin={margin}
+      marginX={marginX}
+      marginY={marginY}
       tabIndex={onClick ? 0 : undefined}
       role={onClick ? 'button' : undefined}
       {...props}

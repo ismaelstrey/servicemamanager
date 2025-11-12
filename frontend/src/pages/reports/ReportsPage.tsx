@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useReports } from '../../hooks/useReports';
 import { StatsCard } from '../../components/dashboard';
-import { Card, CardHeader, CardBody, Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell, Spinner, Alert, Button } from '../../components/ui';
+import { Card, CardHeader, CardBody, Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell, Alert, Button, LogoLoader } from '../../components/ui';
 import ChartContainer from '../../components/ui/ChartContainer';
 import TicketsStatusChart from '../../components/reports/TicketsStatusChart';
 import { Bar } from 'react-chartjs-2';
@@ -170,59 +170,63 @@ export function ReportsPage(): React.ReactElement {
       <PageTitle>Relatórios</PageTitle>
       <Subtitle>KPIs, gráficos e exportação de dados.</Subtitle>
 
-            {/* Ações de exportação */}
-  <Card  margin={10} padding='small' variant='outlined'>   
-    <CardBody>
-      <ActionsRow>
-        <Button variant="secondary" onClick={handleExportCsv}>Exportar CSV (tickets)</Button>
-        <Button variant="secondary" onClick={handleExportTicketsPdf}>Exportar PDF (tickets)</Button>
-        <Button variant="secondary" onClick={handleExportTicketsXlsx}>Exportar XLSX (tickets)</Button>
-        <Button variant="secondary" onClick={handleExportServiceOrdersPdf}>Exportar PDF (OS)</Button>
-        <Button variant="secondary" onClick={handleExportServiceOrdersXlsx}>Exportar XLSX (OS)</Button>
-      </ActionsRow>
-    </CardBody>
-  </Card>
+      {/* Ações de exportação */}
+      <Block>
+        <Card padding='small' variant='outlined'>
+          <CardBody>
+            <ActionsRow>
+              <Button variant="secondary" onClick={handleExportCsv}>Exportar CSV (tickets)</Button>
+              <Button variant="secondary" onClick={handleExportTicketsPdf}>Exportar PDF (tickets)</Button>
+              <Button variant="secondary" onClick={handleExportTicketsXlsx}>Exportar XLSX (tickets)</Button>
+              <Button variant="secondary" onClick={handleExportServiceOrdersPdf}>Exportar PDF (OS)</Button>
+              <Button variant="secondary" onClick={handleExportServiceOrdersXlsx}>Exportar XLSX (OS)</Button>
+            </ActionsRow>
+          </CardBody>
+        </Card>
+      </Block>
 
       {/* Filtros de período */}
-      <Card margin={10} padding='small' >
-        <CardBody>
-          <ReportsFilters
-            startDate={startDate}
-            endDate={endDate}
-            status={status}
-            tag={tag}
-            assigneeId={assigneeId}
-            customerId={customerId}
-            priority={priority}
-            setStartDate={setStartDate}
-            setEndDate={setEndDate}
-            setStatus={setStatus}
-            setTag={setTag}
-            setAssigneeId={setAssigneeId}
-            setCustomerId={setCustomerId}
-            setPriority={setPriority}
-            searchCustomers={searchCustomers}
-            onApply={() => {/* efeito já cuida do load ao mudar filtros */}}
-            onClear={() => {
-              setStartDate('');
-              setEndDate('');
-              setStatus('');
-              setTag('');
-              setAssigneeId('');
-              setCustomerId('');
-              setPriority('');
-            }}
-          />
-        </CardBody>
-      </Card>
+      <Block>
+        <Card padding='small' >
+          <CardBody>
+            <ReportsFilters
+              startDate={startDate}
+              endDate={endDate}
+              status={status}
+              tag={tag}
+              assigneeId={assigneeId}
+              customerId={customerId}
+              priority={priority}
+              setStartDate={setStartDate}
+              setEndDate={setEndDate}
+              setStatus={setStatus}
+              setTag={setTag}
+              setAssigneeId={setAssigneeId}
+              setCustomerId={setCustomerId}
+              setPriority={setPriority}
+              searchCustomers={searchCustomers}
+              onApply={() => {/* efeito já cuida do load ao mudar filtros */ }}
+              onClear={() => {
+                setStartDate('');
+                setEndDate('');
+                setStatus('');
+                setTag('');
+                setAssigneeId('');
+                setCustomerId('');
+                setPriority('');
+              }}
+            />
+          </CardBody>
+        </Card>
+      </Block>
 
 
 
       {/* Estado de carregamento/erro */}
       {loading && (
-        <Block>
-          <Spinner size="md" label="Carregando dados de relatórios..." />
-        </Block>
+
+        <LogoLoader message="Carregando dados de relatórios..." />
+
       )}
       {error && (
         <Block>

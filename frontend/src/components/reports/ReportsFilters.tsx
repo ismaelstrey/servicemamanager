@@ -1,7 +1,8 @@
 import React from 'react'
 import styled, { keyframes } from 'styled-components'
 import SearchableSelect from '../SearchableSelect'
-import { Input, Button } from '../ui'
+import { Input, Button, Tooltip } from '../ui'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 export interface ReportsFiltersProps {
   startDate: string
@@ -42,88 +43,109 @@ const ReportsFilters: React.FC<ReportsFiltersProps> = ({
   onApply,
   onClear,
 }) => {
+  // Controle de exibição dos filtros: ocultos por padrão
+  const [collapsed, setCollapsed] = React.useState<boolean>(true)
   return (
     <FiltersCard >
-      <SectionHeader>Relatórios — Filtros</SectionHeader>
-
-      <FiltersGrid>
-        <Field>
-          <Label>Data inicial</Label>
-          <Input
-            type="date"
-            value={startDate}
-            onChange={(e: any) => setStartDate(e.target.value)}
-            variant="outlined"
+      <HeaderRow>
+        <SectionHeader>Relatórios — Filtros</SectionHeader>
+        {/* Botão de toggle minimalista com ícone e tooltip */}
+        <Tooltip content={collapsed ? 'Mostrar filtros' : 'Ocultar filtros'} placement="bottom">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setCollapsed((prev) => !prev)}
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? 'Mostrar filtros' : 'Ocultar filtros'}
+            title={collapsed ? 'Mostrar filtros' : 'Ocultar filtros'}
+            leftIcon={collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            children=""
           />
-        </Field>
-        <Field>
-          <Label>Data final</Label>
-          <Input
-            type="date"
-            value={endDate}
-            onChange={(e: any) => setEndDate(e.target.value)}
-            variant="outlined"
-          />
-        </Field>
-        <Field>
-          <Button variant="primary" onClick={() => onApply?.()}>Aplicar</Button>
-        </Field>
-      </FiltersGrid>
+        </Tooltip>
+      </HeaderRow>
 
-      <Divider />
-      <SubsectionHeader>Filtros avançados</SubsectionHeader>
+      {!collapsed && (
+        <>
+          <FiltersGrid>
+            <Field>
+              <Label>Data inicial</Label>
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(e: any) => setStartDate(e.target.value)}
+                variant="outlined"
+              />
+            </Field>
+            <Field>
+              <Label>Data final</Label>
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e: any) => setEndDate(e.target.value)}
+                variant="outlined"
+              />
+            </Field>
+            <Field>
+              <Button variant="primary" onClick={() => onApply?.()}>Aplicar</Button>
+            </Field>
+          </FiltersGrid>
 
-      <AdvancedFiltersGrid>
-        <Field>
-          <Label>Status</Label>
-          <Select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="">Todos</option>
-            <option value="open">Aberto</option>
-            <option value="assigned">Atribuído</option>
-            <option value="in_progress">Em andamento</option>
-            <option value="pending">Pendente</option>
-            <option value="resolved">Resolvido</option>
-            <option value="closed">Fechado</option>
-            <option value="cancelled">Cancelado</option>
-          </Select>
-        </Field>
-        <Field>
-          <Label>Tag</Label>
-          <Input type="text" value={tag} onChange={(e: any) => setTag(e.target.value)} placeholder="Ex: urgência, cliente VIP" />
-        </Field>
-        <Field>
-          <Label>Técnico (ID)</Label>
-          <Input type="number" value={assigneeId} onChange={(e: any) => setAssigneeId(e.target.value)} placeholder="Ex: 12" />
-        </Field>
-        <Field>
-          <Label>Cliente</Label>
-          <SelectWrapper>
-            <SearchableSelect
-              placeholder="Digite para buscar clientes"
-              value={customerId || undefined}
-              onChange={(val) => setCustomerId(val ? String(val) : '')}
-              fetchOptions={async (q) => {
-                const res = await searchCustomers(q, 1, 10)
-                return res.items.map((c) => ({ value: c.id, label: `${c.name} · ${c.email ?? ''}`.trim() }))
-              }}
-            />
-          </SelectWrapper>
-        </Field>
-        <Field>
-          <Label>Prioridade</Label>
-          <Select value={priority} onChange={(e) => setPriority(e.target.value)}>
-            <option value="">Todas</option>
-            <option value="urgent">Urgente</option>
-            <option value="high">Alta</option>
-            <option value="medium">Média</option>
-            <option value="low">Baixa</option>
-          </Select>
-        </Field>
-        <ActionsInline>
-          <Button variant="primary" onClick={() => onApply?.()}>Buscar</Button>
-          <Button variant="warning" onClick={() => onClear?.()}>Limpar</Button>
-        </ActionsInline>
-      </AdvancedFiltersGrid>
+          <Divider />
+          <SubsectionHeader>Filtros avançados</SubsectionHeader>
+
+          <AdvancedFiltersGrid>
+            <Field>
+              <Label>Status</Label>
+              <Select value={status} onChange={(e) => setStatus(e.target.value)}>
+                <option value="">Todos</option>
+                <option value="open">Aberto</option>
+                <option value="assigned">Atribuído</option>
+                <option value="in_progress">Em andamento</option>
+                <option value="pending">Pendente</option>
+                <option value="resolved">Resolvido</option>
+                <option value="closed">Fechado</option>
+                <option value="cancelled">Cancelado</option>
+              </Select>
+            </Field>
+            <Field>
+              <Label>Tag</Label>
+              <Input type="text" value={tag} onChange={(e: any) => setTag(e.target.value)} placeholder="Ex: urgência, cliente VIP" />
+            </Field>
+            <Field>
+              <Label>Técnico (ID)</Label>
+              <Input type="number" value={assigneeId} onChange={(e: any) => setAssigneeId(e.target.value)} placeholder="Ex: 12" />
+            </Field>
+            <Field>
+              <Label>Cliente</Label>
+              <SelectWrapper>
+                <SearchableSelect
+                  placeholder="Digite para buscar clientes"
+                  value={customerId || undefined}
+                  onChange={(val) => setCustomerId(val ? String(val) : '')}
+                  fetchOptions={async (q) => {
+                    const res = await searchCustomers(q, 1, 10)
+                    return res.items.map((c) => ({ value: c.id, label: `${c.name} · ${c.email ?? ''}`.trim() }))
+                  }}
+                />
+              </SelectWrapper>
+            </Field>
+            <Field>
+              <Label>Prioridade</Label>
+              <Select value={priority} onChange={(e) => setPriority(e.target.value)}>
+                <option value="">Todas</option>
+                <option value="urgent">Urgente</option>
+                <option value="high">Alta</option>
+                <option value="medium">Média</option>
+                <option value="low">Baixa</option>
+              </Select>
+            </Field>
+            <ActionsInline>
+              <Button variant="primary" onClick={() => onApply?.()}>Buscar</Button>
+              <Button variant="secondary" onClick={() => onClear?.()}>Limpar</Button>
+            </ActionsInline>
+          </AdvancedFiltersGrid>
+        </>
+      )}
     </FiltersCard>
   )
 }
@@ -163,6 +185,13 @@ const SectionHeader = styled.h2`
   letter-spacing: ${({ theme }) => theme.typography.letterSpacing.tight};
   margin: 0 0 ${({ theme }) => theme.spacing.md} 0;
   color: ${({ theme }) => theme.colors.text.primary};
+`
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing?.sm || '0.5rem'};
 `
 
 const SubsectionHeader = styled.h3`

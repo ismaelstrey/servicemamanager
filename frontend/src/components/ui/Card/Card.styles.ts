@@ -47,7 +47,12 @@ const paddingStyles = {
   `,
 };
 
-export const StyledCard = styled.div<StyledCardProps>`
+// Evitar que props internas sejam repassadas ao DOM (corrige warning de atributos desconhecidos)
+export const StyledCard = styled.div.withConfig({
+  // Não repassar estas props customizadas para o elemento HTML
+  shouldForwardProp: (prop) => !['variant', 'padding', 'hoverable', 'margin', 'marginX', 'marginY'].includes(prop as string),
+})<StyledCardProps>`
+  /* Margem base uniforme (fallback quando não há marginX/marginY) */
   margin: ${({ margin }) => typeof margin === 'number' ? `${margin}px` : (margin ?? '0')};
   border-radius: ${({ theme }) => theme.borders.radius.lg};
   transition: all ${({ theme }) => theme.animations.duration.fast} ${({ theme }) => theme.animations.easing.easeInOut};
@@ -72,6 +77,18 @@ export const StyledCard = styled.div<StyledCardProps>`
       transform: translateY(0);
       box-shadow: ${({ theme }) => theme.shadows.md};
     }
+  `}
+
+  /* Margens por eixo X (left/right) quando fornecidas */
+  ${({ marginX }) => marginX !== undefined && css`
+    margin-left: ${typeof marginX === 'number' ? `${marginX}px` : marginX};
+    margin-right: ${typeof marginX === 'number' ? `${marginX}px` : marginX};
+  `}
+
+  /* Margens por eixo Y (top/bottom) quando fornecidas */
+  ${({ marginY }) => marginY !== undefined && css`
+    margin-top: ${typeof marginY === 'number' ? `${marginY}px` : marginY};
+    margin-bottom: ${typeof marginY === 'number' ? `${marginY}px` : marginY};
   `}
 
   /* Focus visible para acessibilidade */

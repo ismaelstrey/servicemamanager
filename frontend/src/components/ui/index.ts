@@ -127,3 +127,7 @@ export { default as CommentThread } from './CommentThread';
 export { default as FileUpload } from './FileUpload';
 export { default as Calendar } from './Calendar';
 export { default as Timeline } from './Timeline';
+
+// Loading com logo
+export { default as LogoLoader } from './LogoLoader';
+export type { LogoLoaderProps, LogoLoaderVariant } from './LogoLoader';

@@ -12,6 +12,10 @@ export interface CardProps {
   clickable?: boolean;
   title?: string;
   margin?: string | number;
+  // Novas props para controle de margem por eixo
+  // marginX aplica nas laterais (left/right) e marginY em top/bottom
+  marginX?: string | number;
+  marginY?: string | number;
 }
 
 export interface CardHeaderProps {
@@ -36,4 +40,7 @@ export interface StyledCardProps {
   hoverable?: boolean;
   onClick?: () => void;
   margin?: string | number;
+  // Props internas para margem por eixo
+  marginX?: string | number;
+  marginY?: string | number;
 }
