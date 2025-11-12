@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const reportController_1 = require("../controllers/reportController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
+const providerContextMiddleware_1 = require("../middlewares/providerContextMiddleware");
 const reportValidator_1 = require("../validators/reportValidator");
 const cacheMiddleware_1 = require("../middleware/cacheMiddleware");
 // Comentário: Rotas para relatórios, protegidas por JWT, com validação de query e cache em sumário
@@ -126,7 +127,7 @@ const router = (0, express_1.Router)();
  *                     - { label: 'Ordens de Serviço', value: 80 }
  *                     - { label: 'OS pendentes', value: 22 }
 */
-router.get('/summary', authMiddleware_1.authMiddleware, (0, cacheMiddleware_1.statsCacheMiddleware)(), (0, reportValidator_1.validateQuery)(reportValidator_1.reportFilterSchema), (req, res) => reportController_1.reportController.getSummary(req, res));
+router.get('/summary', authMiddleware_1.authMiddleware, providerContextMiddleware_1.providerContextMiddleware, (0, cacheMiddleware_1.statsCacheMiddleware)(), (0, reportValidator_1.validateQuery)(reportValidator_1.reportFilterSchema), (req, res) => reportController_1.reportController.getSummary(req, res));
 /**
  * @swagger
  * /api/reports/tickets:
@@ -217,7 +218,10 @@ router.get('/summary', authMiddleware_1.authMiddleware, (0, cacheMiddleware_1.st
  *                   page: 1
  *                   limit: 20
  */
-router.get('/tickets', authMiddleware_1.authMiddleware, (0, reportValidator_1.validateQuery)(reportValidator_1.reportFilterSchema), (req, res) => reportController_1.reportController.getTickets(req, res));
+router.get('/tickets', authMiddleware_1.authMiddleware, providerContextMiddleware_1.providerContextMiddleware, (0, reportValidator_1.validateQuery)(reportValidator_1.reportFilterSchema), (req, res) => {
+    console.log("Requisição feita na rotas", req.query);
+    return reportController_1.reportController.getTickets(req, res);
+});
 /**
  * @swagger
  * /api/reports/service-orders:
@@ -313,7 +317,7 @@ router.get('/tickets', authMiddleware_1.authMiddleware, (0, reportValidator_1.va
  *                   page: 1
  *                   limit: 20
  */
-router.get('/service-orders', authMiddleware_1.authMiddleware, (0, reportValidator_1.validateQuery)(reportValidator_1.reportFilterSchema), (req, res) => reportController_1.reportController.getServiceOrders(req, res));
+router.get('/service-orders', authMiddleware_1.authMiddleware, providerContextMiddleware_1.providerContextMiddleware, (0, reportValidator_1.validateQuery)(reportValidator_1.reportFilterSchema), (req, res) => reportController_1.reportController.getServiceOrders(req, res));
 /**
  * @swagger
  * /api/reports/export:
@@ -366,5 +370,5 @@ router.get('/service-orders', authMiddleware_1.authMiddleware, (0, reportValidat
  *       200:
  *         description: Arquivo exportado
  */
-router.get('/export', authMiddleware_1.authMiddleware, (0, reportValidator_1.validateQuery)(reportValidator_1.exportReportSchema), (req, res) => reportController_1.reportController.exportReport(req, res));
+router.get('/export', authMiddleware_1.authMiddleware, providerContextMiddleware_1.providerContextMiddleware, (0, reportValidator_1.validateQuery)(reportValidator_1.exportReportSchema), (req, res) => reportController_1.reportController.exportReport(req, res));
 exports.default = router;

@@ -1,4 +1,5 @@
 {
+  
   "compilerOptions": {
 
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
@@ -7,7 +8,7 @@
     "useDefineForClassFields": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "types": ["vite/client"],
+    // Removido: referência direta a 'vite/client' para evitar erro quando usando alias de pacote
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -24,5 +25,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src", "vite-env.d.ts"]
 }

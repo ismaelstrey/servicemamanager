@@ -2,7 +2,7 @@
   "name": "telecomai-root",
   "private": true,
   "version": "0.1.0",
-  "packageManager": "pnpm@10.20.0",
+  "packageManager": "pnpm@10.21.0",
   "scripts": {
     "dev": "pnpm -r dev",
     "build": "pnpm -r build",
@@ -15,5 +15,10 @@
   },
   "devDependencies": {
     "@types/swagger-jsdoc": "^6.0.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "npm:rolldown-vite@7.1.14"
+    }
   }
 }

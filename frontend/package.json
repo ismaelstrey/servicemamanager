@@ -62,10 +62,5 @@
     "vite": "npm:rolldown-vite@7.1.14",
     "vite-plugin-pwa": "^1.1.0",
     "vitest": "^4.0.2"
-  },
-  "pnpm": {
-    "overrides": {
-      "vite": "npm:rolldown-vite@7.1.14"
-    }
   }
 }

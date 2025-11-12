@@ -12,8 +12,9 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
 # Garantir instalação de devDependencies na etapa de build
 ENV NODE_ENV=development
 
-# Instala dependências usando npm
-COPY package.json package-lock.json ./
+# Instala dependências usando npm (sem exigir package-lock)
+# Usa padrão para copiar package.json e opcionalmente package-lock.json, se existir
+COPY package*.json ./
 RUN npm install
 
 # Garante presença explícita do dotenv (c12 requer)
@@ -39,7 +40,8 @@ ENV NODE_ENV=production
 ENV PORT=4002
 
 # Instala dependências de produção na etapa de runtime
-COPY package.json ./
+# Copia package.json (e package-lock.json se existir)
+COPY package*.json ./
 RUN npm install --omit=dev
 # Corrige c12 exigindo dotenv na geração do Prisma
 RUN npm install dotenv@16.4.5

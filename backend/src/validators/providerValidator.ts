@@ -437,7 +437,30 @@ export const validateQuery = (schema: z.ZodSchema) => {
       // Log de debug: ajuda a identificar o formato real de req.query e o tipo de providerId
       // Comentário: estes logs são temporários para diagnosticar o erro de providerId na validação
       console.log('[validateQuery] raw query =', req.query, 'providerId =', req.query?.providerId, 'typeof =', typeof req.query?.providerId);
-      const result = schema.safeParse(req.query);
+
+      // Normalização defensiva: converte strings numéricas em números para chaves conhecidas
+      // Isso previne 400 por "Expected number, received string" mesmo em ambientes onde o parser de query se comporta de forma diferente
+      // Conversão apenas para chaves que nossos schemas tratam como número via z.coerce
+      // Evita interferir em schemas que esperam strings e fazem transform(Number),
+      // como listTicketsSchema (page/limit como string)
+      const numericKeys = new Set(['providerId', 'assigneeId', 'customerId']);
+      const sanitized: Record<string, any> = { ...req.query };
+      for (const key of Object.keys(sanitized)) {
+        if (!numericKeys.has(key)) continue;
+        const val = sanitized[key];
+        if (typeof val === 'string') {
+          const trimmed = val.trim();
+          if (/^\d+$/.test(trimmed)) sanitized[key] = parseInt(trimmed, 10);
+        } else if (Array.isArray(val)) {
+          // Se veio como array (ex.: providerId[]=2), usa o primeiro elemento válido
+          for (const item of val) {
+            const trimmed = String(item).trim();
+            if (/^\d+$/.test(trimmed)) { sanitized[key] = parseInt(trimmed, 10); break; }
+          }
+        }
+      }
+
+      const result = schema.safeParse(sanitized);
 
       if (!result.success) {
         return res.status(400).json({

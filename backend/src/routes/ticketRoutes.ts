@@ -118,14 +118,15 @@ const router = Router();
 const controller = new TicketController();
 
 // Protegidas: exigem autenticação com cache para consultas
-router.get('/:providerId/tickets', authMiddleware, validateParams(providerIdParamSchema), validateQuery(listTicketsSchema), listCacheMiddleware(), (req, res) => controller.list(req as any, res));
-router.get('/:providerId/tickets/kanban', authMiddleware, validateParams(providerIdParamSchema), cacheMiddleware({ ttl: 60, keyPrefix: 'kanban', varyBy: ['userId', 'providerId'] }), (req, res) => controller.kanban(req as any, res));
+// Restringe providerId para dígitos, evitando colisão com rotas como /reports/tickets
+router.get('/:providerId(\\d+)/tickets', authMiddleware, validateParams(providerIdParamSchema), validateQuery(listTicketsSchema), listCacheMiddleware(), (req, res) => controller.list(req as any, res));
+router.get('/:providerId(\\d+)/tickets/kanban', authMiddleware, validateParams(providerIdParamSchema), cacheMiddleware({ ttl: 60, keyPrefix: 'kanban', varyBy: ['userId', 'providerId'] }), (req, res) => controller.kanban(req as any, res));
 // Kanban global (sem providerId) com cache
 router.get('/tickets/kanban', authMiddleware, cacheMiddleware({ ttl: 60, keyPrefix: 'kanban_all', varyBy: ['userId'] }), (req, res) => controller.kanbanAll(req as any, res));
 // Lista global de tickets (sem providerId) com cache
 router.get('/tickets', authMiddleware, validateQuery(listTicketsSchema), cacheMiddleware({ ttl: 30, keyPrefix: 'tickets_all', varyBy: ['userId', 'query.page', 'query.limit', 'query.search', 'query.status', 'query.priority', 'query.startDate', 'query.endDate'] }), (req, res) => controller.listAll(req as any, res));
-router.post('/:providerId/tickets', authMiddleware, validateParams(providerIdParamSchema), validateSchema(createTicketSchema), (req, res) => controller.create(req as any, res));
-router.get('/:providerId/tickets/stats', authMiddleware, validateParams(providerIdParamSchema), statsCacheMiddleware(), (req, res) => controller.getStats(req as any, res));
+router.post('/:providerId(\\d+)/tickets', authMiddleware, validateParams(providerIdParamSchema), validateSchema(createTicketSchema), (req, res) => controller.create(req as any, res));
+router.get('/:providerId(\\d+)/tickets/stats', authMiddleware, validateParams(providerIdParamSchema), statsCacheMiddleware(), (req, res) => controller.getStats(req as any, res));
 
 // CRUD por ID de ticket com cache para consultas
 router.get('/tickets/:id', authMiddleware, validateParams(ticketIdParamSchema), ticketCacheMiddleware(), (req, res) => controller.getById(req as any, res));

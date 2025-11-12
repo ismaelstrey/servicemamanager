@@ -33,6 +33,7 @@ const httpRequestDurationMs = new prom_client_1.default.Histogram({
 });
 // Express middleware to measure HTTP metrics
 function metricsMiddleware(req, res, next) {
+    console.log(req.query);
     const method = req.method;
     const route = req.route?.path || req.originalUrl.split('?')[0] || 'unknown';
     const endTimer = httpRequestDurationMs.startTimer();

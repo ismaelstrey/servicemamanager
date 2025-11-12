@@ -46,6 +46,8 @@ export const reportController = {
     // Permite providerId via token ou fallback por query para compatibilidade
     const providerId = resolveProviderId(req);
     if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
+    // Normaliza providerId na query para evitar falhas de validação/coerção
+    (req.query as any).providerId = providerId;
 
     // Aceita filtros opcionais conforme roadmap (startDate, endDate, status, tag)
     const { startDate, endDate, status, tag } = reportFilterSchema.parse(req.query);
@@ -61,6 +63,8 @@ export const reportController = {
       const providerId = resolveProviderId(req);
       console.log('[getTickets] providerId linha 61 =', providerId);
       if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
+      // Normaliza providerId na query para evitar falhas de validação/coerção
+      (req.query as any).providerId = providerId;
 
       const filter = reportFilterSchema.parse(req.query);
       console.log('[getTickets] providerId =', providerId, 'filter =', filter);
@@ -82,6 +86,8 @@ export const reportController = {
     // Log de debug enxuto (não vaza dados sensíveis)
     // console.debug('Report getServiceOrders query:', req.query, 'providerId:', providerId);
     if (!providerId) return res.status(400).json({ message: 'providerId ausente no contexto' });
+    // Normaliza providerId na query para evitar falhas de validação/coerção
+    (req.query as any).providerId = providerId;
 
     const filter = reportFilterSchema.parse(req.query);
     const report = await reportService.getServiceOrdersReport(providerId, filter);

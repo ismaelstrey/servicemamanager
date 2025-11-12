@@ -71,13 +71,16 @@ export function useReports() {
   }, [withProvider]);
 
   const getTicketsReport = useCallback(async (filter: ReportFilter): Promise<TicketReportItem[]> => {
-    const res = await ApiService.get<TicketReportItem[]>('/reports/tickets', { params: withProvider(filter) });
-    return res.data;
+    const res = await ApiService.get<{ items: TicketReportItem[]; total: number; page: number; limit: number } | TicketReportItem[]>('/reports/tickets', { params: withProvider(filter) });
+    const data = res.data as any;
+    // Backend retorna envelope { items, total, page, limit }; manter compatibilidade retornando apenas items
+    return Array.isArray(data) ? (data as TicketReportItem[]) : (data?.items ?? []);
   }, [withProvider]);
 
   const getServiceOrdersReport = useCallback(async (filter: ReportFilter): Promise<ServiceOrderReportItem[]> => {
-    const res = await ApiService.get<ServiceOrderReportItem[]>('/reports/service-orders', { params: withProvider(filter) });
-    return res.data;
+    const res = await ApiService.get<{ items: ServiceOrderReportItem[]; total: number; page: number; limit: number } | ServiceOrderReportItem[]>('/reports/service-orders', { params: withProvider(filter) });
+    const data = res.data as any;
+    return Array.isArray(data) ? (data as ServiceOrderReportItem[]) : (data?.items ?? []);
   }, [withProvider]);
 
   const exportReport = useCallback(async (

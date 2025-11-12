@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { reportController } from '../controllers/reportController';
 import { authMiddleware } from '../middlewares/authMiddleware';
+import { providerContextMiddleware } from '../middlewares/providerContextMiddleware';
 import { validateQuery, reportFilterSchema, exportReportSchema } from '../validators/reportValidator';
 import { statsCacheMiddleware } from '../middleware/cacheMiddleware';
 
@@ -128,7 +129,7 @@ const router = Router();
  *                     - { label: 'Ordens de Serviço', value: 80 }
  *                     - { label: 'OS pendentes', value: 22 }
 */
-router.get('/summary', authMiddleware, statsCacheMiddleware(), validateQuery(reportFilterSchema), (req, res) => reportController.getSummary(req as any, res));
+router.get('/summary', authMiddleware, providerContextMiddleware, statsCacheMiddleware(), validateQuery(reportFilterSchema), (req, res) => reportController.getSummary(req as any, res));
 
 /**
  * @swagger
@@ -220,7 +221,11 @@ router.get('/summary', authMiddleware, statsCacheMiddleware(), validateQuery(rep
  *                   page: 1
  *                   limit: 20
  */
-router.get('/tickets', authMiddleware, validateQuery(reportFilterSchema), (req, res) => reportController.getTickets(req as any, res));
+router.get('/tickets', authMiddleware, providerContextMiddleware, validateQuery(reportFilterSchema), (req, res) => {
+    
+    console.log("Requisição feita na rotas",req.query)
+    return reportController.getTickets(req as any, res)
+});
 
 /**
  * @swagger
@@ -317,7 +322,7 @@ router.get('/tickets', authMiddleware, validateQuery(reportFilterSchema), (req, 
  *                   page: 1
  *                   limit: 20
  */
-router.get('/service-orders', authMiddleware, validateQuery(reportFilterSchema), (req, res) => reportController.getServiceOrders(req as any, res));
+router.get('/service-orders', authMiddleware, providerContextMiddleware, validateQuery(reportFilterSchema), (req, res) => reportController.getServiceOrders(req as any, res));
 
 /**
  * @swagger
@@ -371,6 +376,6 @@ router.get('/service-orders', authMiddleware, validateQuery(reportFilterSchema),
  *       200:
  *         description: Arquivo exportado
  */
-router.get('/export', authMiddleware, validateQuery(exportReportSchema), (req, res) => reportController.exportReport(req as any, res));
+router.get('/export', authMiddleware, providerContextMiddleware, validateQuery(exportReportSchema), (req, res) => reportController.exportReport(req as any, res));
 
 export default router;
