@@ -1,127 +1,70 @@
 import React from 'react';
+import { StyledCard, CardHeader as StyledCardHeader, CardBody as StyledCardBody, CardFooter as StyledCardFooter } from './Card/Card.styles';
+import type { CardProps as CardPropsTypes, CardHeaderProps, CardBodyProps, CardFooterProps } from './Card/Card.types';
 
-export type CardVariant = 'default' | 'outlined' | 'elevated' | 'filled';
-export type CardSize = 'sm' | 'md' | 'lg';
+const sizeToPadding = (size?: 'sm' | 'md' | 'lg'): 'none' | 'small' | 'medium' | 'large' => {
+  switch (size) {
+    case 'sm':
+      return 'small';
+    case 'lg':
+      return 'large';
+    case 'md':
+    default:
+      return 'medium';
+  }
+};
 
-export interface CardProps {
-  children: React.ReactNode;
-  variant?: CardVariant;
-  size?: CardSize;
-  className?: string;
-  hoverable?: boolean;
-  clickable?: boolean;
-  onClick?: () => void;
-  title?: string;
-}
-
-interface CardHeaderProps {
-  children: React.ReactNode;
-  className?: string;
-  actions?: React.ReactNode;
-}
-
-interface CardBodyProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-interface CardFooterProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-export const Card: React.FC<CardProps> = ({
+export const Card: React.FC<CardPropsTypes> = ({
   children,
   variant = 'default',
-  size = 'md',
-  className = '',
-  hoverable = false,
-  clickable = false,
+  padding = 'medium',
+  size, // compatibilidade com API antiga
+  className,
+  hoverable,
   onClick,
   title,
+  clickable,
+  margin = 0,
 }) => {
-  const baseClasses = 'card';
-  const variantClasses = `card--${variant}`;
-  const sizeClasses = `card--${size}`;
-  const hoverableClasses = hoverable ? 'card--hoverable' : '';
-  const clickableClasses = clickable ? 'card--clickable' : '';
+  const computedPadding = padding ?? sizeToPadding(size);
+  const isClickable = Boolean(clickable) || Boolean(onClick);
 
-  const classes = [
-    baseClasses,
-    variantClasses,
-    sizeClasses,
-    hoverableClasses,
-    clickableClasses,
-    className,
-  ].filter(Boolean).join(' ');
-
-  const handleClick = () => {
-    if (clickable && onClick) {
-      onClick();
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
+    if (!isClickable) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick?.();
     }
   };
 
   return (
-    <div
-      className={classes}
-      onClick={handleClick}
-      role={clickable ? 'button' : undefined}
-      tabIndex={clickable ? 0 : undefined}
+    <StyledCard
+      variant={variant}
+      padding={computedPadding}
+      hoverable={hoverable}
+      onClick={onClick}
+      className={className}
       title={title}
-      onKeyDown={clickable ? (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleClick();
-        }
-      } : undefined}
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={handleKeyDown}
+      margin={margin}
     >
       {children}
-    </div>
+    </StyledCard>
   );
 };
 
-export const CardHeader: React.FC<CardHeaderProps> = ({
-  children,
-  className = '',
-  actions,
-}) => {
-  return (
-    <div className={`card-header ${className}`}>
-      <div className="card-header__content">
-        {children}
-      </div>
-      {actions && (
-        <div className="card-header__actions">
-          {actions}
-        </div>
-      )}
-    </div>
-  );
-};
+export const CardHeader: React.FC<CardHeaderProps> = ({ children, className }) => (
+  <StyledCardHeader className={className}>{children}</StyledCardHeader>
+);
 
-export const CardBody: React.FC<CardBodyProps> = ({
-  children,
-  className = '',
-}) => {
-  return (
-    <div className={`card-body ${className}`}>
-      {children}
-    </div>
-  );
-};
+export const CardBody: React.FC<CardBodyProps> = ({ children, className }) => (
+  <StyledCardBody className={className}>{children}</StyledCardBody>
+);
 
-export const CardFooter: React.FC<CardFooterProps> = ({
-  children,
-  className = '',
-}) => {
-  return (
-    <div className={`card-footer ${className}`}>
-      {children}
-    </div>
-  );
-};
-
-// Compound component pattern
-
+export const CardFooter: React.FC<CardFooterProps> = ({ children, className }) => (
+  <StyledCardFooter className={className}>{children}</StyledCardFooter>
+);
 
 export default Card;

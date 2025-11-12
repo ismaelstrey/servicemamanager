@@ -54,6 +54,7 @@ export const InputWrapper = styled.div<{
           border: 1px solid ${hasError ? theme.colors.error.main : theme.colors.border.primary};
           
           &:focus-within {
+            background-color: ${theme.mode === 'dark' ? theme.colors.background.tertiary : theme.colors.background.primary};
             border-color: ${hasError ? theme.colors.error.main : theme.colors.primary.main};
             box-shadow: 0 0 0 3px ${hasError ? theme.colors.error.main + '20' : theme.colors.primary.main + '20'};
           }

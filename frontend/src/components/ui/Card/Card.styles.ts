@@ -20,6 +20,12 @@ const variantStyles = {
     border: 1px solid transparent;
     box-shadow: ${({ theme }) => theme.shadows.md};
   `,
+  
+  filled: css`
+    background-color: ${({ theme }) => theme.colors.background.primary};
+    border: 1px solid ${({ theme }) => theme.colors.border.primary};
+    box-shadow: none;
+  `,
 };
 
 // Estilos de padding
@@ -42,6 +48,7 @@ const paddingStyles = {
 };
 
 export const StyledCard = styled.div<StyledCardProps>`
+  margin: ${({ margin }) => typeof margin === 'number' ? `${margin}px` : (margin ?? '0')};
   border-radius: ${({ theme }) => theme.borders.radius.lg};
   transition: all ${({ theme }) => theme.animations.duration.fast} ${({ theme }) => theme.animations.easing.easeInOut};
   overflow: hidden;

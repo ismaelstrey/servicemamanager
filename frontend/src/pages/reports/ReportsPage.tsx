@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useReports } from '../../hooks/useReports';
 import { StatsCard } from '../../components/dashboard';
-import { Card, CardHeader, CardBody, Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell, Spinner, Alert, Input, Button } from '../../components/ui';
+import { Card, CardHeader, CardBody, Table, TableHeader, TableBody, TableRow, TableHeaderCell, TableCell, Spinner, Alert, Button } from '../../components/ui';
 import ChartContainer from '../../components/ui/ChartContainer';
 import TicketsStatusChart from '../../components/reports/TicketsStatusChart';
 import { Bar } from 'react-chartjs-2';
@@ -27,8 +27,9 @@ const TicketsInlineBar: React.FC<{ data: any }> = ({ data }) => {
 };
 import ServiceOrderStatusChart from '../../components/dashboard/charts/ServiceOrderStatusChart';
 import { useCustomers } from '../../hooks/useCustomers';
-import SearchableSelect from '../../components/SearchableSelect';
+import ReportsFilters from '../../components/reports/ReportsFilters';
 import { useAuth } from '../../hooks/useAuth';
+import styled from 'styled-components';
 
 // Página de Relatórios (/reports)
 // Exibe KPIs, gráficos e opções de exportação.
@@ -165,116 +166,81 @@ export function ReportsPage(): React.ReactElement {
   }, [serviceOrders]);
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">Relatórios</h1>
-      <p className="text-sm text-gray-600 mb-4">KPIs, gráficos e exportação de dados.</p>
+    <PageContainer>
+      <PageTitle>Relatórios</PageTitle>
+      <Subtitle>KPIs, gráficos e exportação de dados.</Subtitle>
+
+            {/* Ações de exportação */}
+  <Card  margin={10} padding='small' variant='outlined'>   
+    <CardBody>
+      <ActionsRow>
+        <Button variant="secondary" onClick={handleExportCsv}>Exportar CSV (tickets)</Button>
+        <Button variant="secondary" onClick={handleExportTicketsPdf}>Exportar PDF (tickets)</Button>
+        <Button variant="secondary" onClick={handleExportTicketsXlsx}>Exportar XLSX (tickets)</Button>
+        <Button variant="secondary" onClick={handleExportServiceOrdersPdf}>Exportar PDF (OS)</Button>
+        <Button variant="secondary" onClick={handleExportServiceOrdersXlsx}>Exportar XLSX (OS)</Button>
+      </ActionsRow>
+    </CardBody>
+  </Card>
 
       {/* Filtros de período */}
-      <Card className="mb-4">
+      <Card margin={10} padding='small' >
         <CardBody>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-            <div>
-              <label className="block text-sm font-medium mb-1">Data inicial</label>
-              <Input type="date" value={startDate} onChange={(e: any) => setStartDate(e.target.value)} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Data final</label>
-              <Input type="date" value={endDate} onChange={(e: any) => setEndDate(e.target.value)} />
-            </div>
-            <div>
-              <Button variant="primary" onClick={() => { /* os effects já disparam o carregamento */ }}>Aplicar</Button>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end mt-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Status</label>
-              <select className="w-full border rounded px-3 py-2" value={status} onChange={(e) => setStatus(e.target.value)}>
-                <option value="">Todos</option>
-                <option value="open">Aberto</option>
-                <option value="assigned">Atribuído</option>
-                <option value="in_progress">Em andamento</option>
-                <option value="pending">Pendente</option>
-                <option value="resolved">Resolvido</option>
-                <option value="closed">Fechado</option>
-                <option value="cancelled">Cancelado</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Tag</label>
-              <Input type="text" value={tag} onChange={(e: any) => setTag(e.target.value)} placeholder="Ex: urgência, cliente VIP" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Técnico (ID)</label>
-              <Input type="number" value={assigneeId} onChange={(e: any) => setAssigneeId(e.target.value)} placeholder="Ex: 12" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Cliente</label>
-              <SearchableSelect
-                placeholder="Digite para buscar clientes"
-                value={customerId || undefined}
-                onChange={(val) => setCustomerId(val ? String(val) : '')}
-                fetchOptions={async (q) => {
-                  const res = await searchCustomers(q, 1, 10);
-                  return res.items.map((c) => ({ value: c.id, label: `${c.name} · ${c.email ?? ''}`.trim() }));
-                }}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Prioridade</label>
-              <select className="w-full border rounded px-3 py-2" value={priority} onChange={(e) => setPriority(e.target.value)}>
-                <option value="">Todas</option>
-                <option value="urgent">Urgente</option>
-                <option value="high">Alta</option>
-                <option value="medium">Média</option>
-                <option value="low">Baixa</option>
-              </select>
-            </div>
-          </div>
+          <ReportsFilters
+            startDate={startDate}
+            endDate={endDate}
+            status={status}
+            tag={tag}
+            assigneeId={assigneeId}
+            customerId={customerId}
+            priority={priority}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+            setStatus={setStatus}
+            setTag={setTag}
+            setAssigneeId={setAssigneeId}
+            setCustomerId={setCustomerId}
+            setPriority={setPriority}
+            searchCustomers={searchCustomers}
+            onApply={() => {/* efeito já cuida do load ao mudar filtros */}}
+            onClear={() => {
+              setStartDate('');
+              setEndDate('');
+              setStatus('');
+              setTag('');
+              setAssigneeId('');
+              setCustomerId('');
+              setPriority('');
+            }}
+          />
         </CardBody>
       </Card>
 
-      {/* Ações de exportação */}
-      <div className="flex gap-3 mb-6">
-        <button className="px-4 py-2 bg-green-600 text-white rounded" onClick={handleExportCsv}>
-          Exportar CSV (tickets)
-        </button>
-        <button className="px-4 py-2 bg-indigo-600 text-white rounded" onClick={handleExportTicketsPdf}>
-          Exportar PDF (tickets)
-        </button>
-        <button className="px-4 py-2 bg-purple-600 text-white rounded" onClick={handleExportTicketsXlsx}>
-          Exportar XLSX (tickets)
-        </button>
-        <button className="px-4 py-2 bg-indigo-700 text-white rounded" onClick={handleExportServiceOrdersPdf}>
-          Exportar PDF (OS)
-        </button>
-        <button className="px-4 py-2 bg-purple-700 text-white rounded" onClick={handleExportServiceOrdersXlsx}>
-          Exportar XLSX (OS)
-        </button>
-      </div>
+
 
       {/* Estado de carregamento/erro */}
       {loading && (
-        <div className="mb-4">
+        <Block>
           <Spinner size="md" label="Carregando dados de relatórios..." />
-        </div>
+        </Block>
       )}
       {error && (
-        <div className="mb-4">
+        <Block>
           <Alert variant="danger" title="Erro ao carregar relatórios">{error}</Alert>
-        </div>
+        </Block>
       )}
 
       {/* KPIs */}
       {summary && summary.kpis && summary.kpis.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <KpisGrid>
           {summary.kpis.map((kpi) => (
             <StatsCard key={kpi.label} title={kpi.label} value={kpi.value} />
           ))}
-        </div>
+        </KpisGrid>
       )}
 
       {/* Gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+      <ChartsGrid2>
         <ChartContainer title="Status dos Tickets">
           <TicketsStatusChart stats={ticketsStats} />
         </ChartContainer>
@@ -282,10 +248,10 @@ export function ReportsPage(): React.ReactElement {
         <ChartContainer title="Status de Ordens de Serviço">
           <ServiceOrderStatusChart stats={serviceOrderStats} />
         </ChartContainer>
-      </div>
+      </ChartsGrid2>
 
       {/* Gráficos adicionais */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      <ChartsGrid3>
         <ChartContainer title="Tickets por Prioridade">
           {/* Placeholder de componente; renderização inline por simplicidade */}
           {(() => {
@@ -337,10 +303,10 @@ export function ReportsPage(): React.ReactElement {
             return <TicketsInlineBar data={data} />;
           })()}
         </ChartContainer>
-      </div>
+      </ChartsGrid3>
 
       {/* Gráficos OS adicionais */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      <ChartsGrid3>
         <ChartContainer title="OS por Prioridade">
           {(() => {
             const counts: Record<string, number> = {};
@@ -391,13 +357,13 @@ export function ReportsPage(): React.ReactElement {
             return <TicketsInlineBar data={data} />;
           })()}
         </ChartContainer>
-      </div>
+      </ChartsGrid3>
 
       {/* Tabelas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <TablesGrid>
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">Tickets</h3>
+            <SectionTitle>Tickets</SectionTitle>
           </CardHeader>
           <CardBody>
             <Table>
@@ -423,7 +389,7 @@ export function ReportsPage(): React.ReactElement {
 
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">Ordens de Serviço</h3>
+            <SectionTitle>Ordens de Serviço</SectionTitle>
           </CardHeader>
           <CardBody>
             <Table>
@@ -446,9 +412,88 @@ export function ReportsPage(): React.ReactElement {
             </Table>
           </CardBody>
         </Card>
-      </div>
-    </div>
+      </TablesGrid>
+    </PageContainer>
   );
 }
 
 export default ReportsPage;
+
+// Styled components reutilizáveis para layout
+const PageContainer = styled.div`
+  padding: ${({ theme }) => theme.spacing?.lg || '1.5rem'};
+`;
+
+const PageTitle = styled.h1`
+  color: ${({ theme }) => theme.colors?.text?.primary || '#111'};
+  margin: 0 0 ${({ theme }) => theme.spacing?.md || '1rem'} 0;
+  font-size: ${({ theme }) => theme.typography?.fontSize?.xl || '1.5rem'};
+  font-weight: 600;
+`;
+
+const Subtitle = styled.p`
+  color: ${({ theme }) => theme.colors?.text?.secondary || '#6b7280'};
+  margin: 0 0 ${({ theme }) => theme.spacing?.md || '1rem'} 0;
+  font-size: ${({ theme }) => theme.typography?.fontSize?.sm || '0.875rem'};
+`;
+
+// (wrappers de filtros foram movidos para ReportsFilters)
+
+const ActionsRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing?.md || '1rem'};
+  margin: 0 0 ${({ theme }) => theme.spacing?.lg || '1.5rem'} 0;
+  flex-wrap: wrap;
+`;
+
+const Block = styled.div`
+  margin: 0 0 ${({ theme }) => theme.spacing?.md || '1rem'} 0;
+`;
+
+const KpisGrid = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.spacing?.md || '1rem'};
+  margin: 0 0 ${({ theme }) => theme.spacing?.lg || '1.5rem'} 0;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints?.lg || '1024px'}) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  @media (max-width: ${({ theme }) => theme.breakpoints?.lg || '1024px'}) and (min-width: ${({ theme }) => theme.breakpoints?.sm || '640px'}) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+`;
+
+const ChartsGrid2 = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.spacing?.md || '1rem'};
+  margin: 0 0 ${({ theme }) => theme.spacing?.lg || '1.5rem'} 0;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints?.lg || '1024px'}) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const ChartsGrid3 = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.spacing?.md || '1rem'};
+  margin: 0 0 ${({ theme }) => theme.spacing?.lg || '1.5rem'} 0;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints?.lg || '1024px'}) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const TablesGrid = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.spacing?.md || '1rem'};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints?.lg || '1024px'}) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const SectionTitle = styled.h3`
+  font-size: ${({ theme }) => theme.typography?.fontSize?.lg || '1.125rem'};
+  font-weight: 600;
+  margin: 0;
+`;

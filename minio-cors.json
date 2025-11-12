@@ -1,10 +1,10 @@
 {
   "CORSRules": [
     {
-      "AllowedOrigins": ["*"],
-      "AllowedMethods": ["GET", "HEAD"],
-      "AllowedHeaders": ["*"],
-      "ExposeHeaders": ["ETag", "Content-Length", "Content-Type", "x-amz-request-id"],
+      "AllowedOrigin": ["*"],
+      "AllowedMethod": ["GET", "HEAD"],
+      "AllowedHeader": ["*"],
+      "ExposeHeader": ["ETag", "Content-Length", "Content-Type", "x-amz-request-id"],
       "MaxAgeSeconds": 3600
     }
   ]
