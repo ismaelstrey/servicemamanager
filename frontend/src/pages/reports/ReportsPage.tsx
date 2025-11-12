@@ -13,11 +13,12 @@ import {
   Title,
   Tooltip,
   Legend,
+  type ChartData,
 } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const TicketsInlineBar: React.FC<{ data: any }> = ({ data }) => {
+const TicketsInlineBar: React.FC<{ data: ChartData<'bar'> }> = ({ data }) => {
   const options = {
     responsive: true,
     plugins: { legend: { position: 'bottom' as const }, title: { display: false } },
@@ -43,8 +44,24 @@ export function ReportsPage(): React.ReactElement {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<{ kpis: Array<{ label: string; value: number }> } | null>(null);
-  const [tickets, setTickets] = useState<Array<{ id: number; status: string; createdAt: string }>>([]);
-  const [serviceOrders, setServiceOrders] = useState<Array<{ id: number; status: string; scheduledAt: string }>>([]);
+  type TicketItem = {
+    id: number;
+    status: string;
+    createdAt: string;
+    priority?: string | null;
+    assigneeId?: number | null;
+    customerId?: number | null;
+  };
+  type ServiceOrderItem = {
+    id: number;
+    status: string;
+    scheduledAt: string;
+    priority?: string | null;
+    assigneeId?: number | null;
+    customerId?: number | null;
+  };
+  const [tickets, setTickets] = useState<Array<TicketItem>>([]);
+  const [serviceOrders, setServiceOrders] = useState<Array<ServiceOrderItem>>([]);
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [status, setStatus] = useState<string>('');
@@ -81,8 +98,8 @@ export function ReportsPage(): React.ReactElement {
           setTickets(t);
           setServiceOrders(so);
         }
-      } catch (err: any) {
-        if (!cancelled) setError(err?.message ?? 'Falha ao carregar relatórios');
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Falha ao carregar relatórios');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -91,7 +108,7 @@ export function ReportsPage(): React.ReactElement {
     return () => {
       cancelled = true;
     };
-  }, [getReportsSummary, getTicketsReport, getServiceOrdersReport, startDate, endDate, status, tag, assigneeId, customerId, priority]);
+  }, [getReportsSummary, getTicketsReport, getServiceOrdersReport, startDate, endDate, status, tag, assigneeId, customerId, priority, providerId]);
 
   // Nota: manter simples para scaffolding; implementar carregamento real depois.
   const handleExportCsv = async () => {
@@ -261,12 +278,12 @@ export function ReportsPage(): React.ReactElement {
           {(() => {
             const counts: Record<string, number> = {};
             for (const t of tickets) {
-              const p = (t as any).priority ?? 'não informado';
+              const p = t.priority ?? 'não informado';
               counts[p] = (counts[p] ?? 0) + 1;
             }
             const labels = Object.keys(counts);
             const values = labels.map((l) => counts[l]);
-            const data = {
+            const data: ChartData<'bar'> = {
               labels,
               datasets: [{ label: 'Tickets', data: values, backgroundColor: '#3b82f6' }],
             };
@@ -278,12 +295,12 @@ export function ReportsPage(): React.ReactElement {
           {(() => {
             const counts: Record<string, number> = {};
             for (const t of tickets) {
-              const tech = (t as any).assigneeId != null ? `#${(t as any).assigneeId}` : 'não informado';
+              const tech = t.assigneeId != null ? `#${t.assigneeId}` : 'não informado';
               counts[tech] = (counts[tech] ?? 0) + 1;
             }
             const labels = Object.keys(counts);
             const values = labels.map((l) => counts[l]);
-            const data = {
+            const data: ChartData<'bar'> = {
               labels,
               datasets: [{ label: 'Tickets', data: values, backgroundColor: '#10b981' }],
             };
@@ -295,12 +312,12 @@ export function ReportsPage(): React.ReactElement {
           {(() => {
             const counts: Record<string, number> = {};
             for (const t of tickets) {
-              const cust = (t as any).customerId != null ? `#${(t as any).customerId}` : 'não informado';
+              const cust = t.customerId != null ? `#${t.customerId}` : 'não informado';
               counts[cust] = (counts[cust] ?? 0) + 1;
             }
             const labels = Object.keys(counts);
             const values = labels.map((l) => counts[l]);
-            const data = {
+            const data: ChartData<'bar'> = {
               labels,
               datasets: [{ label: 'Tickets', data: values, backgroundColor: '#f59e0b' }],
             };
@@ -315,12 +332,12 @@ export function ReportsPage(): React.ReactElement {
           {(() => {
             const counts: Record<string, number> = {};
             for (const so of serviceOrders) {
-              const p = (so as any).priority ?? 'não informado';
+              const p = so.priority ?? 'não informado';
               counts[p] = (counts[p] ?? 0) + 1;
             }
             const labels = Object.keys(counts);
             const values = labels.map((l) => counts[l]);
-            const data = {
+            const data: ChartData<'bar'> = {
               labels,
               datasets: [{ label: 'OS', data: values, backgroundColor: '#6366f1' }],
             };
@@ -332,12 +349,12 @@ export function ReportsPage(): React.ReactElement {
           {(() => {
             const counts: Record<string, number> = {};
             for (const so of serviceOrders) {
-              const tech = (so as any).assigneeId != null ? `#${(so as any).assigneeId}` : 'não informado';
+              const tech = so.assigneeId != null ? `#${so.assigneeId}` : 'não informado';
               counts[tech] = (counts[tech] ?? 0) + 1;
             }
             const labels = Object.keys(counts);
             const values = labels.map((l) => counts[l]);
-            const data = {
+            const data: ChartData<'bar'> = {
               labels,
               datasets: [{ label: 'OS', data: values, backgroundColor: '#22c55e' }],
             };
@@ -349,12 +366,12 @@ export function ReportsPage(): React.ReactElement {
           {(() => {
             const counts: Record<string, number> = {};
             for (const so of serviceOrders) {
-              const cust = (so as any).customerId != null ? `#${(so as any).customerId}` : 'não informado';
+              const cust = so.customerId != null ? `#${so.customerId}` : 'não informado';
               counts[cust] = (counts[cust] ?? 0) + 1;
             }
             const labels = Object.keys(counts);
             const values = labels.map((l) => counts[l]);
-            const data = {
+            const data: ChartData<'bar'> = {
               labels,
               datasets: [{ label: 'OS', data: values, backgroundColor: '#f97316' }],
             };
