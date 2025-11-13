@@ -15,4 +15,8 @@ Bem-vindo à documentação do sistema TelecomAI. Navegue pelos tópicos abaixo:
 - [PM2](./pm2.md)
 - [Swagger](./swagger.md)
 
+## Status Geral
+- [Status do Backend](../backendStatus.md)
+- [Status do Frontend](../frontendStatus.md)
+
 Cada documento segue padrões do projeto: TypeScript, camelCase, hooks para API, Tailwind v4 e comentários em português.

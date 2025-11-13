@@ -12,7 +12,14 @@ export function HelpPage(): React.ReactElement {
       <ul className="list-disc pl-6">
         {topics.map((t) => (
           <li key={t.id} className="mb-2">
-            <span className="font-medium mr-2">{t.title}</span>
+            <a
+              className="font-medium mr-2 text-blue-600 hover:underline"
+              href={`/${t.path}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t.title}
+            </a>
             <span className="text-gray-500">{t.path}</span>
           </li>
         ))}

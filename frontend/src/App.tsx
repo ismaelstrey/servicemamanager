@@ -44,6 +44,9 @@ const ClientServiceOrderDetailsPage = lazy(() => import('./pages/client/ServiceO
 const TemplateShowcase = lazy(() => import('./pages/templates/TemplateShowcase'))
 const ResponsiveLayoutShowcase = lazy(() => import('./pages/layout/ResponsiveLayoutShowcase'))
 const EquipmentsPage = lazy(() => import('./pages/equipments').then(m => ({ default: m.EquipmentsPage })))
+const UsersListPage = lazy(() => import('./pages/users/UsersListPage').then(m => ({ default: m.UsersListPage })))
+const UserFormPage = lazy(() => import('./pages/users/UserFormPage').then(m => ({ default: m.UserFormPage })))
+const CustomersListPage = lazy(() => import('./pages/customers/CustomersListPage').then(m => ({ default: m.CustomersListPage })))
 
 // Layout
 import { Layout } from './components/layout'
@@ -275,6 +278,48 @@ const App: React.FC = () => {
                 <ProtectedRoute>
                   <Layout>
                     <ReportsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Users */}
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <UsersListPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users/new"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <UserFormPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <UserFormPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Customers */}
+            <Route
+              path="/customers"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CustomersListPage />
                   </Layout>
                 </ProtectedRoute>
               }

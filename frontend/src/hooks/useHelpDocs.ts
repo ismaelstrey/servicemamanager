@@ -10,6 +10,8 @@ export interface HelpTopic {
 export function useHelpDocs(): HelpTopic[] {
   // Lista estática de tópicos baseada na estrutura criada em docs/help
   return [
+    { id: 'backendStatus', title: 'Status do Backend', path: 'docs/backendStatus.md' },
+    { id: 'frontendStatus', title: 'Status do Frontend', path: 'docs/frontendStatus.md' },
     { id: 'overview', title: 'Visão Geral', path: 'docs/help/overview.md' },
     { id: 'auth', title: 'Autenticação', path: 'docs/help/auth.md' },
     { id: 'tickets', title: 'Tickets', path: 'docs/help/tickets.md' },
