@@ -7,7 +7,6 @@ import type { CustomerListItem } from '../../services/customerService';
 export function CustomersListPage(): React.ReactElement {
   const { searchCustomers } = useCustomers();
   const [items, setItems] = useState<CustomerListItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState<string>('');
   const [page, setPage] = useState<number>(1);
@@ -16,15 +15,12 @@ export function CustomersListPage(): React.ReactElement {
 
   const load = async () => {
     try {
-      setLoading(true);
       setError(null);
       const res = await searchCustomers(search, page, limit);
       setItems(res.items);
       setTotal(res.total);
     } catch (e) {
       setError('Falha ao carregar clientes');
-    } finally {
-      setLoading(false);
     }
   };
 

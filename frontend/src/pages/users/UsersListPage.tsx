@@ -1,19 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 import { useUsers, type UserListItem } from '../../hooks/useUsers';
 import { DataTable, type Column } from '../../components/ui/DataTable';
-import { Button, Modal, Input, Pagination, Alert } from '../../components/ui';
+import { Button, Modal, Input, Pagination, Alert, SearchBox } from '../../components/ui';
+import ListTemplate from '../../components/templates/ListTemplate/ListTemplate';
 
 export function UsersListPage(): React.ReactElement {
   const navigate = useNavigate();
   const { listUsers, updateUser, disableUser } = useUsers();
 
   const [items, setItems] = useState<UserListItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [totalItems, setTotalItems] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState<string>('');
   const [page, setPage] = useState<number>(1);
-  const [limit, setLimit] = useState<number>(10);
+  const [limit] = useState<number>(10);
 
   const [passwordModalOpen, setPasswordModalOpen] = useState<boolean>(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
@@ -21,21 +23,19 @@ export function UsersListPage(): React.ReactElement {
 
   const load = async () => {
     try {
-      setLoading(true);
       setError(null);
       const data = await listUsers();
       const filtered = search.trim()
         ? data.filter((u) =>
-            [u.name, u.email].some((v) => v?.toLowerCase().includes(search.toLowerCase()))
-          )
+          [u.name, u.email].some((v) => v?.toLowerCase().includes(search.toLowerCase()))
+        )
         : data;
+      setTotalItems(filtered.length);
       const start = (page - 1) * limit;
       const end = start + limit;
       setItems(filtered.slice(start, end));
     } catch (err: any) {
       setError('Falha ao carregar usuários');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -43,7 +43,12 @@ export function UsersListPage(): React.ReactElement {
     load();
   }, [page, limit]);
 
-  const total = useMemo(() => items.length + ((page - 1) * limit), [items, page, limit]);
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(totalItems / limit)), [totalItems, limit]);
+
+  const ActionsCell = styled.div`
+    display: flex;
+    gap: ${({ theme }) => theme.spacing.xs};
+  `;
 
   const columns: Column<UserListItem>[] = [
     { key: 'id', header: 'ID', width: 80 },
@@ -56,11 +61,11 @@ export function UsersListPage(): React.ReactElement {
       header: 'Ações',
       width: 300,
       render: (r) => (
-        <div style={{ display: 'flex', gap: 8 }}>
+        <ActionsCell>
           <Button variant="primary" size="sm" onClick={() => navigate(`/users/${r.id}`)}>Editar</Button>
           <Button variant="secondary" size="sm" onClick={() => navigate(`/users/${r.id}`)}>Visualizar</Button>
           <Button
-            variant={r.active ? 'danger' : 'success'}
+            variant={r.active ? 'danger' : 'accent'}
             size="sm"
             onClick={async () => {
               try {
@@ -84,41 +89,38 @@ export function UsersListPage(): React.ReactElement {
           >
             Alterar Senha
           </Button>
-        </div>
+        </ActionsCell>
       ),
     },
   ];
 
   return (
-    <div className="p-6">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div>
-          <h1 className="text-2xl font-semibold">Usuários</h1>
-          <p className="text-sm text-gray-600">Gerencie usuários, perfis e permissões.</p>
-        </div>
-        <Button variant="success" onClick={() => navigate('/users/new')}>Cadastrar Usuário</Button>
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        <Input placeholder="Buscar por nome ou email" value={search} onChange={(e: any) => setSearch(e.target.value)} />
-        <Button onClick={() => { setPage(1); load(); }}>Buscar</Button>
-      </div>
-
-      {error && <Alert variant="danger" title="Erro">{error}</Alert>}
-
-      <DataTable columns={columns} data={items} style={{ marginTop: 8 }} />
-
-      <div style={{ marginTop: 12 }}>
-        <Pagination
-          page={page as any}
-          total={total as any}
-          pageSize={limit as any}
-          onPageChange={(p: number) => setPage(p)}
-          onPageSizeChange={(s: number) => { setLimit(s); setPage(1); }}
+    <ListTemplate
+      heading="Usuários"
+      actions={(
+        <Button variant="primary" onClick={() => navigate('/users/new')}>Cadastrar Usuário</Button>
+      )}
+      toolbar={(
+        <SearchBox
+          value={search}
+          onChange={(e: any) => setSearch(e.target.value)}
+          onSearch={() => { setPage(1); load(); }}
+          onClear={() => { setSearch(''); setPage(1); load(); }}
+          placeholder="Buscar por nome ou email"
         />
-      </div>
+      )}
+      footer={(
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={(p: number) => setPage(p)}
+        />
+      )}
+    >
+      {error && <Alert variant="danger" title="Erro">{error}</Alert>}
+      <DataTable columns={columns} data={items} />
 
-      <Modal open={passwordModalOpen} onClose={() => setPasswordModalOpen(false)} title="Alterar Senha">
+      <Modal isOpen={passwordModalOpen} onClose={() => setPasswordModalOpen(false)} title="Alterar Senha">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <Input type="password" placeholder="Nova senha" value={newPassword} onChange={(e: any) => setNewPassword(e.target.value)} />
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
@@ -141,7 +143,7 @@ export function UsersListPage(): React.ReactElement {
           </div>
         </div>
       </Modal>
-    </div>
+    </ListTemplate>
   );
 }
 
