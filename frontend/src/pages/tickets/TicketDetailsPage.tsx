@@ -7,7 +7,9 @@ import {
   Tabs, Tab, TabList, TabPanels, TabPanel,
   Spinner, Alert,
   Modal, ModalHeader, ModalBody, ModalFooter,
-  Toast
+  Toast,
+  Select,
+  TextArea
 } from '../../components/ui';
 import { ApiService } from '../../services/api';
 import TicketService from '../../services/ticketService';
@@ -136,6 +138,12 @@ const InputRow = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.sm};
   align-items: center;
+`;
+
+const ModalForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
 const StyledInput = styled.input`
@@ -698,93 +706,53 @@ export function TicketDetailsPage() {
       />
 
       {/* Comment Modal */}
-      <Modal
-        isOpen={showCommentModal}
-        onClose={() => setShowCommentModal(false)}
-        size="md"
-      >
+      <Modal isOpen={showCommentModal} onClose={() => setShowCommentModal(false)} size="md">
         <ModalHeader>
           <h3>Adicionar Comentário</h3>
         </ModalHeader>
         <ModalBody>
-          <textarea
-            className="ticket-details__comment-textarea"
-            placeholder="Digite seu comentário..."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            rows={4}
-          />
+          <ModalForm>
+            <TextArea
+              label="Comentário"
+              placeholder="Digite seu comentário..."
+              value={newComment}
+              onChange={(e: any) => setNewComment(e.target.value)}
+              rows={4 as any}
+              fullWidth
+            />
+          </ModalForm>
         </ModalBody>
         <ModalFooter>
-          <Button
-            variant="primary"
-            onClick={() => setShowCommentModal(false)}
-            disabled={commentLoading}
-          >
-            Cancelar
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleAddComment}
-            disabled={!newComment.trim() || commentLoading}
-            loading={commentLoading}
-          >
-            Adicionar Comentário
-          </Button>
+          <Button variant="secondary" onClick={() => setShowCommentModal(false)} disabled={commentLoading}>Cancelar</Button>
+          <Button variant="primary" onClick={handleAddComment} disabled={!newComment.trim() || commentLoading} loading={commentLoading}>Adicionar Comentário</Button>
         </ModalFooter>
       </Modal>
 
       {/* Status Update Modal */}
-      <Modal
-        isOpen={showStatusModal}
-        onClose={() => setShowStatusModal(false)}
-        size="md"
-      >
+      <Modal isOpen={showStatusModal} onClose={() => setShowStatusModal(false)} size="md">
         <ModalHeader>
           <h3>Alterar Status</h3>
         </ModalHeader>
         <ModalBody>
-          <div className="ticket-details__status-form">
-            <div className="ticket-details__form-group">
-              <label>Novo Status:</label>
-              <select
-                value={newStatus}
-                onChange={(e) => setNewStatus(e.target.value as TicketStatus)}
-                className="ticket-details__select"
-              >
-                {Object.entries(statusLabels).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="ticket-details__form-group">
-              <label>Comentário (opcional):</label>
-              <textarea
-                className="ticket-details__comment-textarea"
-                placeholder="Adicione um comentário sobre a mudança de status..."
-                value={statusUpdateNote}
-                onChange={(e) => setStatusUpdateNote(e.target.value)}
-                rows={3}
-              />
-            </div>
-          </div>
+          <ModalForm>
+            <Select label="Novo Status" value={newStatus} onChange={(e) => setNewStatus(e.target.value as TicketStatus)} fullWidth>
+              {Object.entries(statusLabels).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </Select>
+            <TextArea
+              label="Comentário (opcional)"
+              placeholder="Adicione um comentário sobre a mudança de status..."
+              value={statusUpdateNote}
+              onChange={(e: any) => setStatusUpdateNote(e.target.value)}
+              rows={3 as any}
+              fullWidth
+            />
+          </ModalForm>
         </ModalBody>
         <ModalFooter>
-          <Button
-            variant="primary"
-            onClick={() => setShowStatusModal(false)}
-            disabled={statusLoading}
-          >
-            Cancelar
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleStatusUpdate}
-            disabled={statusLoading}
-            loading={statusLoading}
-          >
-            Alterar Status
-          </Button>
+          <Button variant="secondary" onClick={() => setShowStatusModal(false)} disabled={statusLoading}>Cancelar</Button>
+          <Button variant="primary" onClick={handleStatusUpdate} disabled={statusLoading} loading={statusLoading}>Alterar Status</Button>
         </ModalFooter>
       </Modal>
     </TicketDetailsWrapper>
