@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { StatsCard, RecentTickets, RecentServiceOrders, QuickActions, createQuickActions } from '../components/dashboard';
-import { Spinner, Alert, ChartContainer, Toast } from '../components/ui';
+import { LogoLoader, Alert, ChartContainer, Toast } from '../components/ui';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import type { Ticket } from '../types/ticket';
 import type { ServiceOrder } from '../types/serviceOrder';
@@ -295,11 +295,7 @@ export function DashboardPage() {
   };
 
   if (loading) {
-    return (
-      <div className="dashboard dashboard--loading">
-        <Spinner size="lg" centered label="Carregando dashboard..." />
-      </div>
-    );
+    return <LogoLoader fullscreen message="Carregando dashboard..." />;
   }
 
   // Visão global está sempre disponível — não há estado de provedor ausente aqui.

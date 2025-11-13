@@ -1,6 +1,6 @@
 import type React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { Button, Spinner } from '../../components/ui';
+import { Button, LogoLoader } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import type { UserRole } from '../../types/auth';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -23,12 +23,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Mostrar loading enquanto verifica autenticação
   if (loading) {
-    return (
-      <div>
-        <Spinner />
-        <p>Verificando autenticação...</p>
-      </div>
-    );
+    return <LogoLoader fullscreen message="Verificando autenticação..." />;
   }
 
   // Se não estiver logado, redirecionar para login

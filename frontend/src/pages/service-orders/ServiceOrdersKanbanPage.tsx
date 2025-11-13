@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import styled from 'styled-components';
+import { decodeJwt } from '../../utils/jwt';
 import KanbanBoard from '../../components/kanban/KanbanBoard';
 import { ApiService } from '../../services/api';
 import ServiceOrderService from '../../services/serviceOrderService';
-import { Button, Spinner } from '../../components/ui';
+import { Button, Alert, LogoLoader } from '../../components/ui';
 
 type KanbanBoardData = Record<string, { id: number; title: string; priority: 'low' | 'medium' | 'high' | 'urgent' | 'critical'; updatedAt: string | Date }[]>;
 
@@ -18,6 +20,32 @@ const statusLabels: Record<string, string> = {
 
 const columnOrder = ['pending', 'in_progress', 'waiting_parts', 'waiting_client', 'completed', 'cancelled'];
 
+const PageWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.lg};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const Title = styled.h2`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.text.primary};
+  font-size: ${({ theme }) => theme.typography.ui.subtitle.fontSize};
+  font-weight: ${({ theme }) => theme.typography.ui.subtitle.fontWeight};
+`;
+
+const ActionsRow = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
 const ServiceOrdersKanbanPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -28,7 +56,12 @@ const ServiceOrdersKanbanPage: React.FC = () => {
   const providerId = useMemo(() => {
     const fromQuery = searchParams.get('provider');
     if (fromQuery) return parseInt(fromQuery);
-    return undefined;
+    const saved = localStorage.getItem('selectedProviderId');
+    if (saved && saved !== 'global') return parseInt(saved);
+    const token = localStorage.getItem('token');
+    const payload = decodeJwt(token ?? undefined);
+    const pid = (payload as any)?.providerId;
+    return typeof pid === 'number' ? pid : undefined;
   }, [searchParams]);
 
   useEffect(() => {
@@ -36,7 +69,10 @@ const ServiceOrdersKanbanPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const url = providerId ? `/service-orders/kanban?providerId=${providerId}` : `/service-orders/kanban`;
+        if (!providerId) {
+          throw { response: { data: { message: 'providerId obrigatório para Kanban' } } };
+        }
+        const url = `/service-orders/kanban?providerId=${providerId}`;
         const res = await ApiService.get<KanbanBoardData>(url);
         setBoard(res.data || {});
       } catch (err: any) {
@@ -90,27 +126,25 @@ const ServiceOrdersKanbanPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <Spinner />
-        <span>Carregando Kanban de Ordens de Serviço...</span>
-      </div>
-    );
+    return <LogoLoader fullscreen message="Carregando Kanban de Ordens de Serviço..." />;
   }
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Ordens de Serviço — Kanban</h2>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+    <PageWrapper>
+      <HeaderRow>
+        <Title>Ordens de Serviço — Kanban</Title>
+        <ActionsRow>
           <Button variant="secondary" onClick={() => navigate('/service-orders')}>Lista de OS</Button>
           <Button onClick={() => {
-            const url = providerId ? `/service-orders/kanban?providerId=${providerId}` : `/service-orders/kanban`;
+            const url = providerId ? `/service-orders/kanban?providerId=${providerId}` : undefined;
+            if (!url) { setError('providerId obrigatório para Kanban'); return; }
             setLoading(true);
             ApiService.get<KanbanBoardData>(url).then(r => setBoard(r.data || {})).finally(() => setLoading(false));
           }}>Recarregar</Button>
-        </div>
-      </div>
+        </ActionsRow>
+      </HeaderRow>
+
+      {error && (<Alert variant="danger">{error}</Alert>)}
 
       <KanbanBoard
         board={board}
@@ -121,7 +155,7 @@ const ServiceOrdersKanbanPage: React.FC = () => {
         onError={(msg) => setError(msg)}
         onItemClick={(id) => navigate(`/service-orders/${id}`)}
       />
-    </div>
+    </PageWrapper>
   );
 };
 

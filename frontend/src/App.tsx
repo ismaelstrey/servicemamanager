@@ -50,6 +50,7 @@ const CustomersListPage = lazy(() => import('./pages/customers/CustomersListPage
 
 // Layout
 import { Layout } from './components/layout'
+import { LogoLoader } from './components/ui'
 import ClientProtectedRoute from './components/auth/ClientProtectedRoute'
 import CommandPalette from './components/CommandPalette'
 import ClientPublicRoute from './components/auth/ClientPublicRoute'
@@ -70,16 +71,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const { isAuthenticated, isLoading } = useAuth()
 
   if (isLoading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh'
-      }}>
-        Carregando...
-      </div>
-    )
+    return <LogoLoader fullscreen message="Verificando autenticação..." />
   }
 
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
@@ -90,16 +82,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth()
 
   if (isLoading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh'
-      }}>
-        Carregando...
-      </div>
-    )
+    return <LogoLoader fullscreen message="Verificando autenticação..." />
   }
 
   return !isAuthenticated ? <>{children}</> : <Navigate to="/dashboard" replace />
@@ -111,7 +94,7 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ClientAuthProvider>
-            <Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'60vh'}}>Carregando...</div>}>
+            <Suspense fallback={<LogoLoader fullscreen message="Carregando..." />}>
             <Routes>
             {/* Rotas públicas */}
             <Route

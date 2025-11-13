@@ -9,7 +9,7 @@ import {
   TextArea, 
   Select,
   Alert,
-  Spinner,
+  LogoLoader,
   Dropdown,
   DropdownItem
 } from '../../components/ui';
@@ -465,11 +465,7 @@ export function ServiceOrderDetailsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="service-order-details-page service-order-details-page--loading">
-        <Spinner size="lg" centered label="Carregando ordem de serviço..." />
-      </div>
-    );
+    return <LogoLoader fullscreen message="Carregando ordem de serviço..." />;
   }
 
   if (error || !serviceOrder) {
