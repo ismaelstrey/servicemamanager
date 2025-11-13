@@ -1,7 +1,51 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Card, Button, Badge, Spinner, Alert } from '../../components/ui';
-import ServiceOrderService from '../../services/serviceOrderService';
+import styled from 'styled-components';
+import { Card, Button, Badge, Alert, LogoLoader } from '../../components/ui';
+import { ApiService } from '../../services/api';
+import { decodeJwt } from '../../utils/jwt';
 import type { ServiceOrder } from '../../services/serviceOrderService';
+
+const PageWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.lg};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const MonthBox = styled(Card)`
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
+` as any;
+
+const WeekHeader = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  text-align: center;
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+`;
+
+const CalendarGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const DayCell = styled.div`
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  padding: ${({ theme }) => theme.spacing.xs};
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
 
 // Página de calendário de Ordens de Serviço com navegação mensal
 const ServiceOrdersCalendarPage: React.FC = () => {
@@ -9,22 +53,50 @@ const ServiceOrdersCalendarPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>([]);
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [providerId, setProviderId] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const resolveProvider = () => {
+      const saved = localStorage.getItem('selectedProviderId');
+      if (saved && saved !== 'global') return Number(saved);
+      const token = localStorage.getItem('token');
+      const payload = decodeJwt(token ?? undefined);
+      const pid = (payload as any)?.providerId;
+      return typeof pid === 'number' ? pid : undefined;
+    };
+    setProviderId(resolveProvider());
+  }, []);
 
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await ServiceOrderService.getServiceOrders({ page: 1, limit: 100 });
+        if (!providerId || providerId <= 0) {
+          throw new Error('providerId obrigatório para calendário');
+        }
+        const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+        const formatDate = (d: Date) => {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}`;
+        };
+        const res = await ApiService.get<ServiceOrder[]>(
+          '/service-orders/calendar',
+          { params: { id: providerId, from: formatDate(start), to: formatDate(end) } }
+        );
         setServiceOrders(res.data || []);
-      } catch (e) {
-        setError('Erro ao carregar ordens de serviço para o calendário.');
+      } catch (e: any) {
+        const msg = e?.response?.data?.message || e?.message || 'Erro ao carregar ordens de serviço para o calendário.';
+        setError(msg);
       } finally {
         setIsLoading(false);
       }
     };
     load();
-  }, []);
+  }, [providerId, currentMonth]);
 
   const monthLabel = useMemo(() => {
     return currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
@@ -84,15 +156,15 @@ const ServiceOrdersCalendarPage: React.FC = () => {
   };
 
   return (
-    <div className="service-orders-page" style={{ padding: '1rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+    <PageWrapper>
+      <HeaderRow>
         <h1 style={{ margin: 0 }}>Calendário de Ordens de Serviço</h1>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <Button variant="outline" onClick={prevMonth}>◀ Mês anterior</Button>
-          <Card><div style={{ padding: '0.5rem 0.75rem' }}>{monthLabel}</div></Card>
+          <MonthBox>{monthLabel}</MonthBox>
           <Button variant="outline" onClick={nextMonth}>Mês seguinte ▶</Button>
         </div>
-      </div>
+      </HeaderRow>
 
       {error && (
         <Alert variant="danger" title="Erro" onDismiss={() => setError(null)}>
@@ -100,20 +172,17 @@ const ServiceOrdersCalendarPage: React.FC = () => {
         </Alert>
       )}
 
-      <Card>
-        {isLoading ? (
-          <div className="loading-container">
-            <Spinner />
-            <p>Carregando calendário...</p>
-          </div>
-        ) : (
+      {isLoading ? (
+        <LogoLoader fullscreen message="Carregando calendário..." />
+      ) : (
+        <Card>
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <WeekHeader>
               {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((w) => (
-                <div key={w} style={{ textAlign: 'center', fontWeight: 600 }}>{w}</div>
+                <div key={w}>{w}</div>
               ))}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem' }}>
+            </WeekHeader>
+            <CalendarGrid>
               {Array.from({ length: firstWeekdayIndex }).map((_, idx) => (
                 <div key={`empty-${idx}`} style={{ minHeight: '100px' }} />
               ))}
@@ -121,7 +190,7 @@ const ServiceOrdersCalendarPage: React.FC = () => {
                 const day = idx + 1;
                 const items = ordersByDay[day] || [];
                 return (
-                  <div key={`day-${day}`} style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.5rem', minHeight: '120px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <DayCell key={`day-${day}`}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <strong>{String(day).padStart(2, '0')}</strong>
                       {items.length > 0 && <Badge variant="info" size="sm">{items.length}</Badge>}
@@ -134,14 +203,14 @@ const ServiceOrdersCalendarPage: React.FC = () => {
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </DayCell>
                 );
               })}
-            </div>
+            </CalendarGrid>
           </div>
-        )}
-      </Card>
-    </div>
+        </Card>
+      )}
+    </PageWrapper>
   );
 };
 
