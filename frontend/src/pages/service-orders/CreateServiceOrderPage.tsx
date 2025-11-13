@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { Card, Alert, Button } from '../../components/ui';
+import { Card, Alert, Button, Heading } from '../../components/ui';
 import { ServiceOrderForm as ServiceOrderFormComponent } from '../../components/forms';
 import type { ServiceOrderFormData } from '../../components/forms/ServiceOrderForm';
 
@@ -65,34 +66,35 @@ const CreateServiceOrderPage: React.FC = () => {
     }
   };
 
+  const PageWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacing.lg};
+  `;
+
+  const HeaderRow = styled.div`
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing.sm};
+  `;
+
+  const Content = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.sm};
+  `;
+
   return (
-    <div className="create-service-order-page">
-      <div className="page-header">
-        <div className="header-content">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/service-orders')}
-            className="back-button"
-          >
-            ← Voltar
-          </Button>
-          <h1>Nova Ordem de Serviço</h1>
-        </div>
-      </div>
+    <PageWrapper>
+      <HeaderRow>
+        <Button variant="ghost" size="sm" onClick={() => navigate('/service-orders')}>← Voltar</Button>
+        <Heading level={1}>Nova Ordem de Serviço</Heading>
+      </HeaderRow>
 
-      <div className="page-content">
-        {error && (
-          <Alert variant="error" className="mb-4">
-            {error}
-          </Alert>
-        )}
-
-        {success && (
-          <Alert variant="success" className="mb-4">
-            {success}
-          </Alert>
-        )}
+      <Content>
+        {error && (<Alert variant="error">{error}</Alert>)}
+        {success && (<Alert variant="success">{success}</Alert>)}
 
         <Card>
           <ServiceOrderFormComponent
@@ -103,8 +105,8 @@ const CreateServiceOrderPage: React.FC = () => {
             submitButtonText="Criar Ordem de Serviço"
           />
         </Card>
-      </div>
-    </div>
+      </Content>
+    </PageWrapper>
   );
 };
 

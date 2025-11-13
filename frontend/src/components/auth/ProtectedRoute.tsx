@@ -1,5 +1,6 @@
 import type React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { Button, Spinner } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import type { UserRole } from '../../types/auth';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -23,11 +24,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Mostrar loading enquanto verifica autenticação
   if (loading) {
     return (
-      <div className="protected-route-loading">
-        <div className="spinner-container">
-          <div className="spinner"></div>
-          <p>Verificando autenticação...</p>
-        </div>
+      <div>
+        <Spinner />
+        <p>Verificando autenticação...</p>
       </div>
     );
   }
@@ -60,12 +59,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
               <p><strong>Roles necessárias:</strong> {requiredRoles.join(', ')}</p>
               <p><strong>Sua role:</strong> {user.role}</p>
             </div>
-            <button
-              className="btn btn--secondary"
-              onClick={() => window.history.back()}
-            >
-              Voltar
-            </button>
+            <Button variant="secondary" onClick={() => window.history.back()}>Voltar</Button>
           </div>
         </div>
       );
@@ -87,12 +81,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
             <div className="access-denied__info">
               <p><strong>Permissões necessárias:</strong> {requiredPermissions.join(', ')}</p>
             </div>
-            <button
-              className="btn btn--secondary"
-              onClick={() => window.history.back()}
-            >
-              Voltar
-            </button>
+            <Button variant="secondary" onClick={() => window.history.back()}>Voltar</Button>
           </div>
         </div>
       );

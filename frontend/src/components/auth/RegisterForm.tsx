@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import styled from 'styled-components';
 import { useAuth } from '../../hooks/useAuth';
 import type { RegisterData } from '../../types/auth';
 import { AuthService } from '../../services/authService';
+import { Input, Button, Alert, Checkbox } from '../../components/ui';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -136,197 +138,172 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     return 'Forte';
   };
 
-  return (
-    <div className="register-form">
-      <div className="register-form__header">
-        <h2>Criar Conta</h2>
-        <p>Preencha os dados para criar sua conta</p>
-      </div>
+  const Wrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.md};
+  `;
 
-      <form onSubmit={handleSubmit} className="register-form__form">
-        {error && (
-          <div className="alert alert--error">
-            {error}
-          </div>
+  const Header = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.xs};
+  `;
+
+  const Title = styled.h2`
+    color: ${({ theme }) => theme.colors.text.primary};
+  `;
+
+  const Description = styled.p`
+    color: ${({ theme }) => theme.colors.text.secondary};
+  `;
+
+  const Form = styled.form`
+    display: flex;
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.sm};
+  `;
+
+  const StrengthBar = styled.div`
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing.xs};
+  `;
+
+  const Bar = styled.div`
+    width: 100%;
+    height: 6px;
+    background: ${({ theme }) => theme.colors.neutral[200]};
+    border-radius: ${({ theme }) => theme.borders.radius.sm};
+    overflow: hidden;
+  `;
+
+  const Fill = styled.div<{ $width: number; $color: string }>`
+    width: ${({ $width }) => `${$width}%`};
+    height: 100%;
+    background: ${({ $color }) => $color};
+  `;
+
+  const Row = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  `;
+
+  return (
+    <Wrapper>
+      <Header>
+        <Title>Criar Conta</Title>
+        <Description>Preencha os dados para criar sua conta</Description>
+      </Header>
+
+      <Form onSubmit={handleSubmit}>
+        {error && (<Alert variant="error">{error}</Alert>)}
+
+        <Input
+          label="Nome Completo"
+          id="name"
+          name="name"
+          value={formData.name}
+          onChange={handleInputChange}
+          placeholder="Seu nome completo"
+          autoComplete="name"
+          disabled={loading}
+          error={formErrors.name || undefined}
+          fullWidth
+        />
+
+        <Input
+          label="Email"
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleInputChange}
+          placeholder="seu@email.com"
+          autoComplete="email"
+          disabled={loading}
+          error={formErrors.email || undefined}
+          fullWidth
+        />
+
+        <Input
+          label="Senha"
+          type={showPassword ? 'text' : 'password'}
+          id="password"
+          name="password"
+          value={formData.password}
+          onChange={handleInputChange}
+          placeholder="Sua senha"
+          autoComplete="new-password"
+          disabled={loading}
+          error={formErrors.password || undefined}
+          rightAddon={(
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowPassword(!showPassword)} disabled={loading}>
+              {showPassword ? 'Ocultar' : 'Mostrar'}
+            </Button>
+          )}
+          fullWidth
+        />
+
+        {passwordStrength && formData.password && (
+          <StrengthBar>
+            <Bar>
+              <Fill $width={(passwordStrength.score / 6) * 100} $color={getPasswordStrengthColor(passwordStrength.score)} />
+            </Bar>
+            <span style={{ color: getPasswordStrengthColor(passwordStrength.score) }}>
+              {getPasswordStrengthText(passwordStrength.score)}
+            </span>
+          </StrengthBar>
         )}
 
-        <div className="form-group">
-          <label htmlFor="name" className="form-label">
-            Nome Completo
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            className={`form-input ${formErrors.name ? 'form-input--error' : ''}`}
-            placeholder="Seu nome completo"
-            autoComplete="name"
-            disabled={loading}
-          />
-          {formErrors.name && (
-            <span className="form-error">{formErrors.name}</span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="email" className="form-label">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            className={`form-input ${formErrors.email ? 'form-input--error' : ''}`}
-            placeholder="seu@email.com"
-            autoComplete="email"
-            disabled={loading}
-          />
-          {formErrors.email && (
-            <span className="form-error">{formErrors.email}</span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="password" className="form-label">
-            Senha
-          </label>
-          <div className="form-input-group">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              className={`form-input ${formErrors.password ? 'form-input--error' : ''}`}
-              placeholder="Sua senha"
-              autoComplete="new-password"
-              disabled={loading}
-            />
-            <button
-              type="button"
-              className="form-input-addon"
-              onClick={() => setShowPassword(!showPassword)}
-              disabled={loading}
-            >
-              {showPassword ? '👁️' : '👁️‍🗨️'}
-            </button>
-          </div>
-          
-          {passwordStrength && formData.password && (
-            <div className="password-strength">
-              <div className="password-strength__bar">
-                <div
-                  className="password-strength__fill"
-                  style={{
-                    width: `${(passwordStrength.score / 6) * 100}%`,
-                    backgroundColor: getPasswordStrengthColor(passwordStrength.score),
-                  }}
-                />
-              </div>
-              <span
-                className="password-strength__text"
-                style={{ color: getPasswordStrengthColor(passwordStrength.score) }}
-              >
-                {getPasswordStrengthText(passwordStrength.score)}
-              </span>
-            </div>
-          )}
-          
-          {formErrors.password && (
-            <span className="form-error">{formErrors.password}</span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="confirmPassword" className="form-label">
-            Confirmar Senha
-          </label>
-          <div className="form-input-group">
-            <input
-              type={showConfirmPassword ? 'text' : 'password'}
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              className={`form-input ${formErrors.confirmPassword ? 'form-input--error' : ''}`}
-              placeholder="Confirme sua senha"
-              autoComplete="new-password"
-              disabled={loading}
-            />
-            <button
-              type="button"
-              className="form-input-addon"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              disabled={loading}
-            >
-              {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-            </button>
-          </div>
-          {formErrors.confirmPassword && (
-            <span className="form-error">{formErrors.confirmPassword}</span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label className="form-checkbox">
-            <input
-              type="checkbox"
-              name="acceptTerms"
-              checked={formData.acceptTerms}
-              onChange={handleInputChange}
-              disabled={loading}
-            />
-            <span className="form-checkbox__checkmark"></span>
-            Aceito os{' '}
-            <a href="/terms" target="_blank" rel="noopener noreferrer">
-              termos de uso
-            </a>{' '}
-            e{' '}
-            <a href="/privacy" target="_blank" rel="noopener noreferrer">
-              política de privacidade
-            </a>
-          </label>
-          {formErrors.acceptTerms && (
-            <span className="form-error">{formErrors.acceptTerms}</span>
-          )}
-        </div>
-
-        <button
-          type="submit"
-          className="btn btn--primary btn--full"
+        <Input
+          label="Confirmar Senha"
+          type={showConfirmPassword ? 'text' : 'password'}
+          id="confirmPassword"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleInputChange}
+          placeholder="Confirme sua senha"
+          autoComplete="new-password"
           disabled={loading}
-        >
-          {loading ? (
-            <>
-              <span className="spinner"></span>
-              Criando conta...
-            </>
-          ) : (
-            'Criar Conta'
+          error={formErrors.confirmPassword || undefined}
+          rightAddon={(
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowConfirmPassword(!showConfirmPassword)} disabled={loading}>
+              {showConfirmPassword ? 'Ocultar' : 'Mostrar'}
+            </Button>
           )}
-        </button>
+          fullWidth
+        />
+
+        <Row>
+          <Checkbox
+            label={(
+              <>
+                Aceito os <a href="/terms" target="_blank" rel="noopener noreferrer">termos de uso</a> e <a href="/privacy" target="_blank" rel="noopener noreferrer">política de privacidade</a>
+              </>
+            ) as any}
+            checked={formData.acceptTerms}
+            onChange={(e) => handleInputChange({ target: { name: 'acceptTerms', type: 'checkbox', checked: (e.target as HTMLInputElement).checked } } as any)}
+            disabled={loading}
+          />
+        </Row>
+        {formErrors.acceptTerms && (<Alert variant="warning">{formErrors.acceptTerms}</Alert>)}
+
+        <Button type="submit" variant="primary" fullWidth disabled={loading}>
+          {loading ? 'Criando conta...' : 'Criar Conta'}
+        </Button>
 
         {onLogin && (
-          <div className="register-form__footer">
+          <div>
             <p>
               Já tem uma conta?{' '}
-              <button
-                type="button"
-                className="link-button"
-                onClick={onLogin}
-                disabled={loading}
-              >
-                Fazer login
-              </button>
+              <Button type="button" variant="link" onClick={onLogin} disabled={loading}>Fazer login</Button>
             </p>
           </div>
         )}
-      </form>
-    </div>
+      </Form>
+    </Wrapper>
   );
 };
 

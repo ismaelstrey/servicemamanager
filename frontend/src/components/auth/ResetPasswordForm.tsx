@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
 import { AuthService } from '../../services/authService';
 import type { ResetPasswordData } from '../../types/auth';
+import { Input, Button, Alert } from '../../components/ui';
 
 interface ResetPasswordFormProps {
   token?: string;
@@ -123,176 +125,143 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
     if (score <= 4) return 'Média';
     return 'Forte';
   };
+  const Wrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.md};
+  `;
+  const Header = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.xs};
+  `;
+  const Title = styled.h2`
+    color: ${({ theme }) => theme.colors.text.primary};
+  `;
+  const Description = styled.p`
+    color: ${({ theme }) => theme.colors.text.secondary};
+  `;
+  const Form = styled.form`
+    display: flex;
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.sm};
+  `;
+  const StrengthBar = styled.div`
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing.xs};
+  `;
+  const Bar = styled.div`
+    width: 100%;
+    height: 6px;
+    background: ${({ theme }) => theme.colors.neutral[200]};
+    border-radius: ${({ theme }) => theme.borders.radius.sm};
+    overflow: hidden;
+  `;
+  const Fill = styled.div<{ $width: number; $color: string }>`
+    width: ${({ $width }) => `${$width}%`};
+    height: 100%;
+    background: ${({ $color }) => $color};
+  `;
 
   if (success) {
     return (
-      <div className="reset-password-form">
-        <div className="reset-password-form__success">
-          <div className="success-icon">✅</div>
-          <h2>Senha Redefinida!</h2>
-          <p>
-            Sua senha foi redefinida com sucesso. Agora você pode fazer login com sua nova senha.
-          </p>
-          {onBack && (
-            <button
-              type="button"
-              className="btn btn--primary"
-              onClick={onBack}
-            >
-              Ir para Login
-            </button>
-          )}
-        </div>
-      </div>
+      <Wrapper>
+        <Alert variant="success" title="Senha Redefinida!">
+          Sua senha foi redefinida com sucesso. Agora você pode fazer login com sua nova senha.
+        </Alert>
+        {onBack && (
+          <Button type="button" variant="primary" onClick={onBack}>Ir para Login</Button>
+        )}
+      </Wrapper>
     );
   }
 
   return (
-    <div className="reset-password-form">
-      <div className="reset-password-form__header">
-        <h2>Redefinir Senha</h2>
-        <p>Digite sua nova senha</p>
-      </div>
+    <Wrapper>
+      <Header>
+        <Title>Redefinir Senha</Title>
+        <Description>Digite sua nova senha</Description>
+      </Header>
 
-      <form onSubmit={handleSubmit} className="reset-password-form__form">
-        {error && (
-          <div className="alert alert--error">
-            {error}
-          </div>
-        )}
+      <Form onSubmit={handleSubmit}>
+        {error && (<Alert variant="error">{error}</Alert>)}
 
         {!token && (
-          <div className="form-group">
-            <label htmlFor="token" className="form-label">
-              Token de Recuperação
-            </label>
-            <input
-              type="text"
-              id="token"
-              name="token"
-              value={formData.token}
-              onChange={handleInputChange}
-              className={`form-input ${formErrors.token ? 'form-input--error' : ''}`}
-              placeholder="Cole aqui o token recebido por email"
-              disabled={loading}
-            />
-            {formErrors.token && (
-              <span className="form-error">{formErrors.token}</span>
-            )}
-          </div>
+          <Input
+            label="Token de Recuperação"
+            id="token"
+            name="token"
+            value={formData.token}
+            onChange={handleInputChange}
+            placeholder="Cole aqui o token recebido por email"
+            disabled={loading}
+            error={(formErrors as any).token || undefined}
+            fullWidth
+          />
         )}
 
-        <div className="form-group">
-          <label htmlFor="password" className="form-label">
-            Nova Senha
-          </label>
-          <div className="form-input-group">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              className={`form-input ${formErrors.password ? 'form-input--error' : ''}`}
-              placeholder="Sua nova senha"
-              autoComplete="new-password"
-              disabled={loading}
-            />
-            <button
-              type="button"
-              className="form-input-addon"
-              onClick={() => setShowPassword(!showPassword)}
-              disabled={loading}
-            >
-              {showPassword ? '👁️' : '👁️‍🗨️'}
-            </button>
-          </div>
+        <Input
+          label="Nova Senha"
+          type={showPassword ? 'text' : 'password'}
+          id="password"
+          name="password"
+          value={formData.password}
+          onChange={handleInputChange}
+          placeholder="Sua nova senha"
+          autoComplete="new-password"
+          disabled={loading}
+          error={formErrors.password || undefined}
+          rightAddon={(
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowPassword(!showPassword)} disabled={loading}>
+              {showPassword ? 'Ocultar' : 'Mostrar'}
+            </Button>
+          )}
+          fullWidth
+        />
           
           {passwordStrength && formData.password && (
-            <div className="password-strength">
-              <div className="password-strength__bar">
-                <div
-                  className="password-strength__fill"
-                  style={{
-                    width: `${(passwordStrength.score / 6) * 100}%`,
-                    backgroundColor: getPasswordStrengthColor(passwordStrength.score),
-                  }}
-                />
-              </div>
-              <span
-                className="password-strength__text"
-                style={{ color: getPasswordStrengthColor(passwordStrength.score) }}
-              >
+            <StrengthBar>
+              <Bar>
+                <Fill $width={(passwordStrength.score / 6) * 100} $color={getPasswordStrengthColor(passwordStrength.score)} />
+              </Bar>
+              <span style={{ color: getPasswordStrengthColor(passwordStrength.score) }}>
                 {getPasswordStrengthText(passwordStrength.score)}
               </span>
-            </div>
+            </StrengthBar>
           )}
           
-          {formErrors.password && (
-            <span className="form-error">{formErrors.password}</span>
+          {formErrors.password && (<Alert variant="warning">{formErrors.password}</Alert>)}
+
+        <Input
+          label="Confirmar Nova Senha"
+          type={showConfirmPassword ? 'text' : 'password'}
+          id="confirmPassword"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleInputChange}
+          placeholder="Confirme sua nova senha"
+          autoComplete="new-password"
+          disabled={loading}
+          error={formErrors.confirmPassword || undefined}
+          rightAddon={(
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowConfirmPassword(!showConfirmPassword)} disabled={loading}>
+              {showConfirmPassword ? 'Ocultar' : 'Mostrar'}
+            </Button>
           )}
-        </div>
+          fullWidth
+        />
 
-        <div className="form-group">
-          <label htmlFor="confirmPassword" className="form-label">
-            Confirmar Nova Senha
-          </label>
-          <div className="form-input-group">
-            <input
-              type={showConfirmPassword ? 'text' : 'password'}
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              className={`form-input ${formErrors.confirmPassword ? 'form-input--error' : ''}`}
-              placeholder="Confirme sua nova senha"
-              autoComplete="new-password"
-              disabled={loading}
-            />
-            <button
-              type="button"
-              className="form-input-addon"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              disabled={loading}
-            >
-              {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-            </button>
-          </div>
-          {formErrors.confirmPassword && (
-            <span className="form-error">{formErrors.confirmPassword}</span>
-          )}
-        </div>
+        <Button type="submit" variant="primary" fullWidth disabled={loading}>
+          {loading ? 'Redefinindo...' : 'Redefinir Senha'}
+        </Button>
 
-        <div className="form-actions">
-          <button
-            type="submit"
-            className="btn btn--primary btn--full"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Redefinindo...
-              </>
-            ) : (
-              'Redefinir Senha'
-            )}
-          </button>
+        {onBack && (
+          <Button type="button" variant="ghost" fullWidth onClick={onBack} disabled={loading}>Voltar</Button>
+        )}
+      </Form>
 
-          {onBack && (
-            <button
-              type="button"
-              className="btn btn--ghost btn--full"
-              onClick={onBack}
-              disabled={loading}
-            >
-              Voltar
-            </button>
-          )}
-        </div>
-      </form>
-
-      <div className="reset-password-form__help">
+      <div>
         <h4>Dicas para uma senha segura:</h4>
         <ul>
           <li>Use pelo menos 8 caracteres</li>
@@ -301,7 +270,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
           <li>Evite informações pessoais</li>
         </ul>
       </div>
-    </div>
+    </Wrapper>
   );
 };
 

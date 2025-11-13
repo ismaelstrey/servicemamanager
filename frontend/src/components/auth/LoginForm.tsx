@@ -1,12 +1,46 @@
 import React, { useState } from 'react';
+import styled from 'styled-components';
 import { useAuth } from '../../hooks/useAuth';
 import type { LoginCredentials } from '../../types/auth';
+import { Input, Button, Alert, Checkbox } from '../../components/ui';
 
 interface LoginFormProps {
   onSuccess?: () => void;
   onForgotPassword?: () => void;
   onRegister?: () => void;
 }
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const Header = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Title = styled.h2`
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+const Description = styled.p`
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const Row = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
 
 export const LoginForm: React.FC<LoginFormProps> = ({
   onSuccess,
@@ -74,126 +108,74 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   };
 
   return (
-    <div className="login-form">
-      <div className="login-form__header">
-        <h2>Entrar</h2>
-        <p>Acesse sua conta para continuar</p>
-      </div>
+    <Wrapper>
+      <Header>
+        <Title>Entrar</Title>
+        <Description>Acesse sua conta para continuar</Description>
+      </Header>
 
-      <form onSubmit={handleSubmit} className="login-form__form">
-        {error && (
-          <div className="alert alert--error">
-            {error}
-          </div>
-        )}
+      <Form onSubmit={handleSubmit}>
+        {error && (<Alert variant="error">{error}</Alert>)}
 
-        <div className="form-group">
-          <label htmlFor="email" className="form-label">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            className={`form-input ${formErrors.email ? 'form-input--error' : ''}`}
-            placeholder="seu@email.com"
-            autoComplete="email"
+        <Input
+          label="Email"
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleInputChange}
+          placeholder="seu@email.com"
+          autoComplete="email"
+          disabled={loading}
+          error={formErrors.email || undefined}
+          fullWidth
+        />
+
+        <Input
+          label="Senha"
+          type={showPassword ? 'text' : 'password'}
+          id="password"
+          name="password"
+          value={formData.password}
+          onChange={handleInputChange}
+          placeholder="Sua senha"
+          autoComplete="current-password"
+          disabled={loading}
+          error={formErrors.password || undefined}
+          rightAddon={(
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowPassword(!showPassword)} disabled={loading}>
+              {showPassword ? 'Ocultar' : 'Mostrar'}
+            </Button>
+          )}
+          fullWidth
+        />
+
+        <Row>
+          <Checkbox
+            label="Lembrar de mim"
+            checked={formData.rememberMe}
+            onChange={(e) => handleInputChange({ target: { name: 'rememberMe', type: 'checkbox', checked: (e.target as HTMLInputElement).checked } } as any)}
             disabled={loading}
           />
-          {formErrors.email && (
-            <span className="form-error">{formErrors.email}</span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="password" className="form-label">
-            Senha
-          </label>
-          <div className="form-input-group">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              className={`form-input ${formErrors.password ? 'form-input--error' : ''}`}
-              placeholder="Sua senha"
-              autoComplete="current-password"
-              disabled={loading}
-            />
-            <button
-              type="button"
-              className="form-input-addon"
-              onClick={() => setShowPassword(!showPassword)}
-              disabled={loading}
-            >
-              {showPassword ? '👁️' : '👁️‍🗨️'}
-            </button>
-          </div>
-          {formErrors.password && (
-            <span className="form-error">{formErrors.password}</span>
-          )}
-        </div>
-
-        <div className="form-group form-group--row">
-          <label className="form-checkbox">
-            <input
-              type="checkbox"
-              name="rememberMe"
-              checked={formData.rememberMe}
-              onChange={handleInputChange}
-              disabled={loading}
-            />
-            <span className="form-checkbox__checkmark"></span>
-            Lembrar de mim
-          </label>
-
           {onForgotPassword && (
-            <button
-              type="button"
-              className="link-button"
-              onClick={onForgotPassword}
-              disabled={loading}
-            >
-              Esqueci minha senha
-            </button>
+            <Button type="button" variant="link" onClick={onForgotPassword} disabled={loading}>Esqueci minha senha</Button>
           )}
-        </div>
+        </Row>
 
-        <button
-          type="submit"
-          className="btn btn--primary btn--full"
-          disabled={loading}
-        >
-          {loading ? (
-            <>
-              <span className="spinner"></span>
-              Entrando...
-            </>
-          ) : (
-            'Entrar'
-          )}
-        </button>
+        <Button type="submit" variant="primary" fullWidth disabled={loading}>
+          {loading ? 'Entrando...' : 'Entrar'}
+        </Button>
 
         {onRegister && (
-          <div className="login-form__footer">
+          <div>
             <p>
               Não tem uma conta?{' '}
-              <button
-                type="button"
-                className="link-button"
-                onClick={onRegister}
-                disabled={loading}
-              >
-                Criar conta
-              </button>
+              <Button type="button" variant="link" onClick={onRegister} disabled={loading}>Criar conta</Button>
             </p>
           </div>
         )}
-      </form>
-    </div>
+      </Form>
+    </Wrapper>
   );
 };
 

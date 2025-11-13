@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import LoginForm from '../../components/auth/LoginForm';
@@ -80,6 +81,20 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const BrandTitle = styled.h1`
+    color: ${({ theme }) => theme.colors.text.primary};
+  `;
+  const BrandSubtitle = styled.p`
+    color: ${({ theme }) => theme.colors.text.secondary};
+  `;
+  const FooterText = styled.p`
+    color: ${({ theme }) => theme.colors.text.secondary};
+  `;
+  const FooterLinks = styled.div`
+    a { color: ${({ theme }) => theme.colors.primary.main}; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  `;
+
   return (
     <div className="auth-page">
       <div className="auth-page__container">
@@ -87,8 +102,8 @@ export const LoginPage: React.FC = () => {
           <div className="brand-logo">
         <img src="/images/logo.svg" alt="TelecomAI" loading="lazy" />
           </div>
-          <h1>TelecomAI</h1>
-          <p>Sistema de Gestão de Tickets e Ordens de Serviço</p>
+          <BrandTitle>TelecomAI</BrandTitle>
+          <BrandSubtitle>Sistema de Gestão de Tickets e Ordens de Serviço</BrandSubtitle>
         </div>
 
         <div className="auth-page__form">
@@ -103,12 +118,12 @@ export const LoginPage: React.FC = () => {
       </div>
 
       <div className="auth-page__footer">
-        <p>&copy; 2024 TelecomAI. Todos os direitos reservados.</p>
-        <div className="footer-links">
+        <FooterText>&copy; 2024 TelecomAI. Todos os direitos reservados.</FooterText>
+        <FooterLinks className="footer-links">
           <a href="/terms">Termos de Uso</a>
           <a href="/privacy">Política de Privacidade</a>
           <a href="/support">Suporte</a>
-        </div>
+        </FooterLinks>
       </div>
     </div>
   );

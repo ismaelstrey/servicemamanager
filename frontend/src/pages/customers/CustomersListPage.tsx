@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import styled from 'styled-components';
 import { useCustomers } from '../../hooks/useCustomers';
 import { DataTable, type Column } from '../../components/ui/DataTable';
-import { Input, Button, Alert } from '../../components/ui';
+import { Button, Alert, Pagination, Select, SearchBox } from '../../components/ui';
+import ListTemplate from '../../components/templates/ListTemplate/ListTemplate';
 import type { CustomerListItem } from '../../services/customerService';
 
 export function CustomersListPage(): React.ReactElement {
@@ -34,40 +36,41 @@ export function CustomersListPage(): React.ReactElement {
     { key: 'document', header: 'Documento', width: 180 },
   ];
 
+  const FooterRow = styled.div`
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing.sm};
+  `;
+
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
+
   return (
-    <div className="p-6">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div>
-          <h1 className="text-2xl font-semibold">Clientes</h1>
-          <p className="text-sm text-gray-600">Lista de clientes com busca e paginação.</p>
-        </div>
-        <Button variant="secondary" disabled>
-          Cadastrar Cliente (pendente backend)
-        </Button>
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        <Input placeholder="Buscar clientes" value={search} onChange={(e: any) => setSearch(e.target.value)} />
-        <Button onClick={() => { setPage(1); load(); }}>Buscar</Button>
-      </div>
-
+    <ListTemplate
+      heading="Clientes"
+      actions={(<Button variant="secondary" disabled>Cadastrar Cliente (pendente backend)</Button>)}
+      toolbar={(
+        <SearchBox
+          value={search}
+          onChange={(e: any) => setSearch(e.target.value)}
+          onSearch={() => { setPage(1); load(); }}
+          onClear={() => { setSearch(''); setPage(1); load(); }}
+          placeholder="Buscar clientes"
+        />
+      )}
+      footer={(
+        <FooterRow>
+          <Pagination currentPage={page} totalPages={totalPages} onPageChange={(p: number) => setPage(p)} />
+          <Select label="Itens por página" value={String(limit)} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+          </Select>
+        </FooterRow>
+      )}
+    >
       {error && <Alert variant="danger" title="Erro">{error}</Alert>}
-
       <DataTable columns={columns} data={items} />
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
-        <span className="text-sm text-gray-600">Página {page} de {Math.max(1, Math.ceil(total / limit))}</span>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button variant="secondary" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>Anterior</Button>
-          <Button variant="secondary" onClick={() => setPage((p) => p + 1)} disabled={page >= Math.ceil(total / limit)}>Próxima</Button>
-        </div>
-        <select className="border p-2 rounded" value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}>
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-          <option value={50}>50</option>
-        </select>
-      </div>
-    </div>
+    </ListTemplate>
   );
 }
 

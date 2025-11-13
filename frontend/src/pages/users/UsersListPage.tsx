@@ -3,8 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useUsers, type UserListItem } from '../../hooks/useUsers';
 import { DataTable, type Column } from '../../components/ui/DataTable';
-import { Button, Modal, Input, Pagination, Alert, SearchBox } from '../../components/ui';
+import { Button, Pagination, Alert, SearchBox } from '../../components/ui';
 import ListTemplate from '../../components/templates/ListTemplate/ListTemplate';
+import ChangePasswordModal from '../../components/modals/changePasswordModal';
+
+const ActionsCell = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
 
 export function UsersListPage(): React.ReactElement {
   const navigate = useNavigate();
@@ -19,7 +26,7 @@ export function UsersListPage(): React.ReactElement {
 
   const [passwordModalOpen, setPasswordModalOpen] = useState<boolean>(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [newPassword, setNewPassword] = useState<string>('');
+  
 
   const load = async () => {
     try {
@@ -44,11 +51,6 @@ export function UsersListPage(): React.ReactElement {
   }, [page, limit]);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(totalItems / limit)), [totalItems, limit]);
-
-  const ActionsCell = styled.div`
-    display: flex;
-    gap: ${({ theme }) => theme.spacing.xs};
-  `;
 
   const columns: Column<UserListItem>[] = [
     { key: 'id', header: 'ID', width: 80 },
@@ -81,11 +83,7 @@ export function UsersListPage(): React.ReactElement {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => {
-              setSelectedUserId(r.id);
-              setNewPassword('');
-              setPasswordModalOpen(true);
-            }}
+            onClick={() => { setSelectedUserId(r.id); setPasswordModalOpen(true); }}
           >
             Alterar Senha
           </Button>
@@ -120,29 +118,20 @@ export function UsersListPage(): React.ReactElement {
       {error && <Alert variant="danger" title="Erro">{error}</Alert>}
       <DataTable columns={columns} data={items} />
 
-      <Modal isOpen={passwordModalOpen} onClose={() => setPasswordModalOpen(false)} title="Alterar Senha">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <Input type="password" placeholder="Nova senha" value={newPassword} onChange={(e: any) => setNewPassword(e.target.value)} />
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <Button variant="secondary" onClick={() => setPasswordModalOpen(false)}>Cancelar</Button>
-            <Button
-              variant="primary"
-              onClick={async () => {
-                if (!selectedUserId) return;
-                try {
-                  await updateUser(selectedUserId, { password: newPassword });
-                  setPasswordModalOpen(false);
-                  setSelectedUserId(null);
-                } catch (e) {
-                  setError('Falha ao alterar senha');
-                }
-              }}
-            >
-              Salvar
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      <ChangePasswordModal
+        isOpen={passwordModalOpen}
+        onClose={() => setPasswordModalOpen(false)}
+        onSubmit={async (pwd: string) => {
+          if (!selectedUserId) return;
+          try {
+            await updateUser(selectedUserId, { password: pwd });
+            setPasswordModalOpen(false);
+            setSelectedUserId(null);
+          } catch (e) {
+            setError('Falha ao alterar senha');
+          }
+        }}
+      />
     </ListTemplate>
   );
 }

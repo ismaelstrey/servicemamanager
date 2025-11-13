@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import styled, { css } from 'styled-components';
 
 export type SelectSize = 'sm' | 'md' | 'lg';
 export type SelectVariant = 'default' | 'filled' | 'outlined';
@@ -14,7 +15,100 @@ export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectE
   children: React.ReactNode;
 }
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
+const Wrapper = styled.div<{ $fullWidth?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+  ${({ $fullWidth }) => $fullWidth && css`width: 100%;`}
+`;
+
+const Label = styled.label`
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Container = styled.div`
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+`;
+
+const StyledSelect = styled.select<{ $size: SelectSize; $variant: SelectVariant; $hasError?: boolean }>`
+  appearance: none;
+  width: 100%;
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  color: ${({ theme }) => theme.colors.text.primary};
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  transition: all ${({ theme }) => theme.animations.transition.fast};
+
+  ${({ $size, theme }) => {
+    switch ($size) {
+      case 'sm':
+        return css`padding: ${theme.spacing.xs} ${theme.spacing.sm}; font-size: ${theme.typography.fontSize.sm};`;
+      case 'lg':
+        return css`padding: ${theme.spacing.md} ${theme.spacing.lg}; font-size: ${theme.typography.fontSize.lg};`;
+      default:
+        return css`padding: ${theme.spacing.sm} ${theme.spacing.md}; font-size: ${theme.typography.fontSize.base};`;
+    }
+  }}
+
+  ${({ $variant, theme }) => {
+    switch ($variant) {
+      case 'filled':
+        return css`
+          background-color: ${theme.colors.neutral[100]};
+          border-color: transparent;
+        `;
+      case 'outlined':
+        return css`
+          background-color: transparent;
+          border-color: ${theme.colors.border.primary};
+        `;
+      default:
+        return css``;
+    }
+  }}
+
+  ${({ $hasError, theme }) => $hasError && css`
+    border-color: ${theme.colors.danger.main};
+    box-shadow: ${theme.shadows.focus.danger};
+  `}
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary.main};
+    box-shadow: ${({ theme }) => theme.shadows.focus.primary};
+    outline: none;
+  }
+`;
+
+const Icon = styled.div`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${({ theme }) => theme.colors.text.secondary};
+  pointer-events: none;
+`;
+
+const Feedback = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const ErrorText = styled.span`
+  color: ${({ theme }) => theme.colors.danger.main};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+`;
+
+const HelperText = styled.span`
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+`;
+
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(({ 
   label,
   error,
   helperText,
@@ -22,44 +116,27 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
   variant = 'default',
   fullWidth = false,
   placeholder,
-  className = '',
   id,
   children,
   ...props
 }, ref) => {
   const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
-  
-  const baseClasses = 'select';
-  const sizeClasses = `select--${size}`;
-  const variantClasses = `select--${variant}`;
-  const fullWidthClasses = fullWidth ? 'select--full' : '';
-  const errorClasses = error ? 'select--error' : '';
-  const disabledClasses = props.disabled ? 'select--disabled' : '';
-
-  const selectClasses = [
-    baseClasses,
-    sizeClasses,
-    variantClasses,
-    fullWidthClasses,
-    errorClasses,
-    disabledClasses,
-    className,
-  ].filter(Boolean).join(' ');
 
   return (
-    <div className="select-wrapper">
+    <Wrapper $fullWidth={fullWidth}>
       {label && (
-        <label htmlFor={selectId} className="select-label">
+        <Label htmlFor={selectId}>
           {label}
-          {props.required && <span className="select-required">*</span>}
-        </label>
+          {props.required && <span>*</span>}
+        </Label>
       )}
-      
-      <div className="select-container">
-        <select
+      <Container>
+        <StyledSelect
           ref={ref}
           id={selectId}
-          className={selectClasses}
+          $size={size}
+          $variant={variant}
+          $hasError={Boolean(error)}
           {...props}
         >
           {placeholder && (
@@ -68,33 +145,20 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
             </option>
           )}
           {children}
-        </select>
-        <div className="select-icon">
-          <svg
-            width="12"
-            height="8"
-            viewBox="0 0 12 8"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M1 1.5L6 6.5L11 1.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+        </StyledSelect>
+        <Icon>
+          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </div>
-      </div>
-
+        </Icon>
+      </Container>
       {(error || helperText) && (
-        <div className="select-feedback">
-          {error && <span className="select-error-text">{error}</span>}
-          {!error && helperText && <span className="select-helper-text">{helperText}</span>}
-        </div>
+        <Feedback>
+          {error && <ErrorText>{error}</ErrorText>}
+          {!error && helperText && <HelperText>{helperText}</HelperText>}
+        </Feedback>
       )}
-    </div>
+    </Wrapper>
   );
 });
 

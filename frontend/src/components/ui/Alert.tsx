@@ -1,4 +1,5 @@
 import React from 'react';
+import styled, { css } from 'styled-components';
 
 export type AlertVariant = 'success' | 'danger' | 'warning' | 'info' | 'custom' | 'error' | 'primary';
 export type AlertSize = 'sm' | 'md' | 'lg';
@@ -22,6 +23,85 @@ const defaultIcons = {
   info: 'ℹ',
 };
 
+const Container = styled.div<{ $variant: AlertVariant; $size: AlertSize; $dismissible?: boolean }>`
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing.sm};
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  background: ${({ theme }) => theme.colors.background.secondary};
+  color: ${({ theme }) => theme.colors.text.primary};
+
+  ${({ $size, theme }) => {
+    switch ($size) {
+      case 'sm':
+        return css`padding: ${theme.spacing.xs};`;
+      case 'lg':
+        return css`padding: ${theme.spacing.lg};`;
+      default:
+        return css`padding: ${theme.spacing.md};`;
+    }
+  }}
+
+  ${({ $variant, theme }) => {
+    const v = $variant === 'error' ? 'danger' : $variant;
+    switch (v) {
+      case 'success':
+        return css`border-color: ${theme.colors.success.main};`;
+      case 'danger':
+        return css`border-color: ${theme.colors.danger.main};`;
+      case 'warning':
+        return css`border-color: ${theme.colors.warning.main};`;
+      case 'info':
+        return css`border-color: ${theme.colors.info.main};`;
+      case 'primary':
+        return css`border-color: ${theme.colors.primary.main};`;
+      default:
+        return css``;
+    }
+  }}
+`;
+
+const Content = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex: 1;
+`;
+
+const IconBox = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Body = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Title = styled.div`
+  font-weight: ${({ theme }) => theme.typography.ui.subtitle.fontWeight};
+`;
+
+const Description = styled.div`
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const Message = styled.div``;
+
+const Dismiss = styled.button`
+  position: absolute;
+  right: ${({ theme }) => theme.spacing.sm};
+  top: ${({ theme }) => theme.spacing.sm};
+  border: 0;
+  background: transparent;
+  color: ${({ theme }) => theme.colors.text.secondary};
+  cursor: pointer;
+`;
+
 export const Alert: React.FC<AlertProps> = ({
   children,
   variant,
@@ -33,56 +113,30 @@ export const Alert: React.FC<AlertProps> = ({
   onDismiss,
   icon,
 }) => {
-  const baseClasses = 'alert';
-  const variantClasses = `alert--${variant}`;
-  const sizeClasses = `alert--${size}`;
-  const dismissibleClasses = dismissible ? 'alert--dismissible' : '';
-
-  const classes = [
-    baseClasses,
-    variantClasses,
-    sizeClasses,
-    dismissibleClasses,
-    className,
-  ].filter(Boolean).join(' ');
-
   const alertIcon = icon || defaultIcons[variant as keyof typeof defaultIcons];
 
   return (
-    <div className={classes} role="alert" aria-live="polite">
-      <div className="alert__content">
+    <Container className={className} $variant={variant} $size={size} $dismissible={dismissible} role="alert" aria-live="polite">
+      <Content>
         {alertIcon && (
-          <div className="alert__icon">
-            {alertIcon}
-          </div>
+          <IconBox>{alertIcon}</IconBox>
         )}
-        <div className="alert__body">
+        <Body>
           {title && (
-            <div className="alert__title">
+            <Title>
               {title}
               {description && (
-                <div className="alert__description">
-                  {description}
-                </div>
+                <Description>{description}</Description>
               )}
-            </div>
+            </Title>
           )}
-          <div className="alert__message">
-            {children}
-          </div>
-        </div>
-      </div>
+          <Message>{children}</Message>
+        </Body>
+      </Content>
       {dismissible && onDismiss && (
-        <button
-          className="alert__dismiss"
-          onClick={onDismiss}
-          aria-label="Fechar alerta"
-          type="button"
-        >
-          ×
-        </button>
+        <Dismiss onClick={onDismiss} aria-label="Fechar alerta" type="button">×</Dismiss>
       )}
-    </div>
+    </Container>
   );
 };
 

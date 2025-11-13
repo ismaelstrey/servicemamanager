@@ -1,11 +1,45 @@
 import React, { useState } from 'react';
+import styled from 'styled-components';
 import { AuthService } from '../../services/authService';
 import type { ForgotPasswordData } from '../../types/auth';
+import { Input, Button, Alert } from '../../components/ui';
 
 interface ForgotPasswordFormProps {
   onSuccess?: () => void;
   onBack?: () => void;
 }
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const Header = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Title = styled.h2`
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+const Description = styled.p`
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const Actions = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
 
 export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
   onSuccess,
@@ -75,96 +109,60 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
 
   if (success) {
     return (
-      <div className="forgot-password-form">
-        <div className="forgot-password-form__success">
-          <div className="success-icon">✅</div>
-          <h2>Email Enviado!</h2>
-          <p>
-            Enviamos um link de recuperação para <strong>{formData.email}</strong>.
-            Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.
-          </p>
-          <p className="text-muted">
-            Não recebeu o email? Verifique sua pasta de spam ou tente novamente em alguns minutos.
-          </p>
-          {onBack && (
-            <button
-              type="button"
-              className="btn btn--secondary"
-              onClick={onBack}
-            >
-              Voltar ao Login
-            </button>
-          )}
-        </div>
-      </div>
+      <Wrapper>
+        <Alert variant="success" title="Email Enviado!" description={
+          <>Enviamos um link de recuperação para <strong>{formData.email}</strong>. Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.</>
+        }>
+          Não recebeu o email? Verifique sua pasta de spam ou tente novamente em alguns minutos.
+        </Alert>
+        {onBack && (
+          <Button variant="secondary" type="button" onClick={onBack}>Voltar ao Login</Button>
+        )}
+      </Wrapper>
     );
   }
 
   return (
-    <div className="forgot-password-form">
-      <div className="forgot-password-form__header">
-        <h2>Recuperar Senha</h2>
-        <p>Digite seu email para receber um link de recuperação</p>
-      </div>
+    <Wrapper>
+      <Header>
+        <Title>Recuperar Senha</Title>
+        <Description>Digite seu email para receber um link de recuperação</Description>
+      </Header>
 
-      <form onSubmit={handleSubmit} className="forgot-password-form__form">
+      <Form onSubmit={handleSubmit}>
         {error && (
-          <div className="alert alert--error">
-            {error}
-          </div>
+          <Alert variant="error">{error}</Alert>
         )}
 
-        <div className="form-group">
-          <label htmlFor="email" className="form-label">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            className={`form-input ${formErrors.email ? 'form-input--error' : ''}`}
-            placeholder="seu@email.com"
-            autoComplete="email"
-            disabled={loading}
-            autoFocus
-          />
-          {formErrors.email && (
-            <span className="form-error">{formErrors.email}</span>
-          )}
-        </div>
+        <Input
+          label="Email"
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleInputChange}
+          placeholder="seu@email.com"
+          autoComplete="email"
+          disabled={loading}
+          autoFocus
+          error={formErrors.email || undefined}
+          fullWidth
+        />
 
-        <div className="form-actions">
-          <button
-            type="submit"
-            className="btn btn--primary btn--full"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Enviando...
-              </>
-            ) : (
-              'Enviar Link de Recuperação'
-            )}
-          </button>
+        <Actions>
+          <Button variant="primary" type="submit" disabled={loading} fullWidth>
+            {loading ? 'Enviando...' : 'Enviar Link de Recuperação'}
+          </Button>
 
           {onBack && (
-            <button
-              type="button"
-              className="btn btn--ghost btn--full"
-              onClick={onBack}
-              disabled={loading}
-            >
+            <Button variant="ghost" type="button" onClick={onBack} disabled={loading} fullWidth>
               Voltar ao Login
-            </button>
+            </Button>
           )}
-        </div>
-      </form>
+        </Actions>
+      </Form>
 
-      <div className="forgot-password-form__help">
+      <div>
         <h4>Precisa de ajuda?</h4>
         <ul>
           <li>Verifique se o email está correto</li>
@@ -173,7 +171,7 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
           <li>Entre em contato com o suporte se o problema persistir</li>
         </ul>
       </div>
-    </div>
+    </Wrapper>
   );
 };
 
