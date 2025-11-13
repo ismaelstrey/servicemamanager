@@ -22,6 +22,7 @@ const TicketsListPage = lazy(() => import('./pages/tickets/TicketsListPage').the
 const CreateTicketPage = lazy(() => import('./pages/tickets/CreateTicketPage'))
 const TicketDetailsPage = lazy(() => import('./pages/tickets/TicketDetailsPage').then(m => ({ default: m.TicketDetailsPage })))
 const TicketsKanbanPage = lazy(() => import('./pages/tickets/TicketsKanbanPage'))
+const TicketsEditPage = lazy(() => import('./pages/tickets/TicketsEditPage'))
 const ServiceOrdersKanbanPage = lazy(() => import('./pages/service-orders/ServiceOrdersKanbanPage'))
 const ServiceOrdersListPage = lazy(() => import('./pages/service-orders/ServiceOrdersListPage'))
 const ServiceOrderDetailsPage = lazy(() => import('./pages/service-orders/ServiceOrderDetailsPage'))
@@ -344,6 +345,16 @@ const App: React.FC = () => {
                 <ProtectedRoute>
                   <Layout>
                     <TicketDetailsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tickets/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <TicketsEditPage />
                   </Layout>
                 </ProtectedRoute>
               }
