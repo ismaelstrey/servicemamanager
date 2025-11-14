@@ -5,6 +5,8 @@ import { PageHeader } from '../../components/layout';
 import { TicketForm } from '../../components/composite';
 import type { CreateTicketFormValues, PriorityOption, EquipmentOption } from '../../components/composite';
 import { Card, Spinner, Button } from '../../components/ui';
+import { useTickets } from '../../hooks/useTickets'
+import type { CreateTicketData } from '../../types/ticket'
 
 const PageWrapper = styled.div`
   display: flex;
@@ -50,6 +52,7 @@ const CreateTicketPage: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [equipment, setEquipment] = useState<EquipmentOption[]>([]);
   const [loadingEquipment, setLoadingEquipment] = useState(false);
+  const { createTicket, listEquipments } = useTickets()
 
   const [form, setForm] = useState<CreateTicketFormValues>({
     title: '',
@@ -78,26 +81,17 @@ const CreateTicketPage: React.FC = () => {
     { value: 'urgent', label: 'Urgente' },
   ];
 
-  // Mock function to load equipment
   const loadEquipment = async () => {
-    setLoadingEquipment(true);
+    setLoadingEquipment(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const mockEquipment: EquipmentOption[] = [
-        { id: '1', name: 'Server-01', type: 'Server' },
-        { id: '2', name: 'Switch-Core-01', type: 'Network' },
-        { id: '3', name: 'Firewall-01', type: 'Security' },
-        { id: '4', name: 'Router-WAN-01', type: 'Network' },
-        { id: '5', name: 'UPS-01', type: 'Power' }
-      ];
-      setEquipment(mockEquipment);
+      const items = await listEquipments()
+      setEquipment(items.map((i) => ({ id: String(i.id), name: i.name })))
     } catch (err) {
-      console.error('Error loading equipment:', err);
+      console.error('Error loading equipment:', err)
     } finally {
-      setLoadingEquipment(false);
+      setLoadingEquipment(false)
     }
-  };
+  }
 
   React.useEffect(() => {
     loadEquipment();
@@ -134,14 +128,24 @@ const CreateTicketPage: React.FC = () => {
     setError(null);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setSuccess(true);
+      const data: CreateTicketData = {
+        title: form.title.trim(),
+        description: form.description.trim(),
+        priority: form.priority,
+        category: form.category.toLowerCase() as any,
+        source: 'portal' as any,
+        customerInfo: { name: '-', email: '-' },
+        equipmentId: form.equipmentId ? Number(form.equipmentId) : undefined,
+        tags: []
+      }
+      const ticket = await createTicket.mutateAsync(data)
+      setSuccess(true)
       setTimeout(() => {
-        navigate('/tickets');
-      }, 2000);
-    } catch {
-      setError('Erro ao criar ticket. Tente novamente.');
+        navigate(`/tickets/${ticket.id}`)
+      }, 1500)
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Erro ao criar ticket. Tente novamente.'
+      setError(msg);
     } finally {
       setIsLoading(false);
     }

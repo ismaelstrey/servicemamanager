@@ -63,13 +63,18 @@ export type TicketCategory =
 
 // Fonte do ticket
 export type TicketSource =
-  | 'web'          // Portal web
-  | 'email'        // Email
-  | 'phone'        // Telefone
-  | 'chat'         // Chat
-  | 'api'          // API
-  | 'mobile'       // App mobile
-  | 'monitoring';  // Sistema de monitoramento
+  | 'portal'
+  | 'manual'
+  | 'email'
+  | 'phone'
+  | 'chat'
+  | 'api'
+  | 'zabbix'
+  | 'mobile'
+  | 'social'
+  | 'other'
+  | 'web'
+  | 'monitoring';
 
 // Status do SLA
 export type SlaStatus =
