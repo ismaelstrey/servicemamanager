@@ -17,7 +17,7 @@ import {
   Spinner, 
   Alert 
 } from '../../components/ui';
-import '../../styles/service-orders.css';
+import styled from 'styled-components';
 import { ServiceOrderService, type ServiceOrder, type ServiceOrderFilters } from '../../services/serviceOrderService'
 
 type ListOrder = ServiceOrder
@@ -75,7 +75,7 @@ const ServiceOrdersListPage: React.FC = () => {
       filters.limit = itemsPerPage
       const res = await ServiceOrderService.getServiceOrders(filters as ServiceOrderFilters)
       setServiceOrders((res as unknown as ServiceOrder[]) || [])
-      setTotalItems(res.pagination?.total ?? (res.data?.length ?? 0))
+      setTotalItems(Array.isArray(res as any) ? (res as any).length : ((res as any)?.pagination?.total ?? ((res as any)?.data?.length ?? 0)))
     } catch (e) {
       const apiMsg = (e as any)?.response?.data?.message
       setError(typeof apiMsg === 'string' ? apiMsg : 'Erro ao carregar ordens de serviço. Tente novamente.')
@@ -168,8 +168,8 @@ const ServiceOrdersListPage: React.FC = () => {
   }
 
   return (
-    <div className="service-orders-page">
-      <div className="service-orders-header">
+    <Page>
+      <Header>
         <h1>Ordens de Serviço</h1>
         <Button
           variant="primary"
@@ -177,10 +177,10 @@ const ServiceOrdersListPage: React.FC = () => {
         >
           Nova Ordem de Serviço
         </Button>
-      </div>
+      </Header>
 
-      <div className="service-orders-header-actions" style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-        <div className="view-toggle" style={{ display: 'flex', gap: '0.5rem' }}>
+      <HeaderActions>
+        <ViewToggle>
           <Button
             variant={viewMode === 'list' ? 'primary' : 'outline'}
             onClick={() => setViewMode('list')}
@@ -199,15 +199,15 @@ const ServiceOrdersListPage: React.FC = () => {
           >
             Kanban
           </Button>
-        </div>
-        <div className="quick-nav" style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+        </ViewToggle>
+        <QuickNav>
           <Button variant="outline" onClick={() => navigate('/service-orders/calendar')}>Calendário</Button>
           <Button variant="outline" onClick={() => navigate('/service-orders/reports')}>Relatórios</Button>
-        </div>
-      </div>
+        </QuickNav>
+      </HeaderActions>
 
-      <div className="table-toolbar">
-        <div className="table-toolbar__filters">
+      <TableToolbar>
+        <TableToolbarFilters>
           <Input
             placeholder="Buscar por título, cliente ou descrição..."
             value={searchTerm}
@@ -244,8 +244,8 @@ const ServiceOrdersListPage: React.FC = () => {
           </Dropdown>
 
           
-        </div>
-        <div className="table-toolbar__actions">
+        </TableToolbarFilters>
+        <TableToolbarActions>
           <Button
             variant="outline"
             onClick={() => {
@@ -256,17 +256,17 @@ const ServiceOrdersListPage: React.FC = () => {
           >
             Limpar Filtros
           </Button>
-        </div>
-      </div>
+        </TableToolbarActions>
+      </TableToolbar>
 
-      <Card className="service-orders-table-container">
+      <TableContainer>
         {isLoading ? (
-          <div className="loading-container">
+          <LoadingContainer>
             <Spinner />
             <p>Carregando ordens de serviço...</p>
-          </div>
+          </LoadingContainer>
         ) : viewMode === 'list' ? (
-          <Table className="table--sticky-header">
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHeaderCell scope="col">ID</TableHeaderCell>
@@ -285,14 +285,13 @@ const ServiceOrdersListPage: React.FC = () => {
               {paginatedServiceOrders.map(order => (
                 <TableRow
                   key={order.id}
-                  className="service-order-row"
                   onClick={() => handleServiceOrderClick(order.id)}
                 >
                   <TableCell>#{order.id}</TableCell>
                   <TableCell>
-                    <div className="service-order-title">
+                    <ServiceOrderTitle>
                       <strong>{order.title}</strong>
-                    </div>
+                    </ServiceOrderTitle>
                   </TableCell>
                   <TableCell>{order.provider?.name ?? `#${order.providerId}`}</TableCell>
                   <TableCell>
@@ -301,12 +300,12 @@ const ServiceOrdersListPage: React.FC = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="service-order-priority">
-                      <span className={`priority-dot ${order.priority}`}></span>
+                    <ServiceOrderPriority>
+                      <PriorityDot priority={order.priority} />
                       <Badge variant={getPriorityColor(order.priority)} size="sm">
                         {getPriorityLabel(order.priority)}
                       </Badge>
-                    </div>
+                    </ServiceOrderPriority>
                   </TableCell>
                   <TableCell>
                     {order.ticket ? (
@@ -319,7 +318,7 @@ const ServiceOrdersListPage: React.FC = () => {
                   <TableCell>{order.scheduledDate ? formatDate(order.scheduledDate) : '—'}</TableCell>
                   <TableCell>{order.cost != null ? formatCurrency(order.cost) : '—'}</TableCell>
                   <TableCell>
-                    <div className="service-order-actions">
+                    <RowActions>
                       <Button
                         size="sm"
                         variant="outline"
@@ -330,41 +329,41 @@ const ServiceOrdersListPage: React.FC = () => {
                       >
                         Ver
                       </Button>
-                    </div>
+                    </RowActions>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         ) : (
-          <div className="service-orders-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+          <Grid>
             {paginatedServiceOrders.map(order => (
-              <Card key={order.id} className="service-order-card" onClick={() => handleServiceOrderClick(order.id)}>
-                <div className="service-order-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <OrderCard key={order.id} onClick={() => handleServiceOrderClick(order.id)}>
+                <OrderCardHeader>
                   <h3 style={{ margin: 0 }}>{order.title}</h3>
                   <Badge variant={getStatusVariant(order.status)}>{getStatusLabel(order.status)}</Badge>
-                </div>
-                <div className="service-order-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                </OrderCardHeader>
+                <OrderCardContent>
                   <div><strong>Provedor:</strong> {order.provider?.name ?? `#${order.providerId}`}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span className={`priority-dot ${order.priority}`}></span>
+                  <ServiceOrderPriority>
+                    <PriorityDot priority={order.priority} />
                     <Badge variant={getPriorityColor(order.priority)} size="sm">{getPriorityLabel(order.priority)}</Badge>
-                  </div>
+                  </ServiceOrderPriority>
                   <div><strong>Ticket:</strong> {order.ticket ? `#${order.ticket.id} • ${order.ticket.title}` : `#${order.ticketId}`}</div>
                   <div><strong>Agendada:</strong> {order.scheduledDate ? formatDate(order.scheduledDate) : '—'}</div>
                   <div><strong>Estimado (h):</strong> {order.estimatedHours}</div>
                   <div><strong>Valor:</strong> {order.cost != null ? formatCurrency(order.cost) : '—'}</div>
-                </div>
-                <div className="service-order-card-actions" style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
+                </OrderCardContent>
+                <OrderCardActions>
                   <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); navigate(`/service-orders/${order.id}`); }}>Ver</Button>
-                </div>
-              </Card>
+                </OrderCardActions>
+              </OrderCard>
             ))}
-          </div>
+          </Grid>
         )}
 
         {!isLoading && paginatedServiceOrders.length === 0 && (
-          <div className="empty-state">
+          <EmptyState>
             <p>Nenhuma ordem de serviço encontrada.</p>
             <Button
               variant="primary"
@@ -372,9 +371,9 @@ const ServiceOrdersListPage: React.FC = () => {
             >
               Criar primeira ordem de serviço
             </Button>
-          </div>
+          </EmptyState>
         )}
-      </Card>
+      </TableContainer>
 
       {!isLoading && totalItems > itemsPerPage && (
         <Pagination
@@ -385,8 +384,136 @@ const ServiceOrdersListPage: React.FC = () => {
           showPrevNext
         />
       )}
-    </div>
+    </Page>
   );
 };
+
+const Page = styled.div`
+  padding: 1rem;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+`;
+
+const ViewToggle = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const QuickNav = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+`;
+
+const TableToolbar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+`;
+
+const TableToolbarFilters = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
+
+const TableToolbarActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const TableContainer = styled(Card)`
+  overflow: auto;
+  & table thead th {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+  }
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+`;
+
+const ServiceOrderTitle = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const ServiceOrderPriority = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const PriorityDot = styled.span<{ priority: string }>`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background-color: ${({ priority }) =>
+    priority === 'low' ? '#28a745' :
+    priority === 'medium' ? '#ffca2c' :
+    '#dc3545'};
+`;
+
+const RowActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+`;
+
+const OrderCard = styled(Card)`
+  cursor: pointer;
+`;
+
+const OrderCardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const OrderCardContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+const OrderCardActions = styled.div`
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+`;
 
 export default ServiceOrdersListPage;
