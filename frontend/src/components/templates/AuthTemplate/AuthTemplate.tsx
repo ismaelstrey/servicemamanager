@@ -9,6 +9,12 @@ import {
   AuthSubtitle,
   AuthContent,
   BackgroundPattern,
+  AuthFooter,
+  AuthGrid,
+  BrandSection,
+  BrandLogo,
+  BrandHeading,
+  BrandSubtitle,
 } from './AuthTemplate.styles';
 
 interface AuthTemplateProps {
@@ -18,6 +24,9 @@ interface AuthTemplateProps {
   showLogo?: boolean;
   backgroundImage?: string;
   className?: string;
+  footer?: React.ReactNode;
+  layout?: 'simple' | 'split';
+  brandLogoSrc?: string;
 }
 
 export const AuthTemplate: React.FC<AuthTemplateProps> = ({
@@ -27,6 +36,9 @@ export const AuthTemplate: React.FC<AuthTemplateProps> = ({
   showLogo = true,
   backgroundImage,
   className,
+  footer,
+  layout = 'simple',
+  brandLogoSrc,
   ...props
 }) => {
   return (
@@ -36,23 +48,49 @@ export const AuthTemplate: React.FC<AuthTemplateProps> = ({
       {...props}
     >
       <BackgroundPattern />
-      <AuthCard>
-        {showLogo && (
-          <LogoContainer>
-            <Logo>
-              T
-            </Logo>
-          </LogoContainer>
+      <AuthCard $wide={layout === 'split'}>
+        {layout === 'split' ? (
+          <AuthGrid>
+            <BrandSection>
+              {brandLogoSrc && (
+                <BrandLogo>
+                  <img src={brandLogoSrc} alt={title} loading="lazy" />
+                </BrandLogo>
+              )}
+              <BrandHeading>{title}</BrandHeading>
+              {subtitle && <BrandSubtitle>{subtitle}</BrandSubtitle>}
+            </BrandSection>
+
+            <div>
+              <AuthHeader>
+                <AuthTitle>{title}</AuthTitle>
+                {subtitle && <AuthSubtitle>{subtitle}</AuthSubtitle>}
+              </AuthHeader>
+              <AuthContent>
+                {children}
+              </AuthContent>
+              {footer && <AuthFooter>{footer}</AuthFooter>}
+            </div>
+          </AuthGrid>
+        ) : (
+          <>
+            {showLogo && (
+              <LogoContainer>
+                <Logo>
+                  T
+                </Logo>
+              </LogoContainer>
+            )}
+            <AuthHeader>
+              <AuthTitle>{title}</AuthTitle>
+              {subtitle && <AuthSubtitle>{subtitle}</AuthSubtitle>}
+            </AuthHeader>
+            <AuthContent>
+              {children}
+            </AuthContent>
+            {footer && <AuthFooter>{footer}</AuthFooter>}
+          </>
         )}
-        
-        <AuthHeader>
-          <AuthTitle>{title}</AuthTitle>
-          {subtitle && <AuthSubtitle>{subtitle}</AuthSubtitle>}
-        </AuthHeader>
-        
-        <AuthContent>
-          {children}
-        </AuthContent>
       </AuthCard>
     </AuthContainer>
   );

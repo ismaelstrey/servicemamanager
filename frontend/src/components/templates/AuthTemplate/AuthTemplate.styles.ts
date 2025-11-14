@@ -20,13 +20,13 @@ export const AuthContainer = styled.div<{ backgroundImage?: string }>`
   }
 `;
 
-export const AuthCard = styled.div`
+export const AuthCard = styled.div<{ $wide?: boolean }>`
   background: ${({ theme }) => theme.colors.background.secondary};
   border-radius: ${({ theme }) => theme.borders.radius.lg};
   box-shadow: ${({ theme }) => theme.shadows.xl};
   padding: ${({ theme }) => theme.spacing.xl};
   width: 100%;
-  max-width: 400px;
+  max-width: ${({ $wide }) => ($wide ? '960px' : '400px')};
   backdrop-filter: blur(10px);
   border: 1px solid ${({ theme }) => theme.colors.border.primary};
   
@@ -100,4 +100,50 @@ export const BackgroundPattern = styled.div`
   background-image: radial-gradient(circle at 25% 25%, ${({ theme }) => theme.colors.primary.light} 0%, transparent 50%),
                     radial-gradient(circle at 75% 75%, ${({ theme }) => theme.colors.secondary.light} 0%, transparent 50%);
   pointer-events: none;
+`;
+export const AuthGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: ${({ theme }) => theme.spacing.lg};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
+    grid-template-columns: 1fr 1fr;
+    gap: ${({ theme }) => theme.spacing.xl};
+  }
+`;
+export const BrandSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: ${({ theme }) => theme.spacing.xl};
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary.main} 0%, ${({ theme }) => theme.colors.primary.dark} 100%);
+  color: ${({ theme }) => theme.colors.primary.contrast};
+  text-align: center;
+`;
+export const BrandLogo = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: ${({ theme }) => theme.borders.radius.full};
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+
+  img {
+    width: 50px;
+    height: 50px;
+  }
+`;
+export const BrandHeading = styled.h1`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.fontSize['2xl']};
+  color: ${({ theme }) => theme.colors.primary.contrast};
+`;
+export const BrandSubtitle = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.primary.contrast};
+  opacity: 0.9;
 `;

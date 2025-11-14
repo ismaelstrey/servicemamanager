@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { AuthService } from '../../services/authService';
 import type { ResetPasswordData } from '../../types/auth';
 import { Input, Button, Alert } from '../../components/ui';
@@ -10,11 +10,54 @@ interface ResetPasswordFormProps {
   onBack?: () => void;
 }
 
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+const Header = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+const Title = styled.h2`
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+const Description = styled.p`
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+const StrengthBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+const Bar = styled.div`
+  width: 100%;
+  height: 6px;
+  background: ${({ theme }) => theme.colors.neutral[200]};
+  border-radius: ${({ theme }) => theme.borders.radius.sm};
+  overflow: hidden;
+`;
+const Fill = styled.div<{ $width: number; $color: string }>`
+  width: ${({ $width }) => `${$width}%`};
+  height: 100%;
+  background: ${({ $color }) => $color};
+`;
+const StrengthLabel = styled.span<{ $color: string }>`
+  color: ${({ $color }) => $color};
+`;
+
 export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
   token,
   onSuccess,
   onBack,
 }) => {
+  const theme = useTheme();
   const [formData, setFormData] = useState<ResetPasswordData>({
     token: token || '',
     password: '',
@@ -115,9 +158,9 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
   };
 
   const getPasswordStrengthColor = (score: number): string => {
-    if (score <= 2) return 'red';
-    if (score <= 4) return 'orange';
-    return 'green';
+    if (score <= 2) return theme.colors.danger.main;
+    if (score <= 4) return theme.colors.warning.main;
+    return theme.colors.success.main;
   };
 
   const getPasswordStrengthText = (score: number): string => {
@@ -125,44 +168,6 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
     if (score <= 4) return 'Média';
     return 'Forte';
   };
-  const Wrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacing.md};
-  `;
-  const Header = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacing.xs};
-  `;
-  const Title = styled.h2`
-    color: ${({ theme }) => theme.colors.text.primary};
-  `;
-  const Description = styled.p`
-    color: ${({ theme }) => theme.colors.text.secondary};
-  `;
-  const Form = styled.form`
-    display: flex;
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacing.sm};
-  `;
-  const StrengthBar = styled.div`
-    display: flex;
-    align-items: center;
-    gap: ${({ theme }) => theme.spacing.xs};
-  `;
-  const Bar = styled.div`
-    width: 100%;
-    height: 6px;
-    background: ${({ theme }) => theme.colors.neutral[200]};
-    border-radius: ${({ theme }) => theme.borders.radius.sm};
-    overflow: hidden;
-  `;
-  const Fill = styled.div<{ $width: number; $color: string }>`
-    width: ${({ $width }) => `${$width}%`};
-    height: 100%;
-    background: ${({ $color }) => $color};
-  `;
 
   if (success) {
     return (
@@ -225,9 +230,9 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
               <Bar>
                 <Fill $width={(passwordStrength.score / 6) * 100} $color={getPasswordStrengthColor(passwordStrength.score)} />
               </Bar>
-              <span style={{ color: getPasswordStrengthColor(passwordStrength.score) }}>
+              <StrengthLabel $color={getPasswordStrengthColor(passwordStrength.score)}>
                 {getPasswordStrengthText(passwordStrength.score)}
-              </span>
+              </StrengthLabel>
             </StrengthBar>
           )}
           

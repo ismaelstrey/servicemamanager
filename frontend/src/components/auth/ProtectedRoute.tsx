@@ -1,6 +1,7 @@
 import type React from 'react';
+import styled from 'styled-components';
 import { Navigate, useLocation } from 'react-router-dom';
-import { Button, LogoLoader } from '../../components/ui';
+import { Button, LogoLoader, Card } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import type { UserRole } from '../../types/auth';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -42,21 +43,22 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     const hasRequiredRole = requiredRoles.some(role => hasRole(role));
     if (!hasRequiredRole) {
       return fallback || (
-        <div className="access-denied">
-          <div className="access-denied__content">
-            <div className="access-denied__icon">🚫</div>
-            <h2>Acesso Negado</h2>
-            <p>
-              Você não tem permissão para acessar esta página.
-              Entre em contato com o administrador se acredita que isso é um erro.
-            </p>
-            <div className="access-denied__info">
-              <p><strong>Roles necessárias:</strong> {requiredRoles.join(', ')}</p>
-              <p><strong>Sua role:</strong> {user.role}</p>
-            </div>
-            <Button variant="secondary" onClick={() => window.history.back()}>Voltar</Button>
-          </div>
-        </div>
+        <AccessWrapper>
+          <Card>
+            <AccessContent role="alert">
+              <AccessIcon>🚫</AccessIcon>
+              <AccessTitle>Acesso Negado</AccessTitle>
+              <AccessDesc>
+                Você não tem permissão para acessar esta página. Entre em contato com o administrador se acredita que isso é um erro.
+              </AccessDesc>
+              <AccessInfo>
+                <p><strong>Roles necessárias:</strong> {requiredRoles.join(', ')}</p>
+                <p><strong>Sua role:</strong> {user.role}</p>
+              </AccessInfo>
+              <Button variant="secondary" onClick={() => window.history.back()}>Voltar</Button>
+            </AccessContent>
+          </Card>
+        </AccessWrapper>
       );
     }
   }
@@ -66,19 +68,21 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     const hasRequiredPermission = requiredPermissions.some(permission => hasPermission(permission));
     if (!hasRequiredPermission) {
       return fallback || (
-        <div className="access-denied">
-          <div className="access-denied__content">
-            <div className="access-denied__icon">🚫</div>
-            <h2>Permissão Insuficiente</h2>
-            <p>
-              Você não tem as permissões necessárias para acessar esta funcionalidade.
-            </p>
-            <div className="access-denied__info">
-              <p><strong>Permissões necessárias:</strong> {requiredPermissions.join(', ')}</p>
-            </div>
-            <Button variant="secondary" onClick={() => window.history.back()}>Voltar</Button>
-          </div>
-        </div>
+        <AccessWrapper>
+          <Card>
+            <AccessContent role="alert">
+              <AccessIcon>🚫</AccessIcon>
+              <AccessTitle>Permissão Insuficiente</AccessTitle>
+              <AccessDesc>
+                Você não tem as permissões necessárias para acessar esta funcionalidade.
+              </AccessDesc>
+              <AccessInfo>
+                <p><strong>Permissões necessárias:</strong> {requiredPermissions.join(', ')}</p>
+              </AccessInfo>
+              <Button variant="secondary" onClick={() => window.history.back()}>Voltar</Button>
+            </AccessContent>
+          </Card>
+        </AccessWrapper>
       );
     }
   }
@@ -111,3 +115,34 @@ export const ConditionalRender: React.FC<ConditionalRenderProps> = ({
 };
 
 export default ProtectedRoute;
+
+const AccessWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  padding: ${({ theme }) => theme.spacing.lg};
+`;
+
+const AccessContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const AccessIcon = styled.div`
+  font-size: 32px;
+`;
+
+const AccessTitle = styled.h2`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+const AccessDesc = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const AccessInfo = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;

@@ -6,6 +6,7 @@ import LoginForm from '../../components/auth/LoginForm';
 import RegisterForm from '../../components/auth/RegisterForm';
 import ForgotPasswordForm from '../../components/auth/ForgotPasswordForm';
 import ResetPasswordForm from '../../components/auth/ResetPasswordForm';
+import { AuthTemplate } from '../../components/templates';
 
 type AuthMode = 'login' | 'register' | 'forgot-password' | 'reset-password';
 
@@ -81,51 +82,39 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const BrandTitle = styled.h1`
-    color: ${({ theme }) => theme.colors.text.primary};
-  `;
-  const BrandSubtitle = styled.p`
-    color: ${({ theme }) => theme.colors.text.secondary};
-  `;
   const FooterText = styled.p`
     color: ${({ theme }) => theme.colors.text.secondary};
+    margin: 0;
   `;
   const FooterLinks = styled.div`
+    margin-top: ${({ theme }) => theme.spacing.xs};
+    display: flex;
+    gap: ${({ theme }) => theme.spacing.sm};
+    justify-content: center;
     a { color: ${({ theme }) => theme.colors.primary.main}; text-decoration: none; }
     a:hover { text-decoration: underline; }
   `;
 
   return (
-    <div className="auth-page">
-      <div className="auth-page__container">
-        <div className="auth-page__brand">
-          <div className="brand-logo">
-        <img src="/images/logo.svg" alt="TelecomAI" loading="lazy" />
-          </div>
-          <BrandTitle>TelecomAI</BrandTitle>
-          <BrandSubtitle>Sistema de Gestão de Tickets e Ordens de Serviço</BrandSubtitle>
-        </div>
-
-        <div className="auth-page__form">
-          <div className="auth-form-container">
-            {renderAuthForm()}
-          </div>
-        </div>
-      </div>
-
-      <div className="auth-page__background">
-        <div className="background-pattern"></div>
-      </div>
-
-      <div className="auth-page__footer">
-        <FooterText>&copy; 2024 TelecomAI. Todos os direitos reservados.</FooterText>
-        <FooterLinks className="footer-links">
-          <a href="/terms">Termos de Uso</a>
-          <a href="/privacy">Política de Privacidade</a>
-          <a href="/support">Suporte</a>
-        </FooterLinks>
-      </div>
-    </div>
+    <AuthTemplate
+      title="TelecomAI"
+      subtitle="Sistema de Gestão de Tickets e Ordens de Serviço"
+      showLogo
+      layout="split"
+      brandLogoSrc="/images/logo.svg"
+      footer={(
+        <>
+          <FooterText>&copy; 2024 TelecomAI. Todos os direitos reservados.</FooterText>
+          <FooterLinks>
+            <a href="/terms">Termos de Uso</a>
+            <a href="/privacy">Política de Privacidade</a>
+            <a href="/support">Suporte</a>
+          </FooterLinks>
+        </>
+      )}
+    >
+      {renderAuthForm()}
+    </AuthTemplate>
   );
 };
 

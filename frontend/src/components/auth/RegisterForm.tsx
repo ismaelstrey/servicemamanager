@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { useAuth } from '../../hooks/useAuth';
 import type { RegisterData } from '../../types/auth';
 import { AuthService } from '../../services/authService';
@@ -10,10 +10,67 @@ interface RegisterFormProps {
   onLogin?: () => void;
 }
 
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const Header = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Title = styled.h2`
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+const Description = styled.p`
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const StrengthBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Bar = styled.div`
+  width: 100%;
+  height: 6px;
+  background: ${({ theme }) => theme.colors.neutral[200]};
+  border-radius: ${({ theme }) => theme.borders.radius.sm};
+  overflow: hidden;
+`;
+
+const Fill = styled.div<{ $width: number; $color: string }>`
+  width: ${({ $width }) => `${$width}%`};
+  height: 100%;
+  background: ${({ $color }) => $color};
+`;
+
+const Row = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const StrengthLabel = styled.span<{ $color: string }>`
+  color: ${({ $color }) => $color};
+`;
+
 export const RegisterForm: React.FC<RegisterFormProps> = ({
   onSuccess,
   onLogin,
 }) => {
+  const theme = useTheme();
   const { register, loading, error } = useAuth();
   const [formData, setFormData] = useState<RegisterData>({
     name: '',
@@ -127,9 +184,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   };
 
   const getPasswordStrengthColor = (score: number): string => {
-    if (score <= 2) return 'red';
-    if (score <= 4) return 'orange';
-    return 'green';
+    if (score <= 2) return theme.colors.danger.main;
+    if (score <= 4) return theme.colors.warning.main;
+    return theme.colors.success.main;
   };
 
   const getPasswordStrengthText = (score: number): string => {
@@ -138,57 +195,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     return 'Forte';
   };
 
-  const Wrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacing.md};
-  `;
-
-  const Header = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacing.xs};
-  `;
-
-  const Title = styled.h2`
-    color: ${({ theme }) => theme.colors.text.primary};
-  `;
-
-  const Description = styled.p`
-    color: ${({ theme }) => theme.colors.text.secondary};
-  `;
-
-  const Form = styled.form`
-    display: flex;
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacing.sm};
-  `;
-
-  const StrengthBar = styled.div`
-    display: flex;
-    align-items: center;
-    gap: ${({ theme }) => theme.spacing.xs};
-  `;
-
-  const Bar = styled.div`
-    width: 100%;
-    height: 6px;
-    background: ${({ theme }) => theme.colors.neutral[200]};
-    border-radius: ${({ theme }) => theme.borders.radius.sm};
-    overflow: hidden;
-  `;
-
-  const Fill = styled.div<{ $width: number; $color: string }>`
-    width: ${({ $width }) => `${$width}%`};
-    height: 100%;
-    background: ${({ $color }) => $color};
-  `;
-
-  const Row = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  `;
 
   return (
     <Wrapper>
@@ -251,9 +257,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             <Bar>
               <Fill $width={(passwordStrength.score / 6) * 100} $color={getPasswordStrengthColor(passwordStrength.score)} />
             </Bar>
-            <span style={{ color: getPasswordStrengthColor(passwordStrength.score) }}>
+            <StrengthLabel $color={getPasswordStrengthColor(passwordStrength.score)}>
               {getPasswordStrengthText(passwordStrength.score)}
-            </span>
+            </StrengthLabel>
           </StrengthBar>
         )}
 
