@@ -2,24 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Card, 
-  Button, 
-  Input, 
+import {
+  Card,
+  Button,
+  Input,
   Select,
   Badge,
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableRow, 
-  TableHeaderCell, 
-  TableCell, 
-  Pagination, 
-  Spinner, 
-  Alert 
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHeaderCell,
+  TableCell,
+  Pagination,
+  Alert,
+  LogoLoader
 } from '../../components/ui';
 import { ApiService } from '../../services/api';
 import type { ProviderListItem } from '../../services/providerService';
+import { Block } from '../../components/layout/Flex/Flex';
 
 const DEFAULT_LIMIT = 10;
 
@@ -60,8 +61,8 @@ const ProvidersListPage: React.FC = () => {
       const dataArray = Array.isArray(res.data)
         ? res.data
         : Array.isArray(res.data?.data)
-        ? res.data.data
-        : [];
+          ? res.data.data
+          : [];
 
       const pagination = (res as any).pagination ?? res.data?.pagination ?? null;
 
@@ -92,39 +93,43 @@ const ProvidersListPage: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
     >
-      <Header>
-        <Title>Provedores</Title>
-        <Button onClick={() => navigate('/providers/create')}>Criar Provedor</Button>
-      </Header>
+      <Block>
+        <Header>
+          <Title>Provedores</Title>
+          <Button onClick={() => navigate('/providers/create')}>Criar Provedor</Button>
+        </Header>
+      </Block>
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <Card>
-          <Toolbar>
-            <Filters onSubmit={handleSearchSubmit}>
-              <Input
-                placeholder="Buscar por nome ou workspace"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                fullWidth
-              />
-              <Button type="submit">Buscar</Button>
-            </Filters>
-            <Select value={statusFilter} onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}>
-              <option value="">Todos status</option>
-              <option value="active">Ativo</option>
-              <option value="inactive">Inativo</option>
-              <option value="suspended">Suspenso</option>
-              <option value="pending">Pendente</option>
-            </Select>
-            <Select value={planFilter} onChange={(e) => { setPage(1); setPlanFilter(e.target.value); }}>
-              <option value="">Todos planos</option>
-              <option value="basic">Basic</option>
-              <option value="standard">Standard</option>
-              <option value="premium">Premium</option>
-              <option value="enterprise">Enterprise</option>
-            </Select>
-            <Button onClick={() => navigate('/providers/create')}>Criar Provedor</Button>
-          </Toolbar>
+          <Block>
+            <Toolbar>
+              <Filters onSubmit={handleSearchSubmit}>
+                <Input
+                  placeholder="Buscar por nome ou workspace"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  fullWidth
+                />
+                <Button type="submit">Buscar</Button>
+              </Filters>
+              <Select value={statusFilter} size='lg' onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}>
+                <option value="">Todos status</option>
+                <option value="active">Ativo</option>
+                <option value="inactive">Inativo</option>
+                <option value="suspended">Suspenso</option>
+                <option value="pending">Pendente</option>
+              </Select>
+              <Select value={planFilter} size='lg' onChange={(e) => { setPage(1); setPlanFilter(e.target.value); }}>
+                <option value="">Todos planos</option>
+                <option value="basic">Basic</option>
+                <option value="standard">Standard</option>
+                <option value="premium">Premium</option>
+                <option value="enterprise">Enterprise</option>
+              </Select>
+
+            </Toolbar>
+          </Block>
 
           <AnimatePresence>{error && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -136,7 +141,7 @@ const ProvidersListPage: React.FC = () => {
 
           {loading ? (
             <Centered>
-              <Spinner size="md" label="Carregando provedores..." />
+              <LogoLoader fullscreen message="Carregando provedores..." />
             </Centered>
           ) : (
             <div>

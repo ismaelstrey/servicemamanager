@@ -108,7 +108,7 @@ const HelperText = styled.span`
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
 `;
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(({ 
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
   label,
   error,
   helperText,
@@ -120,7 +120,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
   children,
   ...props
 }, ref) => {
-  const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
+  const selectId = id || `select-${Math.random().toString(36).slice(2, 11)}`;
 
   return (
     <Wrapper $fullWidth={fullWidth}>

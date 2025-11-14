@@ -1,6 +1,7 @@
 const { PrismaClient, $Enums } = require('@prisma/client');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 const prisma = new PrismaClient();
 
@@ -28,10 +29,58 @@ async function main() {
       name: 'Seed Provider',
       cnpj: '00.000.000/0000-00',
       workspace: 'seed-provider',
-      ownerId: user.id
+      ownerId: user.id,
+      phone: '11988887777',
+      email: 'contato@seed-provider.local'
     }
   });
   console.log('🏢 Provider:', provider.name, 'id=', provider.id);
+
+  const branch = await prisma.providerBranch.create({
+    data: {
+      name: 'Matriz Seed',
+      phone: '11977776666',
+      email: 'matriz@seed-provider.local',
+      address: { street: 'Rua Seed', city: 'São Paulo', state: 'SP', zipcode: '01000-000' },
+      providerId: provider.id
+    }
+  });
+  console.log('🏬 Branch criada:', branch.name, 'id=', branch.id);
+
+  const encKeyBase64 = process.env.CREDENTIALS_ENCRYPTION_KEY;
+  if (!encKeyBase64) throw new Error('CREDENTIALS_ENCRYPTION_KEY ausente no ambiente');
+  const encKey = Buffer.from(encKeyBase64, 'base64');
+  const encryptCredential = (password) => {
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', encKey, iv);
+    const enc = Buffer.concat([cipher.update(password, 'utf8'), cipher.final()]);
+    const tag = cipher.getAuthTag();
+    return Buffer.concat([iv, tag, enc]).toString('base64');
+  };
+
+  const service = await prisma.providerService.create({
+    data: {
+      name: 'Zabbix',
+      type: $Enums.ProviderServiceType.zabbix,
+      url: 'https://zabbix.seed-provider.local',
+      description: 'Monitoramento',
+      isActive: true,
+      providerId: provider.id
+    }
+  });
+  console.log('🧩 Serviço criado:', service.name, 'id=', service.id);
+
+  const credential = await prisma.providerServiceCredential.create({
+    data: {
+      serviceId: service.id,
+      label: 'Acesso Principal',
+      username: 'seeduser',
+      passwordEnc: encryptCredential('SeedPass123!'),
+      isActive: true,
+      visibility: $Enums.CredentialVisibility.PROVIDER_ONLY
+    }
+  });
+  console.log('🔑 Credencial criada:', credential.label, 'id=', credential.id);
 
   // Cliente de exemplo vinculado ao provider
   const clientPasswordHash = await bcrypt.hash('clientpass', 10);

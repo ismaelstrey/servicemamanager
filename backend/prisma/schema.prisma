@@ -3,15 +3,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Cliente Prisma: gera o client TypeScript para acessar o banco
 generator client {
   provider = "prisma-client-js"
 }
+// Gerador de diagrama ERD para visualização do modelo
 generator erd {
   provider = "prisma-erd-generator"
   output   = "./diagram"
 }
 
 
+// Usuários internos da plataforma (admin/operadores). Gerenciam provedores,
+// convites, comentários, notificações e templates de checklist.
 model User {
   id        Int      @id @default(autoincrement())
   name      String
@@ -31,6 +35,8 @@ model User {
   createdChecklistTemplates ChecklistTemplate[]
 }
 
+// Provedor/empresa atendida pelo sistema. Centraliza dados de contato e
+// relaciona equipamentos, tickets, serviços, filiais, grupos e rotinas.
 model Provider {
   id        Int      @id @default(autoincrement())
   name      String
@@ -62,6 +68,7 @@ model Provider {
   groups   ProviderGroup[]
 }
 
+// Filiais do provedor (unidades). Guarda contatos, endereço e observações.
 model ProviderBranch {
   id         Int      @id @default(autoincrement())
   name       String
@@ -78,6 +85,7 @@ model ProviderBranch {
   @@map("provider_branches")
 }
 
+// Tipos de serviços do catálogo que o provedor expõe aos clientes.
 enum ProviderServiceType {
   zabbix
   proxmox
@@ -86,6 +94,8 @@ enum ProviderServiceType {
   other
 }
 
+// Catálogo de serviços do provedor (nome, tipo, URL, descrição e status).
+// Agrupa credenciais que podem ser mostradas ao cliente conforme regras.
 model ProviderService {
   id         Int                 @id @default(autoincrement())
   name       String
@@ -103,12 +113,17 @@ model ProviderService {
   @@map("provider_services")
 }
 
+// Controle de visibilidade das credenciais:
+// PUBLIC (qualquer cliente vê), PROVIDER_ONLY (apenas equipe do provedor),
+// CUSTOM (apenas usuários/grupos permitidos).
 enum CredentialVisibility {
   PUBLIC
   PROVIDER_ONLY
   CUSTOM
 }
 
+// Credenciais de acesso vinculadas a um serviço do provedor.
+// Senha armazenada criptografada e com regras de visibilidade/acesso.
 model ProviderServiceCredential {
   id          Int                  @id @default(autoincrement())
   service     ProviderService      @relation(fields: [serviceId], references: [id])
@@ -128,6 +143,8 @@ model ProviderServiceCredential {
   @@map("provider_service_credentials")
 }
 
+// Grupos de usuários do provedor. Usados para organizar permissões e
+// controlar acesso a credenciais por grupo.
 model ProviderGroup {
   id         Int       @id @default(autoincrement())
   name       String
@@ -143,6 +160,7 @@ model ProviderGroup {
   @@map("provider_groups")
 }
 
+// Associação N:N entre grupos do provedor e usuários vinculados ao provedor.
 model ProviderGroupMember {
   group     ProviderGroup @relation(fields: [groupId], references: [id])
   groupId   Int
@@ -153,6 +171,7 @@ model ProviderGroupMember {
   @@map("provider_group_members")
 }
 
+// Usuários com acesso explícito a uma credencial (modo CUSTOM).
 model CredentialUserAccess {
   credential ProviderServiceCredential @relation(fields: [credentialId], references: [id])
   credentialId Int
@@ -163,6 +182,7 @@ model CredentialUserAccess {
   @@map("credential_user_access")
 }
 
+// Grupos com acesso explícito a uma credencial (modo CUSTOM).
 model CredentialGroupAccess {
   credential ProviderServiceCredential @relation(fields: [credentialId], references: [id])
   credentialId Int
@@ -173,6 +193,8 @@ model CredentialGroupAccess {
   @@map("credential_group_access")
 }
 
+// Vínculo entre um usuário interno e um provedor, com papel e permissões.
+// Permite controlar acesso por grupo e por credenciais específicas.
 model ProviderUser {
   id          Int      @id @default(autoincrement())
   role        String   // admin, manager, technician, support, viewer
@@ -195,6 +217,8 @@ model ProviderUser {
   credentialAccess CredentialUserAccess[]
 }
 
+// Convites para adicionar novos usuários a um provedor, com papel e
+// permissões. Possui status, expiração e remetente.
 model ProviderInvite {
   id          Int      @id @default(autoincrement())
   email       String
@@ -217,12 +241,14 @@ model ProviderInvite {
   @@map("provider_invites")
 }
 
+// Status de um equipamento no inventário do provedor.
 enum EquipmentStatus {
   active
   inactive
   maintenance
 }
 
+// Tipo de equipamento (rede/servidor/virtualização etc.).
 enum EquipmentType {
   switch
   olt
@@ -232,6 +258,7 @@ enum EquipmentType {
   other
 }
 
+// Inventário de equipamentos do provedor, com tipo, rótulo, série e status.
 model Equipment {
   id          Int      @id @default(autoincrement())
   type        EquipmentType
@@ -244,6 +271,8 @@ model Equipment {
   updatedAt   DateTime @updatedAt
 }
 
+// Chamados de suporte/incidentes do provedor. Podem ser criados manualmente
+// ou por integrações (Zabbix/API). Relaciona comentários, anexos e tags.
 model Ticket {
   id          Int      @id @default(autoincrement())
   title       String
@@ -264,6 +293,7 @@ model Ticket {
   checklistLinks ChecklistLink[]
 }
 
+// Status possíveis de uma ordem de serviço.
 enum ServiceOrderStatus {
   pending
   in_progress
@@ -273,6 +303,7 @@ enum ServiceOrderStatus {
   cancelled
 }
 
+// Prioridades de execução para ordens de serviço.
 enum ServiceOrderPriority {
   low
   medium
@@ -280,6 +311,7 @@ enum ServiceOrderPriority {
   urgent
 }
 
+// Comentários vinculados a tickets/ordens (internos ou visíveis ao cliente).
 model Comment {
   id           Int      @id @default(autoincrement())
   content      String
@@ -309,6 +341,7 @@ model Comment {
   @@map("comments")
 }
 
+// Tags para organização e classificação de tickets/itens.
 model Tag {
   id        Int      @id @default(autoincrement())
   name      String   @unique
@@ -320,6 +353,7 @@ model Tag {
   @@map("tags")
 }
 
+// Relação N:N entre tickets e tags.
 model TicketTag {
   ticket   Ticket @relation(fields: [ticketId], references: [id])
   ticketId Int
@@ -331,6 +365,7 @@ model TicketTag {
   @@map("ticket_tags")
 }
 
+// Anexos de arquivos relacionados a tickets.
 model TicketAttachment {
   id           Int     @id @default(autoincrement())
   ticket       Ticket  @relation(fields: [ticketId], references: [id])
@@ -347,6 +382,7 @@ model TicketAttachment {
   @@map("ticket_attachments")
 }
 
+// Template de checklist reutilizável para processos (tickets/ordens/rotinas).
 model ChecklistTemplate {
   id          Int      @id @default(autoincrement())
   title       String
@@ -366,6 +402,7 @@ model ChecklistTemplate {
   @@map("checklist_templates")
 }
 
+// Item de um template de checklist (título, descrição, obrigatório, ordem).
 model ChecklistItemTemplate {
   id                   Int               @id @default(autoincrement())
   checklistTemplate    ChecklistTemplate @relation(fields: [checklistTemplateId], references: [id])
@@ -379,6 +416,8 @@ model ChecklistItemTemplate {
   @@map("checklist_item_templates")
 }
 
+// Vincula um template de checklist a um recurso concreto (ticket/OS),
+// rastreando status e progresso de execução.
 model ChecklistLink {
   id                  Int               @id @default(autoincrement())
   checklistTemplate   ChecklistTemplate @relation(fields: [checklistTemplateId], references: [id])
@@ -400,6 +439,7 @@ model ChecklistLink {
   @@map("checklist_links")
 }
 
+// Instância executável de um item de checklist vinculada a um link.
 model ChecklistInstanceItem {
   id             Int              @id @default(autoincrement())
   link           ChecklistLink    @relation(fields: [linkId], references: [id])
@@ -413,6 +453,7 @@ model ChecklistInstanceItem {
   @@map("checklist_items")
 }
 
+// Rotinas agendadas para automatizar processos (ex.: criar tickets/ordens).
 model Routine {
   id            Int       @id @default(autoincrement())
   name          String
@@ -438,6 +479,7 @@ model Routine {
   @@map("routines")
 }
 
+// Registro de execuções de rotinas (resultado, contagem de criados, erros).
 model RoutineLog {
   id         Int      @id @default(autoincrement())
   routine    Routine  @relation(fields: [routineId], references: [id])
@@ -451,6 +493,8 @@ model RoutineLog {
   @@map("routine_logs")
 }
 
+// Ordens de serviço (execução de trabalhos), relacionadas a tickets e
+// clientes, com status, prioridade e datas.
 model ServiceOrder {
   id              Int      @id @default(autoincrement())
   title           String
@@ -483,6 +527,7 @@ model ServiceOrder {
   @@map("service_orders")
 }
 
+// Cofre simples de senhas internas do provedor (não vinculadas a serviços).
 model PasswordVault {
   id          Int      @id @default(autoincrement())
   label       String
@@ -499,6 +544,7 @@ model PasswordVault {
 
 // ===== INTEGRAÇÃO ZABBIX =====
 
+// Configuração de um servidor Zabbix do provedor (URL, credenciais e estado).
 model ZabbixServer {
   id          Int      @id @default(autoincrement())
   name        String   // Nome identificador do servidor
@@ -524,6 +570,7 @@ model ZabbixServer {
   @@map("zabbix_servers")
 }
 
+// Configurações de integração com Zabbix (filtros, mapeamentos e automações).
 model ZabbixConfig {
   id                    Int      @id @default(autoincrement())
   enabledTriggers       Boolean  @default(true)
@@ -549,6 +596,8 @@ model ZabbixConfig {
   @@map("zabbix_configs")
 }
 
+// Eventos recebidos do Zabbix. Usados para análise/automatização e
+// eventualmente criação/atualização de tickets.
 model ZabbixEvent {
   id              Int      @id @default(autoincrement())
   eventId         String   // ID único do evento no Zabbix
@@ -583,6 +632,8 @@ model ZabbixEvent {
   @@map("zabbix_events")
 }
 
+// Notificações do sistema para usuários e clientes, sobre mudanças em
+// entidades como tickets e ordens de serviço.
 model Notification {
   id          Int      @id @default(autoincrement())
   type        String   // e.g. ticket_status_changed, service_order_status_changed
@@ -611,6 +662,7 @@ model Notification {
   @@map("notifications")
 }
 
+// Histórico/auditoria de mudanças em entidades (quem, o quê e quando).
 model ChangeHistory {
   id          Int      @id @default(autoincrement())
   entityType  String   // 'ticket' | 'service_order' | other
@@ -629,6 +681,7 @@ model ChangeHistory {
   @@map("change_history")
 }
 
+// Usuários clientes do provedor (acesso à área do cliente).
 model Customer {
   id          Int      @id @default(autoincrement())
   name        String
@@ -658,23 +711,27 @@ model Customer {
 
 // ===== COMUNICAÇÃO EM TEMPO REAL E INTEGRAÇÕES (Fase 3) =====
 
+// Tipos de canal de comunicação suportados.
 enum ChannelType {
   whatsapp
   telegram
   site
 }
 
+// Estados possíveis de uma conversa.
 enum ConversationStatus {
   open
   active
   closed
 }
 
+// Direção da mensagem (entrada do cliente ou saída do agente).
 enum MessageDirection {
   inbound
   outbound
 }
 
+// Estado de processamento/entrega de uma mensagem.
 enum MessageStatus {
   queued
   sent
@@ -683,6 +740,7 @@ enum MessageStatus {
   failed
 }
 
+// Estado de itens na fila de envio para integrações.
 enum QueueStatus {
   pending
   processing
@@ -690,6 +748,7 @@ enum QueueStatus {
   failed
 }
 
+// Canal de comunicação (WhatsApp, Telegram, Site) com conversas e integrações.
 model Channel {
   id          Int         @id @default(autoincrement())
   type        ChannelType
@@ -706,6 +765,7 @@ model Channel {
   @@map("channels")
 }
 
+// Conta/instância de integração com um canal (tokens, sessão e status).
 model IntegrationAccount {
   id          Int       @id @default(autoincrement())
   channel     Channel   @relation(fields: [channelId], references: [id])
@@ -726,6 +786,7 @@ model IntegrationAccount {
   @@map("integration_accounts")
 }
 
+// Conversas em um canal entre agente e cliente, com mensagens e participantes.
 model Conversation {
   id          Int                @id @default(autoincrement())
   channel     Channel            @relation(fields: [channelId], references: [id])
@@ -746,6 +807,7 @@ model Conversation {
   @@map("conversations")
 }
 
+// Participantes de uma conversa (agente/cliente) e seus metadados.
 model Participant {
   id             Int          @id @default(autoincrement())
   conversation   Conversation @relation(fields: [conversationId], references: [id])
@@ -762,6 +824,7 @@ model Participant {
   @@map("participants")
 }
 
+// Mensagens trocadas na conversa (texto/mídia), com status e anexos.
 model Message {
   id             Int             @id @default(autoincrement())
   conversation   Conversation    @relation(fields: [conversationId], references: [id])
@@ -784,6 +847,7 @@ model Message {
   @@map("messages")
 }
 
+// Anexos vinculados a mensagens (arquivo, tipo e tamanho).
 model Attachment {
   id        Int     @id @default(autoincrement())
   message   Message @relation(fields: [messageId], references: [id])
@@ -797,6 +861,7 @@ model Attachment {
   @@map("attachments")
 }
 
+// Eventos recebidos via webhook das integrações (armazenamento e processamento).
 model WebhookEvent {
   id                 Int               @id @default(autoincrement())
   integration        IntegrationAccount @relation(fields: [integrationAccountId], references: [id])
@@ -812,6 +877,7 @@ model WebhookEvent {
   @@map("webhook_events")
 }
 
+// Fila de saída para envio de mensagens/ações às integrações, com retries.
 model OutboundQueue {
   id                 Int               @id @default(autoincrement())
   integration        IntegrationAccount @relation(fields: [integrationAccountId], references: [id])
