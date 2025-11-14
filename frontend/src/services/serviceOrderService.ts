@@ -1,26 +1,46 @@
 import { ApiService, type PaginatedResponse } from './api';
 
-// Interface para Ordem de Serviço
+// Interface para Ordem de Serviço acorde com a API atual
 export interface ServiceOrder {
-  id: string;
+  id: number;
   title: string;
   description: string;
   status: 'pending' | 'in_progress' | 'waiting_parts' | 'waiting_client' | 'completed' | 'cancelled';
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  type: 'installation' | 'maintenance' | 'repair' | 'inspection';
-  category: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  location: string;
+  scheduledDate: string;
+  startedAt: string | null;
+  completedAt: string | null;
   estimatedHours: number;
-  estimatedCost: number;
-  dueDate: string;
-  notes?: string;
-  assignedTo?: string;
+  actualHours: number | null;
+  cost: number | null;
+  notes: string | null;
+  providerId: number;
+  ticketId: number;
+  customerId: number | null;
+  customerRating: number | null;
+  customerFeedback: string | null;
   createdAt: string;
   updatedAt: string;
-  createdBy: string;
+  provider?: {
+    id: number;
+    name: string;
+    cnpj?: string;
+    workspace?: string;
+    createdAt: string;
+    updatedAt: string;
+    ownerId: number;
+  };
+  ticket?: {
+    id: number;
+    title: string;
+    description?: string;
+    status: 'open' | 'assigned' | 'in_progress' | 'pending' | 'resolved' | 'closed' | 'cancelled';
+    priority: 'low' | 'medium' | 'high' | 'urgent';
+    source?: string;
+    providerId: number;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 // Interface para criar/atualizar Ordem de Serviço
@@ -49,9 +69,8 @@ export interface UpdateServiceOrderData extends Partial<CreateServiceOrderData> 
 export interface ServiceOrderFilters {
   status?: string;
   priority?: string;
-  type?: string;
-  category?: string;
-  assignedTo?: string;
+  providerId?: number;
+  ticketId?: number;
   search?: string;
   page?: number;
   limit?: number;
@@ -151,15 +170,16 @@ export class ServiceOrderService {
     completed?: number;
     cancelled?: number;
   }> {
-    const response = await ApiService.get<{
-      total: number;
-      byStatus: Record<string, number>;
-      byPriority: Record<string, number>;
+    type StatsResponse = {
+      total?: number;
+      byStatus?: Record<string, number>;
+      byPriority?: Record<string, number>;
       averageCompletionTime?: number;
       totalRevenue?: number;
       pendingRevenue?: number;
-    }>(`${this.BASE_URL}/stats`);
-    const data = response.data as any;
+    }
+    const response = await ApiService.get<StatsResponse>(`${this.BASE_URL}/stats`);
+    const data = response.data || {};
     // Preencher campos legados para compatibilidade com o dashboard
     return {
       total: data.total ?? 0,
@@ -168,10 +188,10 @@ export class ServiceOrderService {
       averageCompletionTime: data.averageCompletionTime ?? 0,
       totalRevenue: data.totalRevenue ?? 0,
       pendingRevenue: data.pendingRevenue ?? 0,
-      pending: data.byStatus?.pending ?? 0,
-      inProgress: data.byStatus?.in_progress ?? 0,
-      completed: data.byStatus?.completed ?? 0,
-      cancelled: data.byStatus?.cancelled ?? 0,
+      pending: (data.byStatus ?? {}).pending ?? 0,
+      inProgress: (data.byStatus ?? {}).in_progress ?? 0,
+      completed: (data.byStatus ?? {}).completed ?? 0,
+      cancelled: (data.byStatus ?? {}).cancelled ?? 0,
     };
   }
 

@@ -18,29 +18,13 @@ import {
   Alert 
 } from '../../components/ui';
 import '../../styles/service-orders.css';
+import { ServiceOrderService, type ServiceOrder, type ServiceOrderFilters } from '../../services/serviceOrderService'
 
-interface ServiceOrder {
-  id: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  category: string;
-  clientName: string;
-  assignedTo?: string;
-  estimatedHours: number;
-  actualHours?: number;
-  cost: number;
-  createdAt: string;
-  updatedAt: string;
-  dueDate?: string;
-  equipmentId?: string;
-  equipmentName?: string;
-}
+type ListOrder = ServiceOrder
 
 const ServiceOrdersListPage: React.FC = () => {
   const navigate = useNavigate();
-  const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>([]);
+  const [serviceOrders, setServiceOrders] = useState<ListOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // Alternância de visualização (lista ou grade)
@@ -50,7 +34,6 @@ const ServiceOrdersListPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -60,6 +43,8 @@ const ServiceOrdersListPage: React.FC = () => {
     { value: 'all', label: 'Todos os Status' },
     { value: 'pending', label: 'Pendente' },
     { value: 'in_progress', label: 'Em Andamento' },
+    { value: 'waiting_parts', label: 'Aguardando Peças' },
+    { value: 'waiting_client', label: 'Aguardando Cliente' },
     { value: 'completed', label: 'Concluída' },
     { value: 'cancelled', label: 'Cancelada' }
   ];
@@ -72,125 +57,42 @@ const ServiceOrdersListPage: React.FC = () => {
     { value: 'urgent', label: 'Urgente' }
   ];
 
-  const categoryOptions = [
-    { value: 'all', label: 'Todas as Categorias' },
-    { value: 'installation', label: 'Instalação' },
-    { value: 'maintenance', label: 'Manutenção' },
-    { value: 'repair', label: 'Reparo' },
-    { value: 'upgrade', label: 'Upgrade' },
-    { value: 'consultation', label: 'Consultoria' },
-    { value: 'training', label: 'Treinamento' }
-  ];
+  
 
-  // Mock function to load service orders
-  const loadServiceOrders = async () => {
-    setIsLoading(true);
-    setError(null);
-    
+  const [totalItems, setTotalItems] = useState(0)
+
+  const loadServiceOrders = React.useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const filters: Partial<ServiceOrderFilters> = {}
+      if (searchTerm) filters.search = searchTerm
+      if (statusFilter !== 'all') filters.status = statusFilter
+      if (priorityFilter !== 'all') filters.priority = priorityFilter
       
-      const mockServiceOrders: ServiceOrder[] = [
-        {
-          id: '1',
-          title: 'Instalação de Servidor',
-          description: 'Instalação e configuração de novo servidor Dell PowerEdge',
-          status: 'in_progress',
-          priority: 'high',
-          category: 'installation',
-          clientName: 'Empresa ABC Ltda',
-          assignedTo: 'João Silva',
-          estimatedHours: 8,
-          actualHours: 6,
-          cost: 2500.00,
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-16T14:20:00Z',
-          dueDate: '2024-01-20T18:00:00Z',
-          equipmentId: '1',
-          equipmentName: 'Server-01'
-        },
-        {
-          id: '2',
-          title: 'Manutenção Preventiva Switch',
-          description: 'Manutenção preventiva mensal do switch core',
-          status: 'pending',
-          priority: 'medium',
-          category: 'maintenance',
-          clientName: 'Tech Solutions',
-          estimatedHours: 4,
-          cost: 800.00,
-          createdAt: '2024-01-14T09:15:00Z',
-          updatedAt: '2024-01-14T09:15:00Z',
-          dueDate: '2024-01-18T16:00:00Z',
-          equipmentId: '2',
-          equipmentName: 'Switch-Core-01'
-        },
-        {
-          id: '3',
-          title: 'Reparo Firewall',
-          description: 'Reparo de módulo de rede do firewall principal',
-          status: 'completed',
-          priority: 'urgent',
-          category: 'repair',
-          clientName: 'Secure Corp',
-          assignedTo: 'Maria Santos',
-          estimatedHours: 6,
-          actualHours: 8,
-          cost: 1800.00,
-          createdAt: '2024-01-10T08:00:00Z',
-          updatedAt: '2024-01-12T17:30:00Z',
-          equipmentId: '3',
-          equipmentName: 'Firewall-01'
-        },
-        {
-          id: '4',
-          title: 'Upgrade Sistema Monitoramento',
-          description: 'Atualização do sistema de monitoramento Zabbix',
-          status: 'pending',
-          priority: 'low',
-          category: 'upgrade',
-          clientName: 'Monitor Plus',
-          estimatedHours: 12,
-          cost: 3200.00,
-          createdAt: '2024-01-13T11:45:00Z',
-          updatedAt: '2024-01-13T11:45:00Z',
-          dueDate: '2024-01-25T18:00:00Z'
-        },
-        {
-          id: '5',
-          title: 'Consultoria Segurança',
-          description: 'Consultoria para implementação de políticas de segurança',
-          status: 'in_progress',
-          priority: 'medium',
-          category: 'consultation',
-          clientName: 'SafeNet Inc',
-          assignedTo: 'Carlos Oliveira',
-          estimatedHours: 16,
-          actualHours: 4,
-          cost: 4500.00,
-          createdAt: '2024-01-12T14:20:00Z',
-          updatedAt: '2024-01-15T16:10:00Z',
-          dueDate: '2024-01-30T18:00:00Z'
-        }
-      ];
-      
-      setServiceOrders(mockServiceOrders);
-    } catch {
-      setError('Erro ao carregar ordens de serviço. Tente novamente.');
+      filters.page = currentPage
+      filters.limit = itemsPerPage
+      const res = await ServiceOrderService.getServiceOrders(filters as ServiceOrderFilters)
+      setServiceOrders(res.data || [])
+      setTotalItems(res.pagination?.total ?? (res.data?.length ?? 0))
+    } catch (e) {
+      const apiMsg = (e as any)?.response?.data?.message
+      setError(typeof apiMsg === 'string' ? apiMsg : 'Erro ao carregar ordens de serviço. Tente novamente.')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }, [searchTerm, statusFilter, priorityFilter, currentPage, itemsPerPage])
 
   useEffect(() => {
-    loadServiceOrders();
-  }, []);
+    loadServiceOrders()
+  }, [loadServiceOrders])
 
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'pending': return 'warning';
       case 'in_progress': return 'info';
+      case 'waiting_parts': return 'info';
+      case 'waiting_client': return 'info';
       case 'completed': return 'success';
       case 'cancelled': return 'danger';
       default: return 'secondary';
@@ -201,6 +103,8 @@ const ServiceOrdersListPage: React.FC = () => {
     switch (status) {
       case 'pending': return 'Pendente';
       case 'in_progress': return 'Em Andamento';
+      case 'waiting_parts': return 'Aguardando Peças';
+      case 'waiting_client': return 'Aguardando Cliente';
       case 'completed': return 'Concluída';
       case 'cancelled': return 'Cancelada';
       default: return status;
@@ -242,23 +146,9 @@ const ServiceOrdersListPage: React.FC = () => {
     });
   };
 
-  const filteredServiceOrders = serviceOrders.filter(order => {
-    const matchesSearch = order.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || order.priority === priorityFilter;
-    const matchesCategory = categoryFilter === 'all' || order.category === categoryFilter;
-    
-    return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
-  });
+  const paginatedServiceOrders = serviceOrders
 
-  const paginatedServiceOrders = filteredServiceOrders.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const handleServiceOrderClick = (id: string) => {
+  const handleServiceOrderClick = (id: number) => {
     navigate(`/service-orders/${id}`);
   };
 
@@ -352,19 +242,7 @@ const ServiceOrdersListPage: React.FC = () => {
             ))}
           </Dropdown>
 
-          <Dropdown>
-            <Button variant="outline">
-              {categoryOptions.find(opt => opt.value === categoryFilter)?.label}
-            </Button>
-            {categoryOptions.map(option => (
-              <DropdownItem
-                key={option.value}
-                onClick={() => setCategoryFilter(option.value)}
-              >
-                {option.label}
-              </DropdownItem>
-            ))}
-          </Dropdown>
+          
         </div>
         <div className="table-toolbar__actions">
           <Button
@@ -373,7 +251,6 @@ const ServiceOrdersListPage: React.FC = () => {
               setSearchTerm('');
               setStatusFilter('all');
               setPriorityFilter('all');
-              setCategoryFilter('all');
             }}
           >
             Limpar Filtros
@@ -393,13 +270,13 @@ const ServiceOrdersListPage: React.FC = () => {
               <TableRow>
                 <TableHeaderCell scope="col">ID</TableHeaderCell>
                 <TableHeaderCell scope="col">Título</TableHeaderCell>
-                <TableHeaderCell scope="col">Cliente</TableHeaderCell>
+                <TableHeaderCell scope="col">Provedor</TableHeaderCell>
                 <TableHeaderCell scope="col">Status</TableHeaderCell>
                 <TableHeaderCell scope="col">Prioridade</TableHeaderCell>
-                <TableHeaderCell scope="col">Categoria</TableHeaderCell>
-                <TableHeaderCell scope="col">Responsável</TableHeaderCell>
+                <TableHeaderCell scope="col">Ticket</TableHeaderCell>
+                <TableHeaderCell scope="col">Estimado (h)</TableHeaderCell>
+                <TableHeaderCell scope="col">Agendada</TableHeaderCell>
                 <TableHeaderCell scope="col">Valor</TableHeaderCell>
-                <TableHeaderCell scope="col">Prazo</TableHeaderCell>
                 <TableHeaderCell scope="col">Ações</TableHeaderCell>
               </TableRow>
             </TableHeader>
@@ -414,12 +291,9 @@ const ServiceOrdersListPage: React.FC = () => {
                   <TableCell>
                     <div className="service-order-title">
                       <strong>{order.title}</strong>
-                      {order.equipmentName && (
-                        <small>({order.equipmentName})</small>
-                      )}
                     </div>
                   </TableCell>
-                  <TableCell>{order.clientName}</TableCell>
+                  <TableCell>{order.provider?.name ?? `#${order.providerId}`}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(order.status)}>
                       {getStatusLabel(order.status)}
@@ -433,12 +307,16 @@ const ServiceOrdersListPage: React.FC = () => {
                       </Badge>
                     </div>
                   </TableCell>
-                  <TableCell>{order.category}</TableCell>
-                  <TableCell>{order.assignedTo || 'Não atribuído'}</TableCell>
-                  <TableCell>{formatCurrency(order.cost)}</TableCell>
                   <TableCell>
-                    {order.dueDate ? formatDate(order.dueDate) : 'Sem prazo'}
+                    {order.ticket ? (
+                      <span>#{order.ticket.id} • {order.ticket.title}</span>
+                    ) : (
+                      <span>#{order.ticketId}</span>
+                    )}
                   </TableCell>
+                  <TableCell>{order.estimatedHours}</TableCell>
+                  <TableCell>{order.scheduledDate ? formatDate(order.scheduledDate) : '—'}</TableCell>
+                  <TableCell>{order.cost != null ? formatCurrency(order.cost) : '—'}</TableCell>
                   <TableCell>
                     <div className="service-order-actions">
                       <Button
@@ -466,15 +344,15 @@ const ServiceOrdersListPage: React.FC = () => {
                   <Badge variant={getStatusVariant(order.status)}>{getStatusLabel(order.status)}</Badge>
                 </div>
                 <div className="service-order-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <div><strong>Cliente:</strong> {order.clientName}</div>
+                  <div><strong>Provedor:</strong> {order.provider?.name ?? `#${order.providerId}`}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span className={`priority-dot ${order.priority}`}></span>
                     <Badge variant={getPriorityColor(order.priority)} size="sm">{getPriorityLabel(order.priority)}</Badge>
                   </div>
-                  <div><strong>Categoria:</strong> {order.category}</div>
-                  <div><strong>Responsável:</strong> {order.assignedTo || 'Não atribuído'}</div>
-                  <div><strong>Prazo:</strong> {order.dueDate ? formatDate(order.dueDate) : 'Sem prazo'}</div>
-                  <div><strong>Valor:</strong> {formatCurrency(order.cost)}</div>
+                  <div><strong>Ticket:</strong> {order.ticket ? `#${order.ticket.id} • ${order.ticket.title}` : `#${order.ticketId}`}</div>
+                  <div><strong>Agendada:</strong> {order.scheduledDate ? formatDate(order.scheduledDate) : '—'}</div>
+                  <div><strong>Estimado (h):</strong> {order.estimatedHours}</div>
+                  <div><strong>Valor:</strong> {order.cost != null ? formatCurrency(order.cost) : '—'}</div>
                 </div>
                 <div className="service-order-card-actions" style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
                   <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); navigate(`/service-orders/${order.id}`); }}>Ver</Button>
@@ -497,10 +375,10 @@ const ServiceOrdersListPage: React.FC = () => {
         )}
       </Card>
 
-      {!isLoading && filteredServiceOrders.length > itemsPerPage && (
+      {!isLoading && totalItems > itemsPerPage && (
         <Pagination
           currentPage={currentPage}
-          totalPages={Math.ceil(filteredServiceOrders.length / itemsPerPage)}
+          totalPages={Math.ceil(totalItems / itemsPerPage)}
           onPageChange={setCurrentPage}
           showFirstLast
           showPrevNext

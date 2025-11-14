@@ -122,8 +122,8 @@ const ServiceOrdersCalendarPage: React.FC = () => {
   const ordersByDay = useMemo(() => {
     const map: Record<number, ServiceOrder[]> = {};
     serviceOrders.forEach((so) => {
-      if (!so.dueDate) return;
-      const d = new Date(so.dueDate);
+      if (!so.scheduledDate) return;
+      const d = new Date(so.scheduledDate);
       if (d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear()) {
         const day = d.getDate();
         if (!map[day]) map[day] = [];
