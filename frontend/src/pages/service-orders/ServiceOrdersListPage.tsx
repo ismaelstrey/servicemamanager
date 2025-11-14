@@ -34,6 +34,7 @@ const ServiceOrdersListPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -73,7 +74,7 @@ const ServiceOrdersListPage: React.FC = () => {
       filters.page = currentPage
       filters.limit = itemsPerPage
       const res = await ServiceOrderService.getServiceOrders(filters as ServiceOrderFilters)
-      setServiceOrders(res.data || [])
+      setServiceOrders((res as unknown as ServiceOrder[]) || [])
       setTotalItems(res.pagination?.total ?? (res.data?.length ?? 0))
     } catch (e) {
       const apiMsg = (e as any)?.response?.data?.message
