@@ -12,6 +12,9 @@ import passwordVaultRoutes from './routes/passwordVaultRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import serviceOrderRoutes from './routes/serviceOrderRoutes';
 import commentRoutes from './routes/commentRoutes';
+import branchRoutes from './routes/branchRoutes';
+import serviceCatalogRoutes from './routes/serviceCatalogRoutes';
+import groupRoutes from './routes/groupRoutes';
 import aiRoutes from './routes/aiRoutes';
 import chatRoutes from './routes/chatRoutes';
 import notificationRoutes from './routes/notificationRoutes';
@@ -19,6 +22,7 @@ import clientProfileRoutes from './routes/clientProfileRoutes';
 import customerAuthRoutes from './routes/customerAuthRoutes';
 import clientServiceOrderRoutes from './routes/clientServiceOrderRoutes';
 import clientTicketRoutes from './routes/clientTicketRoutes';
+import clientServiceCatalogRoutes from './routes/clientServiceCatalogRoutes';
 import clientNotificationRoutes from './routes/clientNotificationRoutes';
 import integrationRoutes from './routes/integrationRoutes';
 import debugRoutes from './routes/debugRoutes';
@@ -108,10 +112,14 @@ app.use('/api/service-orders', serviceOrderRoutes);
 app.use('/api/client/service-orders', createResourceRateLimit);
 app.use('/api/client/service-orders', clientServiceOrderRoutes);
 app.use('/api/client/tickets', clientTicketRoutes);
+app.use('/api/client', clientServiceCatalogRoutes);
 app.use('/api/client/notifications', clientNotificationRoutes);
 
 // Rotas de comentários
 app.use('/api/comments', commentRoutes);
+app.use('/api', branchRoutes);
+app.use('/api', serviceCatalogRoutes);
+app.use('/api', groupRoutes);
 // Checklists
 app.use('/api', checklistRoutes);
 // Rotinas

@@ -353,7 +353,7 @@ export class TicketRepository {
     const names = Array.from(new Set(tagNames.map(n => n.trim()).filter(Boolean)))
     if (names.length === 0) return []
     const existing = await this.prisma.tag.findMany({ where: { name: { in: names } } })
-    const existingNames = new Set(existing.map(t => t.name))
+    const existingNames = new Set(existing.map((t: { name: string }) => t.name))
     const toCreate = names.filter(n => !existingNames.has(n))
     if (toCreate.length > 0) {
       await this.prisma.tag.createMany({ data: toCreate.map(n => ({ name: n })) })
@@ -374,7 +374,7 @@ export class TicketRepository {
       where: { ticketId },
       include: { tag: { select: { id: true, name: true } } }
     })
-    return rows.map(r => r.tag)
+    return rows.map((r: { tag: { id: number; name: string } }) => r.tag)
   }
 
   async removeTag(ticketId: number, tagId: number): Promise<boolean> {

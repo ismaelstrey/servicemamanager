@@ -15,6 +15,9 @@ const passwordVaultRoutes_1 = __importDefault(require("./routes/passwordVaultRou
 const dashboardRoutes_1 = __importDefault(require("./routes/dashboardRoutes"));
 const serviceOrderRoutes_1 = __importDefault(require("./routes/serviceOrderRoutes"));
 const commentRoutes_1 = __importDefault(require("./routes/commentRoutes"));
+const branchRoutes_1 = __importDefault(require("./routes/branchRoutes"));
+const serviceCatalogRoutes_1 = __importDefault(require("./routes/serviceCatalogRoutes"));
+const groupRoutes_1 = __importDefault(require("./routes/groupRoutes"));
 const aiRoutes_1 = __importDefault(require("./routes/aiRoutes"));
 const chatRoutes_1 = __importDefault(require("./routes/chatRoutes"));
 const notificationRoutes_1 = __importDefault(require("./routes/notificationRoutes"));
@@ -22,6 +25,7 @@ const clientProfileRoutes_1 = __importDefault(require("./routes/clientProfileRou
 const customerAuthRoutes_1 = __importDefault(require("./routes/customerAuthRoutes"));
 const clientServiceOrderRoutes_1 = __importDefault(require("./routes/clientServiceOrderRoutes"));
 const clientTicketRoutes_1 = __importDefault(require("./routes/clientTicketRoutes"));
+const clientServiceCatalogRoutes_1 = __importDefault(require("./routes/clientServiceCatalogRoutes"));
 const clientNotificationRoutes_1 = __importDefault(require("./routes/clientNotificationRoutes"));
 const integrationRoutes_1 = __importDefault(require("./routes/integrationRoutes"));
 const debugRoutes_1 = __importDefault(require("./routes/debugRoutes"));
@@ -102,9 +106,13 @@ app.use('/api/service-orders', serviceOrderRoutes_1.default);
 app.use('/api/client/service-orders', rateLimitMiddleware_1.createResourceRateLimit);
 app.use('/api/client/service-orders', clientServiceOrderRoutes_1.default);
 app.use('/api/client/tickets', clientTicketRoutes_1.default);
+app.use('/api/client', clientServiceCatalogRoutes_1.default);
 app.use('/api/client/notifications', clientNotificationRoutes_1.default);
 // Rotas de comentários
 app.use('/api/comments', commentRoutes_1.default);
+app.use('/api', branchRoutes_1.default);
+app.use('/api', serviceCatalogRoutes_1.default);
+app.use('/api', groupRoutes_1.default);
 // Checklists
 app.use('/api', checklistRoutes_1.default);
 // Rotinas

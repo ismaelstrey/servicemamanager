@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.validateQuery = exports.validateParams = exports.validateSchema = exports.addMembersSchema = exports.updateGroupSchema = exports.createGroupSchema = exports.groupIdParamSchema = exports.providerIdParamSchema = void 0;
+const zod_1 = require("zod");
+const providerValidator_1 = require("./providerValidator");
+Object.defineProperty(exports, "validateSchema", { enumerable: true, get: function () { return providerValidator_1.validateSchema; } });
+Object.defineProperty(exports, "validateParams", { enumerable: true, get: function () { return providerValidator_1.validateParams; } });
+Object.defineProperty(exports, "validateQuery", { enumerable: true, get: function () { return providerValidator_1.validateQuery; } });
+exports.providerIdParamSchema = zod_1.z.object({ providerId: zod_1.z.string().regex(/^\d+$/).transform(Number).refine(n => n > 0) });
+exports.groupIdParamSchema = zod_1.z.object({ id: zod_1.z.string().regex(/^\d+$/).transform(Number).refine(n => n > 0) });
+exports.createGroupSchema = zod_1.z.object({ name: zod_1.z.string().min(2).max(255), description: zod_1.z.string().max(1000).optional() });
+exports.updateGroupSchema = zod_1.z.object({ name: zod_1.z.string().min(2).max(255).optional(), description: zod_1.z.string().max(1000).optional() }).refine(d => Object.keys(d).length > 0);
+exports.addMembersSchema = zod_1.z.object({ providerUserIds: zod_1.z.array(zod_1.z.number().int().min(1)).min(1) });

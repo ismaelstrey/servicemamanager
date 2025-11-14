@@ -36,6 +36,8 @@ model Provider {
   name      String
   cnpj      String   @unique
   workspace String   @unique
+  phone     String?
+  email     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -55,6 +57,120 @@ model Provider {
   customers      Customer[]
   checklistTemplates ChecklistTemplate[]
   routines Routine[]
+  branches ProviderBranch[]
+  services ProviderService[]
+  groups   ProviderGroup[]
+}
+
+model ProviderBranch {
+  id         Int      @id @default(autoincrement())
+  name       String
+  phone      String?
+  email      String?
+  address    Json?
+  notes      String?
+  provider   Provider @relation(fields: [providerId], references: [id])
+  providerId Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([providerId])
+  @@map("provider_branches")
+}
+
+enum ProviderServiceType {
+  zabbix
+  proxmox
+  grafana
+  erp
+  other
+}
+
+model ProviderService {
+  id         Int                 @id @default(autoincrement())
+  name       String
+  type       ProviderServiceType
+  url        String
+  description String?
+  isActive   Boolean             @default(true)
+  provider   Provider            @relation(fields: [providerId], references: [id])
+  providerId Int
+  credentials ProviderServiceCredential[]
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  @@index([providerId])
+  @@map("provider_services")
+}
+
+enum CredentialVisibility {
+  PUBLIC
+  PROVIDER_ONLY
+  CUSTOM
+}
+
+model ProviderServiceCredential {
+  id          Int                  @id @default(autoincrement())
+  service     ProviderService      @relation(fields: [serviceId], references: [id])
+  serviceId   Int
+  label       String?
+  username    String
+  passwordEnc String
+  isActive    Boolean              @default(true)
+  visibility  CredentialVisibility @default(PROVIDER_ONLY)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  allowedUsers  CredentialUserAccess[]
+  allowedGroups CredentialGroupAccess[]
+
+  @@index([serviceId])
+  @@map("provider_service_credentials")
+}
+
+model ProviderGroup {
+  id         Int       @id @default(autoincrement())
+  name       String
+  description String?
+  provider   Provider  @relation(fields: [providerId], references: [id])
+  providerId Int
+  members    ProviderGroupMember[]
+  credentialGroupAccess CredentialGroupAccess[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([providerId])
+  @@map("provider_groups")
+}
+
+model ProviderGroupMember {
+  group     ProviderGroup @relation(fields: [groupId], references: [id])
+  groupId   Int
+  providerUser ProviderUser @relation(fields: [providerUserId], references: [id])
+  providerUserId Int
+
+  @@id([groupId, providerUserId])
+  @@map("provider_group_members")
+}
+
+model CredentialUserAccess {
+  credential ProviderServiceCredential @relation(fields: [credentialId], references: [id])
+  credentialId Int
+  providerUser ProviderUser @relation(fields: [providerUserId], references: [id])
+  providerUserId Int
+
+  @@id([credentialId, providerUserId])
+  @@map("credential_user_access")
+}
+
+model CredentialGroupAccess {
+  credential ProviderServiceCredential @relation(fields: [credentialId], references: [id])
+  credentialId Int
+  group     ProviderGroup @relation(fields: [groupId], references: [id])
+  groupId   Int
+
+  @@id([credentialId, groupId])
+  @@map("credential_group_access")
 }
 
 model ProviderUser {
@@ -74,6 +190,9 @@ model ProviderUser {
   
   @@unique([userId, providerId])
   @@map("provider_users")
+
+  groupMemberships ProviderGroupMember[]
+  credentialAccess CredentialUserAccess[]
 }
 
 model ProviderInvite {
