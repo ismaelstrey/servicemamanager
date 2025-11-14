@@ -324,26 +324,25 @@ export function TicketsListPage() {
   return (
     <Block>
     
-<Block >
-          <TicketsListHeader isGlobalView={isGlobalView} totalItems={totalItems} />
-</Block>
-<Block>
-  
-        <TicketsListActions
-          viewMode={viewMode}
-          showFavoritesOnly={showFavoritesOnly}
-          presenceCount={presenceCount}
-          notificationCount={notificationCount}
-          onListView={() => setViewMode('list')}
-          onGridView={() => setViewMode('grid')}
-          onKanban={() => navigate('/tickets/kanban')}
-          onToggleFavorites={() => setShowFavoritesOnly(v => !v)}
-          onExportCSV={exportCSV}
-          onExportExcel={exportExcel}
-          onExportPDF={exportPDF}
-          onNewTicket={() => navigate('/tickets/new')}
-        />
-</Block>
+        <Block >
+                  <TicketsListHeader isGlobalView={isGlobalView} totalItems={totalItems} />
+        </Block>
+        <Block>  
+                <TicketsListActions
+                  viewMode={viewMode}
+                  showFavoritesOnly={showFavoritesOnly}
+                  presenceCount={presenceCount}
+                  notificationCount={notificationCount}
+                  onListView={() => setViewMode('list')}
+                  onGridView={() => setViewMode('grid')}
+                  onKanban={() => navigate('/tickets/kanban')}
+                  onToggleFavorites={() => setShowFavoritesOnly(v => !v)}
+                  onExportCSV={exportCSV}
+                  onExportExcel={exportExcel}
+                  onExportPDF={exportPDF}
+                  onNewTicket={() => navigate('/tickets/new')}
+                />
+        </Block>
  
 
       {error && (

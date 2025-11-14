@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Spinner, Toast } from '../../components/ui';
 import KanbanBoard from '../../components/kanban/KanbanBoard';
 import { ApiService } from '../../services/api';
+import TicketsKanbanColumnsFilter from '../../components/tickets/TicketsKanbanColumnsFilter'
 
 type KanbanBoard = Record<string, { id: number; title: string; priority: 'low' | 'medium' | 'high' | 'urgent' | 'critical'; updatedAt: string | Date }[]>;
 
@@ -18,8 +19,7 @@ const statusLabels: Record<string, string> = {
 
 
 
-// Ordem das colunas no board (somente statuses válidos do backend)
-const columnOrder = ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed', 'cancelled'];
+const baseColumnOrder = ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed', 'cancelled'];
 
 const TicketsKanbanPage: React.FC = () => {
   const navigate = useNavigate();
@@ -37,6 +37,25 @@ const TicketsKanbanPage: React.FC = () => {
     // Por padrão, usar visão global (sem provider) para alinhar com /api/tickets/kanban
     return undefined;
   }, [searchParams]);
+
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem('tickets.kanban.visibleColumns')
+      const parsed = raw ? JSON.parse(raw) as string[] : []
+      const valid = parsed.filter((c) => baseColumnOrder.includes(c))
+      return valid.length > 0 ? valid : [...baseColumnOrder]
+    } catch {
+      return [...baseColumnOrder]
+    }
+  })
+
+  const visibleColumnOrder = useMemo(() => {
+    return baseColumnOrder.filter((c) => selectedColumns.includes(c))
+  }, [selectedColumns])
+
+  useEffect(() => {
+    try { localStorage.setItem('tickets.kanban.visibleColumns', JSON.stringify(selectedColumns)) } catch {}
+  }, [selectedColumns])
 
   useEffect(() => {
     const loadBoard = async () => {
@@ -61,9 +80,9 @@ const TicketsKanbanPage: React.FC = () => {
           (normalized as any)[newKey] = [...existing, ...incoming];
         });
 
-        // Garantir todas as colunas do columnOrder existem (arrays vazios por padrão)
+        // Garantir todas as colunas da base existem (arrays vazios por padrão)
         const completed: KanbanBoard = {} as KanbanBoard;
-        for (const col of columnOrder) {
+        for (const col of baseColumnOrder) {
           completed[col] = (normalized[col] || []).map((item) => ({
             id: item.id,
             title: item.title ?? `Ticket #${item.id}`,
@@ -111,7 +130,19 @@ const TicketsKanbanPage: React.FC = () => {
             <p style={{ margin: 0, color: 'var(--color-text-secondary)' }}>Todos os provedores</p>
           )}
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <TicketsKanbanColumnsFilter
+            availableColumns={baseColumnOrder}
+            selectedColumns={selectedColumns}
+            statusLabels={statusLabels}
+            onToggle={(col) => setSelectedColumns((prev) => {
+              const has = prev.includes(col)
+              const next = has ? prev.filter((c) => c !== col) : [...prev, col]
+              return next.length > 0 ? next : prev
+            })}
+            onSelectAll={() => setSelectedColumns([...baseColumnOrder])}
+            onHideDone={() => setSelectedColumns(baseColumnOrder.filter((c) => !['resolved','closed','cancelled'].includes(c)))}
+          />
           <Button variant="secondary" onClick={() => navigate('/tickets')}>Voltar para Lista</Button>
           <Button variant="primary" onClick={() => navigate('/tickets/new')}>Novo Ticket</Button>
         </div>
@@ -121,7 +152,7 @@ const TicketsKanbanPage: React.FC = () => {
 
       <KanbanBoard
         board={board}
-        columnOrder={columnOrder}
+        columnOrder={visibleColumnOrder}
         statusLabels={statusLabels}
         errorMessage={error || undefined}
         onItemClick={(id) => navigate(`/tickets/${id}`)}
@@ -195,7 +226,7 @@ const TicketsKanbanPage: React.FC = () => {
                 (normalized as any)[newKey] = [...existing, ...incoming];
               });
               const completed: KanbanBoard = {} as KanbanBoard;
-              for (const col of columnOrder) {
+              for (const col of baseColumnOrder) {
                 completed[col] = (normalized[col] || []).map((item: any) => ({
                   id: item.id,
                   title: item.title ?? `Ticket #${item.id}`,
