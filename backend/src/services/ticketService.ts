@@ -61,6 +61,17 @@ export class TicketService {
     return ticket;
   }
 
+  async getByIdWithProvider(id: number, user: AuthUser): Promise<{ ticket: TicketRecord; provider: { id: number; name: string; workspace: string; cnpj?: string } }> {
+    const result = await this.repository.findByIdWithProvider(id);
+    if (!result) {
+      const err: any = new Error('Ticket não encontrado');
+      err.status = 404;
+      throw err;
+    }
+    await this.assertAccess(user, result.ticket.providerId);
+    return result;
+  }
+
   async update(id: number, data: UpdateTicketData, user: AuthUser): Promise<TicketRecord> {
     const existing = await this.repository.findById(id);
     if (!existing) {

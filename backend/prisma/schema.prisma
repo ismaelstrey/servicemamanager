@@ -28,6 +28,7 @@ model User {
   comments Comment[]
   notifications Notification[]
   changeHistories ChangeHistory[]
+  createdChecklistTemplates ChecklistTemplate[]
 }
 
 model Provider {
@@ -52,6 +53,8 @@ model Provider {
   notifications Notification[]
   changeHistories ChangeHistory[]
   customers      Customer[]
+  checklistTemplates ChecklistTemplate[]
+  routines Routine[]
 }
 
 model ProviderUser {
@@ -137,6 +140,9 @@ model Ticket {
   zabbixEvents ZabbixEvent[]
   serviceOrders ServiceOrder[]
   comments    Comment[]
+  ticketAttachments TicketAttachment[]
+  tags TicketTag[]
+  checklistLinks ChecklistLink[]
 }
 
 enum ServiceOrderStatus {
@@ -184,6 +190,148 @@ model Comment {
   @@map("comments")
 }
 
+model Tag {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  color     String?
+  createdAt DateTime @default(now())
+
+  tickets   TicketTag[]
+
+  @@map("tags")
+}
+
+model TicketTag {
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+  ticketId Int
+  tag      Tag    @relation(fields: [tagId], references: [id])
+  tagId    Int
+
+  @@id([ticketId, tagId])
+  @@index([tagId])
+  @@map("ticket_tags")
+}
+
+model TicketAttachment {
+  id           Int     @id @default(autoincrement())
+  ticket       Ticket  @relation(fields: [ticketId], references: [id])
+  ticketId     Int
+  url          String
+  originalName String
+  mimeType     String
+  size         Int?
+  uploadedBy   Int?
+  isPublic     Boolean @default(true)
+  createdAt    DateTime @default(now())
+
+  @@index([ticketId])
+  @@map("ticket_attachments")
+}
+
+model ChecklistTemplate {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  type        String   @default("standard")
+  provider    Provider @relation(fields: [providerId], references: [id])
+  providerId  Int
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+  createdById Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       ChecklistItemTemplate[]
+  links       ChecklistLink[]
+  routines    Routine[]
+
+  @@map("checklist_templates")
+}
+
+model ChecklistItemTemplate {
+  id                   Int               @id @default(autoincrement())
+  checklistTemplate    ChecklistTemplate @relation(fields: [checklistTemplateId], references: [id])
+  checklistTemplateId  Int
+  title                String
+  description          String?
+  required             Boolean           @default(false)
+  order                Int               @default(0)
+  instances            ChecklistInstanceItem[]
+
+  @@map("checklist_item_templates")
+}
+
+model ChecklistLink {
+  id                  Int               @id @default(autoincrement())
+  checklistTemplate   ChecklistTemplate @relation(fields: [checklistTemplateId], references: [id])
+  checklistTemplateId Int
+  resourceType        String
+  resourceId          Int
+  status              String            @default("pending")
+  progress            Int               @default(0)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  items               ChecklistInstanceItem[]
+  ticket              Ticket?           @relation(fields: [ticketId], references: [id])
+  ticketId            Int?
+  serviceOrder        ServiceOrder?     @relation(fields: [serviceOrderId], references: [id])
+  serviceOrderId      Int?
+
+  @@index([resourceType, resourceId])
+  @@map("checklist_links")
+}
+
+model ChecklistInstanceItem {
+  id             Int              @id @default(autoincrement())
+  link           ChecklistLink    @relation(fields: [linkId], references: [id])
+  linkId         Int
+  itemTemplate   ChecklistItemTemplate @relation(fields: [itemTemplateId], references: [id])
+  itemTemplateId Int
+  done           Boolean          @default(false)
+  doneAt         DateTime?
+  note           String?
+
+  @@map("checklist_items")
+}
+
+model Routine {
+  id            Int       @id @default(autoincrement())
+  name          String
+  enabled       Boolean   @default(true)
+  provider      Provider  @relation(fields: [providerId], references: [id])
+  providerId    Int
+  targetType    String    @default("ALL_CUSTOMERS")
+  targetIds     Json?
+  daysOfWeek    Json
+  time          String
+  timezone      String?
+  createFor     String    @default("TICKET")
+  template      ChecklistTemplate? @relation(fields: [templateId], references: [id])
+  templateId    Int?
+  defaultCategory String?
+  defaultPriority String?
+  defaultSource   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  logs          RoutineLog[]
+
+  @@map("routines")
+}
+
+model RoutineLog {
+  id         Int      @id @default(autoincrement())
+  routine    Routine  @relation(fields: [routineId], references: [id])
+  routineId  Int
+  runAt      DateTime
+  result     String
+  createdCount Int    @default(0)
+  errorMessage String?
+  createdAt  DateTime @default(now())
+
+  @@map("routine_logs")
+}
+
 model ServiceOrder {
   id              Int      @id @default(autoincrement())
   title           String
@@ -203,6 +351,7 @@ model ServiceOrder {
   ticket          Ticket?  @relation(fields: [ticketId], references: [id])
   ticketId        Int?
   comments        Comment[]
+  checklistLinks  ChecklistLink[]
   
   customer        Customer? @relation(fields: [customerId], references: [id])
   customerId      Int?

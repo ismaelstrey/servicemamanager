@@ -9,8 +9,6 @@ const reportValidator_1 = require("../validators/reportValidator");
 function resolveProviderId(req) {
     // Token primeiro, se válido (>0)
     // Comentário: Logs de debug temporários para investigar providerId vindo do token e da query
-    console.log('[resolveProviderId] req.providerId =', req.providerId, 'typeof =', typeof req.providerId);
-    console.log('[resolveProviderId] raw req.query =', req.query, 'providerId =', req.query?.providerId, 'typeof =', typeof req.query?.providerId);
     if (typeof req.providerId === 'number' && Number.isFinite(req.providerId) && req.providerId > 0) {
         return Number(req.providerId);
     }
@@ -56,22 +54,18 @@ exports.reportController = {
     },
     // Comentário: Relatório de tickets com paginação
     async getTickets(req, res) {
-        console.log("Resposta da query", req);
         // Comentário: try/catch temporário para diagnosticar erro 400 na rota de tickets
         try {
             const providerId = resolveProviderId(req);
-            console.log('[getTickets] providerId linha 61 =', providerId);
             if (!providerId)
                 return res.status(400).json({ message: 'providerId ausente no contexto' });
             // Normaliza providerId na query para evitar falhas de validação/coerção
             req.query.providerId = providerId;
             const filter = reportValidator_1.reportFilterSchema.parse(req.query);
-            console.log('[getTickets] providerId =', providerId, 'filter =', filter);
             const report = await reportService_1.reportService.getTicketsReport(providerId, filter);
             return res.json(report);
         }
         catch (error) {
-            console.error('[getTickets] erro ao gerar relatório de tickets:', error);
             const status = error?.status && Number.isInteger(error.status) ? error.status : 500;
             return res.status(status).json({ message: 'Falha ao obter relatório de tickets', error: error?.message ?? 'Erro desconhecido' });
         }
@@ -79,9 +73,6 @@ exports.reportController = {
     // Comentário: Relatório de ordens de serviço com paginação
     async getServiceOrders(req, res) {
         const providerId = resolveProviderId(req);
-        // console.log("Resposta da query", await req.query, providerId)
-        // Log de debug enxuto (não vaza dados sensíveis)
-        // console.debug('Report getServiceOrders query:', req.query, 'providerId:', providerId);
         if (!providerId)
             return res.status(400).json({ message: 'providerId ausente no contexto' });
         // Normaliza providerId na query para evitar falhas de validação/coerção

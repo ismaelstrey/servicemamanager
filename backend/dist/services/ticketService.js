@@ -51,6 +51,16 @@ class TicketService {
         await this.assertAccess(user, ticket.providerId);
         return ticket;
     }
+    async getByIdWithProvider(id, user) {
+        const result = await this.repository.findByIdWithProvider(id);
+        if (!result) {
+            const err = new Error('Ticket não encontrado');
+            err.status = 404;
+            throw err;
+        }
+        await this.assertAccess(user, result.ticket.providerId);
+        return result;
+    }
     async update(id, data, user) {
         const existing = await this.repository.findById(id);
         if (!existing) {

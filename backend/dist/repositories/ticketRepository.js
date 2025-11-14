@@ -214,6 +214,86 @@ class TicketRepository {
             throw new Error(`Erro ao buscar ticket: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
         }
     }
+    async findByIdWithProvider(id) {
+        try {
+            const row = await this.prisma.ticket.findUnique({
+                where: { id },
+                include: {
+                    provider: { select: { id: true, name: true, workspace: true, cnpj: true } }
+                }
+            });
+            if (!row)
+                return null;
+            return { ticket: this.mapFromPrisma(row), provider: row.provider };
+        }
+        catch (error) {
+            console.error('Erro no TicketRepository.findByIdWithProvider:', error);
+            throw new Error(`Erro ao buscar ticket: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        }
+    }
+    async listAttachments(ticketId) {
+        const rows = await this.prisma.ticketAttachment.findMany({
+            where: { ticketId },
+            select: { id: true, url: true, originalName: true, mimeType: true, size: true }
+        });
+        return rows;
+    }
+    async createAttachment(ticketId, meta) {
+        const row = await this.prisma.ticketAttachment.create({
+            data: {
+                ticketId,
+                url: meta.url,
+                originalName: meta.originalName,
+                mimeType: meta.mimeType,
+                size: meta.size ?? null
+            },
+            select: { id: true, url: true, originalName: true, mimeType: true, size: true }
+        });
+        return row;
+    }
+    async deleteAttachment(ticketId, attachmentId) {
+        const existing = await this.prisma.ticketAttachment.findUnique({ where: { id: attachmentId } });
+        if (!existing || existing.ticketId !== ticketId)
+            return false;
+        await this.prisma.ticketAttachment.delete({ where: { id: attachmentId } });
+        return true;
+    }
+    async addTags(ticketId, tagNames) {
+        const names = Array.from(new Set(tagNames.map(n => n.trim()).filter(Boolean)));
+        if (names.length === 0)
+            return [];
+        const existing = await this.prisma.tag.findMany({ where: { name: { in: names } } });
+        const existingNames = new Set(existing.map(t => t.name));
+        const toCreate = names.filter(n => !existingNames.has(n));
+        if (toCreate.length > 0) {
+            await this.prisma.tag.createMany({ data: toCreate.map(n => ({ name: n })) });
+        }
+        const all = await this.prisma.tag.findMany({ where: { name: { in: names } }, select: { id: true, name: true } });
+        for (const tag of all) {
+            await this.prisma.ticketTag.upsert({
+                where: { ticketId_tagId: { ticketId, tagId: tag.id } },
+                update: {},
+                create: { ticketId, tagId: tag.id }
+            });
+        }
+        return all;
+    }
+    async listTags(ticketId) {
+        const rows = await this.prisma.ticketTag.findMany({
+            where: { ticketId },
+            include: { tag: { select: { id: true, name: true } } }
+        });
+        return rows.map(r => r.tag);
+    }
+    async removeTag(ticketId, tagId) {
+        try {
+            await this.prisma.ticketTag.delete({ where: { ticketId_tagId: { ticketId, tagId } } });
+            return true;
+        }
+        catch {
+            return false;
+        }
+    }
     async update(id, data) {
         try {
             const ticket = await this.prisma.ticket.update({

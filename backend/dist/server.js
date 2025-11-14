@@ -28,6 +28,9 @@ const debugRoutes_1 = __importDefault(require("./routes/debugRoutes"));
 const widgetRoutes_1 = __importDefault(require("./routes/widgetRoutes"));
 const reportRoutes_1 = __importDefault(require("./routes/reportRoutes"));
 const customerRoutes_1 = __importDefault(require("./routes/customerRoutes"));
+const checklistRoutes_1 = __importDefault(require("./routes/checklistRoutes"));
+const routineRoutes_1 = __importDefault(require("./routes/routineRoutes"));
+const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swagger_1 = __importDefault(require("./docs/swagger"));
 const rateLimitMiddleware_1 = require("./middleware/rateLimitMiddleware");
@@ -82,6 +85,7 @@ app.use('/api/providers', notificationRoutes_1.default);
 app.use('/api/dashboard', dashboardRoutes_1.default);
 app.use('/api/reports', reportRoutes_1.default);
 app.use('/api/customers', customerRoutes_1.default);
+app.use('/api/users', userRoutes_1.default);
 app.use('/api/client/profile', clientProfileRoutes_1.default);
 app.use('/api/integrations', integrationRoutes_1.default);
 // Rotas de privacidade (consentimento e solicitação de eliminação de dados)
@@ -101,6 +105,10 @@ app.use('/api/client/tickets', clientTicketRoutes_1.default);
 app.use('/api/client/notifications', clientNotificationRoutes_1.default);
 // Rotas de comentários
 app.use('/api/comments', commentRoutes_1.default);
+// Checklists
+app.use('/api', checklistRoutes_1.default);
+// Rotinas
+app.use('/api', routineRoutes_1.default);
 // Rate limiting específico para IA
 app.use('/api/ai', rateLimitMiddleware_1.aiRateLimit);
 app.use('/api/ai', aiRoutes_1.default);

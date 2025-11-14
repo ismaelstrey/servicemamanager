@@ -25,6 +25,8 @@ import debugRoutes from './routes/debugRoutes';
 import widgetRoutes from './routes/widgetRoutes';
 import reportRoutes from './routes/reportRoutes';
 import customerRoutes from './routes/customerRoutes';
+import checklistRoutes from './routes/checklistRoutes';
+import routineRoutes from './routes/routineRoutes';
 import userRoutes from './routes/userRoutes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger';
@@ -110,6 +112,10 @@ app.use('/api/client/notifications', clientNotificationRoutes);
 
 // Rotas de comentários
 app.use('/api/comments', commentRoutes);
+// Checklists
+app.use('/api', checklistRoutes);
+// Rotinas
+app.use('/api', routineRoutes);
 
 // Rate limiting específico para IA
 app.use('/api/ai', aiRateLimit);

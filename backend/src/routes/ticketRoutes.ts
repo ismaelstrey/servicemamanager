@@ -113,9 +113,11 @@ import {
   historyQuerySchema
 } from '../validators/ticketValidator';
 import { listCacheMiddleware, ticketCacheMiddleware, statsCacheMiddleware, cacheMiddleware } from '../middleware/cacheMiddleware';
+import multer from 'multer';
 
 const router = Router();
 const controller = new TicketController();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 // Protegidas: exigem autenticação com cache para consultas
 // Restringe providerId para dígitos, evitando colisão com rotas como /reports/tickets
@@ -130,6 +132,143 @@ router.get('/:providerId(\\d+)/tickets/stats', authMiddleware, validateParams(pr
 
 // CRUD por ID de ticket com cache para consultas
 router.get('/tickets/:id', authMiddleware, validateParams(ticketIdParamSchema), ticketCacheMiddleware(), (req, res) => controller.getById(req as any, res));
+/**
+ * @swagger
+ * /api/tickets/{id}/with-provider:
+ *   get:
+ *     summary: Detalha ticket incluindo dados do provedor
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Ticket e dados do provedor
+ *       404:
+ *         description: Ticket não encontrado
+ */
+router.get('/tickets/:id/with-provider', authMiddleware, validateParams(ticketIdParamSchema), ticketCacheMiddleware(), (req, res) => controller.getByIdWithProvider(req as any, res));
+/**
+ * @swagger
+ * /api/tickets/{id}/attachments:
+ *   get:
+ *     summary: Lista anexos do ticket
+ *     tags: [Attachments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista de anexos
+ */
+router.get('/tickets/:id/attachments', authMiddleware, validateParams(ticketIdParamSchema), (req, res) => controller.listAttachments(req as any, res));
+/**
+ * @swagger
+ * /api/tickets/{id}/attachments:
+ *   post:
+ *     summary: Envia anexo para o ticket
+ *     tags: [Attachments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Anexo criado
+ */
+router.post('/tickets/:id/attachments', authMiddleware, validateParams(ticketIdParamSchema), upload.single('file'), (req, res) => controller.uploadAttachment(req as any, res));
+/**
+ * @swagger
+ * /api/tickets/{id}/attachments/{attachmentId}:
+ *   delete:
+ *     summary: Remove anexo do ticket
+ *     tags: [Attachments]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.delete('/tickets/:id/attachments/:attachmentId', authMiddleware, (req, res) => controller.deleteAttachment(req as any, res));
+/**
+ * @swagger
+ * /api/tickets/{id}/tags:
+ *   get:
+ *     summary: Lista tags do ticket
+ *     tags: [Tags]
+ *     security:
+ *       - bearerAuth: []
+ *   post:
+ *     summary: Associa tags ao ticket
+ *     tags: [Tags]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ */
+router.get('/tickets/:id/tags', authMiddleware, validateParams(ticketIdParamSchema), (req, res) => controller.listTags(req as any, res));
+router.post('/tickets/:id/tags', authMiddleware, validateParams(ticketIdParamSchema), (req, res) => controller.addTags(req as any, res));
+/**
+ * @swagger
+ * /api/tickets/{id}/tags/{tagId}:
+ *   delete:
+ *     summary: Remove tag do ticket
+ *     tags: [Tags]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.delete('/tickets/:id/tags/:tagId', authMiddleware, (req, res) => controller.removeTag(req as any, res));
+/**
+ * @swagger
+ * /api/tickets/{id}/annotations:
+ *   get:
+ *     summary: Lista anotações do ticket
+ *     tags: [Annotations]
+ *     security:
+ *       - bearerAuth: []
+ *   post:
+ *     summary: Cria anotação no ticket
+ *     tags: [Annotations]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *               isInternal:
+ *                 type: boolean
+ */
+router.get('/tickets/:id/annotations', authMiddleware, validateParams(ticketIdParamSchema), (req, res) => controller.listAnnotations(req as any, res));
+router.post('/tickets/:id/annotations', authMiddleware, validateParams(ticketIdParamSchema), (req, res) => controller.addAnnotation(req as any, res));
 router.get('/tickets/:id/history', authMiddleware, validateParams(ticketIdParamSchema), validateQuery(historyQuerySchema), cacheMiddleware({ ttl: 120, keyPrefix: 'history', varyBy: ['userId', 'providerId', 'params.id', 'query.page', 'query.limit'] }), (req, res) => controller.history(req as any, res));
 router.put('/tickets/:id', authMiddleware, validateParams(ticketIdParamSchema), validateSchema(updateTicketSchema), (req, res) => controller.update(req as any, res));
 router.put('/tickets/:id/status', authMiddleware, validateParams(ticketIdParamSchema), validateSchema(updateTicketStatusSchema), (req, res) => controller.updateStatus(req as any, res));
