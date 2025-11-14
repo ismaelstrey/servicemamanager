@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useAuth } from '../hooks/useAuth'
+import { useProviderContext } from '../contexts/providerContext'
 import { ApiService } from '../services/api'
 import { TicketService } from '../services/ticketService'
 import type { CreateTicketData, Ticket } from '../types/ticket'
@@ -18,7 +19,11 @@ function resolveProviderId(userProviderId?: number | null): number | null {
 
 export function useTickets() {
   const { user } = useAuth()
-  const providerId = useMemo(() => resolveProviderId(user?.providerId ?? null), [user?.providerId])
+  const { selectedProviderId } = useProviderContext()
+  const providerId = useMemo(() => {
+    if (selectedProviderId != null) return selectedProviderId
+    return resolveProviderId(user?.providerId ?? null)
+  }, [selectedProviderId, user?.providerId])
 
   const createTicket = useMutation({
     mutationFn: async (data: CreateTicketData): Promise<Ticket> => {

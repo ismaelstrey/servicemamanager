@@ -6,6 +6,7 @@ import KanbanBoard from '../../components/kanban/KanbanBoard';
 import { ApiService } from '../../services/api';
 import ServiceOrderService from '../../services/serviceOrderService';
 import { Button, Alert, LogoLoader } from '../../components/ui';
+import { useProviderContext } from '../../contexts/providerContext';
 
 type KanbanBoardData = Record<string, { id: number; title: string; priority: 'low' | 'medium' | 'high' | 'urgent' | 'critical'; updatedAt: string | Date }[]>;
 
@@ -53,16 +54,16 @@ const ServiceOrdersKanbanPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { selectedProviderId } = useProviderContext();
   const providerId = useMemo(() => {
     const fromQuery = searchParams.get('provider');
     if (fromQuery) return parseInt(fromQuery);
-    const saved = localStorage.getItem('selectedProviderId');
-    if (saved && saved !== 'global') return parseInt(saved);
+    if (selectedProviderId != null) return Number(selectedProviderId);
     const token = localStorage.getItem('token');
     const payload = decodeJwt(token ?? undefined);
     const pid = (payload as any)?.providerId;
     return typeof pid === 'number' ? pid : undefined;
-  }, [searchParams]);
+  }, [searchParams, selectedProviderId]);
 
   useEffect(() => {
     const fetchBoard = async () => {

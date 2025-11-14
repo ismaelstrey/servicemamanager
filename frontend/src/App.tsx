@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 // Contextos
 import { AuthProvider } from './contexts/AuthContext'
+import { ProviderContextProvider } from './contexts/providerContext'
 import { ClientAuthProvider } from './contexts/ClientAuthContext'
 import { useAuth } from './hooks/useAuth'
 
@@ -95,6 +96,7 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ClientAuthProvider>
+          <ProviderContextProvider>
             <Suspense fallback={<LogoLoader fullscreen message="Carregando..." />}>
             <Routes>
             {/* Rotas públicas */}
@@ -479,6 +481,7 @@ const App: React.FC = () => {
           }
           return <AuthCommandPalette />
         })()}
+          </ProviderContextProvider>
         </ClientAuthProvider>
       </AuthProvider>
 

@@ -1,8 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { useNavigate } from 'react-router-dom'
-import { ThemeToggle } from '../ui'
+import { ThemeToggle, Select } from '../ui'
 import ProfileMenu from './ProfileMenu'
+import { useProviderContext } from '../../contexts/providerContext'
+import useProviders from '../../hooks/useProviders'
 
 const LayoutContainer = styled.div`
   min-height: 100vh;
@@ -49,6 +51,8 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, title = 'TelecomAI' }) => {
   const navigate = useNavigate()
+  const { selectedProviderId, setSelectedProviderId } = useProviderContext()
+  const { data: providers = [] } = useProviders(50)
   return (
     <LayoutContainer>
       <Header>
@@ -67,6 +71,20 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'TelecomAI' }) => {
             {title}
           </Title>
           <RightActions>
+            <Select
+              label="Contexto"
+              size="sm"
+              value={selectedProviderId == null ? 'global' : String(selectedProviderId)}
+              onChange={(e) => {
+                const val = (e.target as HTMLSelectElement).value
+                setSelectedProviderId(val === 'global' ? null : Number(val))
+              }}
+            >
+              <option value="global">Visão Global</option>
+              {providers.map((p) => (
+                <option key={p.id} value={String(p.id)}>{p.name}</option>
+              ))}
+            </Select>
             <ThemeToggle />
             <ProfileMenu />
           </RightActions>

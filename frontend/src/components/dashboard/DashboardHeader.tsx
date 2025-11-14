@@ -1,7 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Select, Button, Alert } from '../ui'
-import type { ProviderListItem } from '../../services/providerService'
 
 // Componente de cabeçalho do Dashboard
 // Renderiza título/subtítulo, filtros (provedor/período), ação de exportar CSV
@@ -10,9 +9,6 @@ import type { ProviderListItem } from '../../services/providerService'
 export interface DashboardHeaderProps {
   title: string
   subtitle: string
-  providers: ProviderListItem[]
-  selectedProviderId: string | number
-  onProviderChange: (value: string) => void
   period: '7d' | '30d' | '3m' | '12m'
   onPeriodChange: (value: '7d' | '30d' | '3m' | '12m') => void
   onExportCsv: () => void
@@ -75,16 +71,13 @@ const InfoArea = styled.div`
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   title,
   subtitle,
-  providers,
-  selectedProviderId,
-  onProviderChange,
   period,
   onPeriodChange,
   onExportCsv,
   onCreateProvider,
   className,
 }) => {
-  const isGlobal = String(selectedProviderId) === 'global'
+  const isGlobal = false
 
   return (
     <HeaderContainer className={className ?? 'dashboard__header'}>
@@ -94,20 +87,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       </TitleGroup>
 
       <ControlsRow>
-        <SelectWrapper $minWidth={240}>
-          <Select
-            label="Contexto"
-            size="sm"
-            value={isGlobal ? 'global' : String(selectedProviderId)}
-            onChange={(e) => onProviderChange((e.target as HTMLSelectElement).value)}
-          >
-            <option value="global">Visão Global</option>
-            {providers.map((p) => (
-              <option key={p.id} value={String(p.id)}>{p.name}</option>
-            ))}
-          </Select>
-        </SelectWrapper>
-
         <SelectWrapper $minWidth={200}>
           <Select
             label="Período"
@@ -126,11 +105,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           Exportar Relatório (CSV)
         </Button>
 
-        {providers.length === 0 && (
-          <Button variant="primary" onClick={onCreateProvider}>
-            Criar Provedor
-          </Button>
-        )}
+        <Button variant="primary" onClick={onCreateProvider}>
+          Criar Provedor
+        </Button>
       </ControlsRow>
 
       {isGlobal && (

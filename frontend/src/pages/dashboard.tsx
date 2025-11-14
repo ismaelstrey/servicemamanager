@@ -14,6 +14,7 @@ import ProviderService, { type ProviderListItem } from '../services/providerServ
 import '../styles/dashboard.css';
 import ServiceOrderStatusChart from '../components/dashboard/charts/ServiceOrderStatusChart';
 import Timeline from '../components/dashboard/Timeline';
+import { useProviderContext } from '../contexts/providerContext';
 
 interface DashboardStats {
   totalTickets: number;
@@ -36,7 +37,7 @@ export function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [providers, setProviders] = useState<ProviderListItem[]>([]);
-  const [selectedProviderId, setSelectedProviderId] = useState<number | 'global'>('global');
+  const { selectedProviderId } = useProviderContext();
   const [providersTotal, setProvidersTotal] = useState<number>(0);
   const [recentActivities, setRecentActivities] = useState<Array<{ type: string; id: number; title: string; description?: string; createdAt: string | Date }>>([]);
   const [period, setPeriod] = useState<'7d' | '30d' | '3m' | '12m'>('30d');
@@ -66,18 +67,7 @@ export function DashboardPage() {
         setProvidersTotal(list.length);
       }
 
-      const saved = localStorage.getItem('selectedProviderId');
-      let initialSelection: number | 'global' = 'global';
-      if (saved) {
-        initialSelection = saved === 'global' ? 'global' : Number(saved);
-      } else {
-        const token = localStorage.getItem('token');
-        const payload = decodeJwt(token ?? undefined);
-        const providerIdFromUser = (user as any)?.providerId ?? payload?.providerId;
-        initialSelection = providerIdFromUser ?? 'global';
-      }
-      setSelectedProviderId(initialSelection);
-      await loadDashboardData(initialSelection);
+      await loadDashboardData(selectedProviderId === null ? 'global' : selectedProviderId);
     } catch (err) {
       setError('Erro ao carregar provedores');
       console.error('Providers loading error:', err);
@@ -213,12 +203,11 @@ export function DashboardPage() {
     }
   };
 
-  const handleProviderChange = async (value: string) => {
-    const mode = value === 'global' ? 'global' : Number(value);
-    setSelectedProviderId(mode);
-    localStorage.setItem('selectedProviderId', value);
-    await loadDashboardData(mode);
-  };
+  useEffect(() => {
+    const mode = selectedProviderId === null ? 'global' : selectedProviderId;
+    loadDashboardData(mode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProviderId]);
 
   const quickActions = createQuickActions({
     onCreateTicket: () => navigate('/tickets/new'),
@@ -231,7 +220,7 @@ export function DashboardPage() {
 
   // Polling simples para notificações de novas atividades (somente modo provedor)
   useEffect(() => {
-    if (selectedProviderId === 'global') return;
+    if (selectedProviderId === null) return;
     const providerId = selectedProviderId as number;
     const id = window.setInterval(async () => {
       try {
@@ -315,9 +304,6 @@ export function DashboardPage() {
       <DashboardHeader
         title={`Bem-vindo, ${user?.name || 'Usuário'}!`}
         subtitle="Aqui está um resumo das suas atividades recentes"
-        providers={providers}
-        selectedProviderId={selectedProviderId}
-        onProviderChange={(value) => handleProviderChange(value)}
         period={period as '7d' | '30d' | '3m' | '12m'}
         onPeriodChange={(value) => setPeriod(value as any)}
         onExportCsv={() => exportCsv()}

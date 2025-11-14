@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { Card, Button, Badge, Alert, LogoLoader } from '../../components/ui';
 import { ApiService } from '../../services/api';
+import { useProviderContext } from '../../contexts/providerContext';
 import { decodeJwt } from '../../utils/jwt';
 import type { ServiceOrder } from '../../services/serviceOrderService';
 
@@ -54,18 +55,12 @@ const ServiceOrdersCalendarPage: React.FC = () => {
   const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>([]);
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [providerId, setProviderId] = useState<number | undefined>(undefined);
+  const { selectedProviderId } = useProviderContext();
 
   useEffect(() => {
-    const resolveProvider = () => {
-      const saved = localStorage.getItem('selectedProviderId');
-      if (saved && saved !== 'global') return Number(saved);
-      const token = localStorage.getItem('token');
-      const payload = decodeJwt(token ?? undefined);
-      const pid = (payload as any)?.providerId;
-      return typeof pid === 'number' ? pid : undefined;
-    };
-    setProviderId(resolveProvider());
-  }, []);
+    const pid = selectedProviderId == null ? undefined : Number(selectedProviderId);
+    setProviderId(Number.isFinite(pid as number) ? pid : undefined);
+  }, [selectedProviderId]);
 
   useEffect(() => {
     const load = async () => {
