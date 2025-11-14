@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Button, Input, Dropdown, DropdownItem } from '../../../components/ui';
+import { Button, Dropdown, DropdownItem } from '../../../components/ui';
+import { Input } from '../../../components/ui/Input';
+import { Search as SearchIcon } from 'lucide-react';
 
 type Option = { value: string; label: string };
 
@@ -34,7 +36,7 @@ const ServiceOrdersToolbar: React.FC<Props> = ({
           placeholder="Buscar por título, cliente ou descrição..."
           value={searchTerm}
           onChange={(e) => onSearchTermChange(e.target.value)}
-          leftIcon="🔍"
+          leftIcon={<SearchIcon size={16} />}
         />
 
         <Dropdown>
