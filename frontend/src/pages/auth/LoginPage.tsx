@@ -10,6 +10,20 @@ import { AuthTemplate } from '../../components/templates';
 
 type AuthMode = 'login' | 'register' | 'forgot-password' | 'reset-password';
 
+const FooterText = styled.p`
+  color: ${({ theme }) => theme.colors.text.secondary};
+  margin: 0;
+`;
+
+const FooterLinks = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.xs};
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  justify-content: center;
+  a { color: ${({ theme }) => theme.colors.primary.main}; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+`;
+
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -81,19 +95,6 @@ export const LoginPage: React.FC = () => {
         );
     }
   };
-
-  const FooterText = styled.p`
-    color: ${({ theme }) => theme.colors.text.secondary};
-    margin: 0;
-  `;
-  const FooterLinks = styled.div`
-    margin-top: ${({ theme }) => theme.spacing.xs};
-    display: flex;
-    gap: ${({ theme }) => theme.spacing.sm};
-    justify-content: center;
-    a { color: ${({ theme }) => theme.colors.primary.main}; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  `;
 
   return (
     <AuthTemplate

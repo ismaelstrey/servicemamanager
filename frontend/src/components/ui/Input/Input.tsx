@@ -29,7 +29,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   const hasError = Boolean(error);
 
   return (
-    <InputContainer fullWidth={fullWidth}>
+    <InputContainer $fullWidth={fullWidth}>
       {label && (
         <InputLabel htmlFor={inputId}>
           {label}
@@ -37,21 +37,21 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
       )}
       
       <InputWrapper
-        hasLeftIcon={Boolean(leftIcon)}
-        hasRightIcon={Boolean(rightIcon)}
-        hasLeftAddon={Boolean(leftAddon)}
-        hasRightAddon={Boolean(rightAddon)}
-        hasError={hasError}
-        variant={variant}
+        $hasLeftIcon={Boolean(leftIcon)}
+        $hasRightIcon={Boolean(rightIcon)}
+        $hasLeftAddon={Boolean(leftAddon)}
+        $hasRightAddon={Boolean(rightAddon)}
+        $hasError={hasError}
+        $variant={variant}
       >
         {leftAddon && (
-          <InputAddon position="left">
+          <InputAddon $position="left">
             {leftAddon}
           </InputAddon>
         )}
         
         {leftIcon && (
-          <InputIcon position="left">
+          <InputIcon $position="left">
             {leftIcon}
           </InputIcon>
         )}
@@ -59,24 +59,23 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         <StyledInput
           ref={ref}
           id={inputId}
-          hasError={hasError}
-          hasLeftIcon={Boolean(leftIcon)}
-          hasRightIcon={Boolean(rightIcon)}
-          hasLeftAddon={Boolean(leftAddon)}
-          hasRightAddon={Boolean(rightAddon)}
-          inputSize={size}
-          variant={variant}
+          $hasError={hasError}
+          $hasLeftIcon={Boolean(leftIcon)}
+          $hasRightIcon={Boolean(rightIcon)}
+          $hasLeftAddon={Boolean(leftAddon)}
+          $hasRightAddon={Boolean(rightAddon)}
+          $inputSize={size}
           {...props}
         />
         
         {rightIcon && (
-          <InputIcon position="right">
+          <InputIcon $position="right">
             {rightIcon}
           </InputIcon>
         )}
         
         {rightAddon && (
-          <InputAddon position="right">
+          <InputAddon $position="right">
             {rightAddon}
           </InputAddon>
         )}
