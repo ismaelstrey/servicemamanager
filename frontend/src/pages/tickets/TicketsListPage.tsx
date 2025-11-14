@@ -20,6 +20,9 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import { useNotifications } from '../../hooks/useNotifications';
 import { usePresence } from '../../hooks/usePresence';
+import TicketsListActions from '../../components/tickets/TicketsListActions'
+import TicketsListHeader from '../../components/tickets/TicketsListHeader'
+import { Block } from '../../components/layout/Flex/Flex';
 
 interface TicketsFilters {
   search: string;
@@ -319,47 +322,29 @@ export function TicketsListPage() {
   }
 
   return (
-    <div className="tickets-list">
-      <div className="tickets-list__header">
-        <div className="tickets-list__title-section">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <h1 className="tickets-list__title">Tickets</h1>
-            <Badge variant={isGlobalView ? 'info' : 'secondary'}>
-              {isGlobalView ? 'Visão Global' : 'Visão por Provedor'}
-            </Badge>
-          </div>
-          <p className="tickets-list__subtitle">
-            {totalItems} ticket{totalItems !== 1 ? 's' : ''} encontrado{totalItems !== 1 ? 's' : ''}
-          </p>
-        </div>
-
-        <div className="tickets-list__actions">
-          <div style={{ display: 'inline-flex', gap: '0.5rem', marginRight: '0.5rem' }}>
-            <Button variant={viewMode === 'list' ? 'primary' : 'secondary'} size="sm" onClick={() => setViewMode('list')}>Lista</Button>
-            <Button variant={viewMode === 'grid' ? 'primary' : 'secondary'} size="sm" onClick={() => setViewMode('grid')}>Grade</Button>
-            <Button variant="secondary" size="sm" onClick={() => navigate('/tickets/kanban')}>Kanban</Button>
-            <Button variant={showFavoritesOnly ? 'primary' : 'secondary'} size="sm" onClick={() => setShowFavoritesOnly(v => !v)}>
-              {showFavoritesOnly ? 'Favoritos ✓' : 'Favoritos'}
-            </Button>
-            <Badge variant="secondary">👥 {presenceCount} online</Badge>
-            <Badge variant="secondary">🔔 {notificationCount}</Badge>
-          </div>
-          <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
-            <Dropdown>
-              <DropdownItem onClick={exportCSV}>Exportar CSV</DropdownItem>
-              <DropdownItem onClick={exportExcel}>Exportar Excel</DropdownItem>
-              <DropdownItem onClick={exportPDF}>Exportar PDF</DropdownItem>
-            </Dropdown>
-            <Button
-              variant="primary"
-              onClick={() => navigate('/tickets/new')}
-              leftIcon="➕"
-            >
-              Novo Ticket
-            </Button>
-          </div>
-        </div>
-      </div>
+    <Block>
+    
+<Block >
+          <TicketsListHeader isGlobalView={isGlobalView} totalItems={totalItems} />
+</Block>
+<Block>
+  
+        <TicketsListActions
+          viewMode={viewMode}
+          showFavoritesOnly={showFavoritesOnly}
+          presenceCount={presenceCount}
+          notificationCount={notificationCount}
+          onListView={() => setViewMode('list')}
+          onGridView={() => setViewMode('grid')}
+          onKanban={() => navigate('/tickets/kanban')}
+          onToggleFavorites={() => setShowFavoritesOnly(v => !v)}
+          onExportCSV={exportCSV}
+          onExportExcel={exportExcel}
+          onExportPDF={exportPDF}
+          onNewTicket={() => navigate('/tickets/new')}
+        />
+</Block>
+ 
 
       {error && (
         <Alert variant="danger" title="Erro">
@@ -545,6 +530,6 @@ export function TicketsListPage() {
           <Spinner size="sm" label="Atualizando..." />
         </div>
       )}
-    </div>
+    </Block>
   );
 }
