@@ -3,10 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Card, 
   Button, 
-  Input, 
   Badge, 
-  Dropdown, 
-  DropdownItem, 
   Table, 
   TableHeader, 
   TableBody, 
@@ -19,6 +16,7 @@ import {
 } from '../../components/ui';
 import styled from 'styled-components';
 import { ServiceOrderService, type ServiceOrder, type ServiceOrderFilters } from '../../services/serviceOrderService'
+import ServiceOrdersToolbar from './components/ServiceOrdersToolbar';
 
 type ListOrder = ServiceOrder
 
@@ -206,58 +204,21 @@ const ServiceOrdersListPage: React.FC = () => {
         </QuickNav>
       </HeaderActions>
 
-      <TableToolbar>
-        <TableToolbarFilters>
-          <Input
-            placeholder="Buscar por título, cliente ou descrição..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            leftIcon="🔍"
-          />
-          
-          <Dropdown>
-            <Button variant="outline">
-              {statusOptions.find(opt => opt.value === statusFilter)?.label}
-            </Button>
-            {statusOptions.map(option => (
-              <DropdownItem
-                key={option.value}
-                onClick={() => setStatusFilter(option.value)}
-              >
-                {option.label}
-              </DropdownItem>
-            ))}
-          </Dropdown>
-
-          <Dropdown>
-            <Button variant="outline">
-              {priorityOptions.find(opt => opt.value === priorityFilter)?.label}
-            </Button>
-            {priorityOptions.map(option => (
-              <DropdownItem
-                key={option.value}
-                onClick={() => setPriorityFilter(option.value)}
-              >
-                {option.label}
-              </DropdownItem>
-            ))}
-          </Dropdown>
-
-          
-        </TableToolbarFilters>
-        <TableToolbarActions>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSearchTerm('');
-              setStatusFilter('all');
-              setPriorityFilter('all');
-            }}
-          >
-            Limpar Filtros
-          </Button>
-        </TableToolbarActions>
-      </TableToolbar>
+      <ServiceOrdersToolbar
+        searchTerm={searchTerm}
+        onSearchTermChange={setSearchTerm}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        priorityFilter={priorityFilter}
+        onPriorityFilterChange={setPriorityFilter}
+        onClearFilters={() => {
+          setSearchTerm('');
+          setStatusFilter('all');
+          setPriorityFilter('all');
+        }}
+        statusOptions={statusOptions}
+        priorityOptions={priorityOptions}
+      />
 
       <TableContainer>
         {isLoading ? (
@@ -416,23 +377,7 @@ const QuickNav = styled.div`
   margin-left: auto;
 `;
 
-const TableToolbar = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-`;
-
-const TableToolbarFilters = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-`;
-
-const TableToolbarActions = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
+// Toolbar movida para componente separado em ./components/ServiceOrdersToolbar
 
 const TableContainer = styled(Card)`
   overflow: auto;
