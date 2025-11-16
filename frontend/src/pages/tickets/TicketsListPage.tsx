@@ -372,10 +372,8 @@ export function TicketsListPage() {
               <TableRow>
                 <TableHeaderCell scope="col">Número</TableHeaderCell>
                 <TableHeaderCell scope="col">Título</TableHeaderCell>
-                <TableHeaderCell scope="col">Cliente</TableHeaderCell>
                 <TableHeaderCell scope="col">Status</TableHeaderCell>
                 <TableHeaderCell scope="col">Prioridade</TableHeaderCell>
-                <TableHeaderCell scope="col">Categoria</TableHeaderCell>
                 <TableHeaderCell scope="col">Responsável</TableHeaderCell>
                 <TableHeaderCell scope="col">Criado em</TableHeaderCell>
                 <TableHeaderCell scope="col">Ações</TableHeaderCell>
@@ -400,12 +398,6 @@ export function TicketsListPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="tickets-list__customer">
-                      <span className="tickets-list__customer-name">{ticket.customerInfo?.name ?? '—'}</span>
-                      <span className="tickets-list__customer-email">{ticket.customerInfo?.email ?? ''}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
                     <Badge variant={getStatusVariant(ticket.status)}>
                       {statusLabels[ticket.status]}
                     </Badge>
@@ -414,11 +406,6 @@ export function TicketsListPage() {
                     <Badge variant={getPriorityVariant(ticket.priority)}>
                       {priorityLabels[ticket.priority]}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <span className="tickets-list__category">
-                      {categoryLabels[ticket.category] ?? '—'}
-                    </span>
                   </TableCell>
                   <TableCell>
                     {ticket.assignee?.name ? (
@@ -485,7 +472,7 @@ export function TicketsListPage() {
                     <Badge variant={getPriorityVariant(ticket.priority)}>{priorityLabels[ticket.priority] ?? '—'}</Badge>
                   </div>
                   <div style={{ marginTop: '0.5rem', fontWeight: 600 }}>{ticket.title}</div>
-                  <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>{ticket.customerInfo?.name ?? '—'} • {ticket.customerInfo?.email ?? ''}</div>
+                  {/* Removido: info do cliente não vem da API */}
                   <div style={{ marginTop: '0.5rem' }}>
                     <Badge variant={getStatusVariant(ticket.status)}>{statusLabels[ticket.status] ?? String(ticket.status)}</Badge>
                   </div>

@@ -13,8 +13,10 @@ import {
 } from '../../components/ui';
 import { ApiService } from '../../services/api';
 import TicketService from '../../services/ticketService';
+import ProviderService from '../../services/providerService';
 import type { Ticket, TicketStatus, TicketComment, TicketHistory } from '../../types/ticket';
 import type { Priority } from '../../types/common';
+import { Block } from '../../components/layout/Flex/Flex';
 
 const statusLabels: Record<TicketStatus, string> = {
   open: 'Aberto',
@@ -162,6 +164,9 @@ export function TicketDetailsPage() {
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [provider, setProvider] = useState<any | null>(null);
+  const [providerLoading, setProviderLoading] = useState(false);
+  const [providerError, setProviderError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('details');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -212,11 +217,30 @@ export function TicketDetailsPage() {
       } as Ticket;
 
       setTicket(normalized);
+      if (normalized.providerId) {
+        await loadProvider(normalized.providerId);
+      } else {
+        setProvider(null);
+      }
     } catch (err) {
       setError('Erro ao carregar ticket');
       console.error('Ticket loading error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadProvider = async (provId: number) => {
+    try {
+      setProviderLoading(true);
+      setProviderError(null);
+      const data = await ProviderService.getById(provId as number);
+      setProvider(data as any);
+    } catch (e: any) {
+      setProviderError(e?.message ?? 'Falha ao carregar provedor');
+      setProvider(null);
+    } finally {
+      setProviderLoading(false);
     }
   };
 
@@ -471,9 +495,9 @@ export function TicketDetailsPage() {
           <Tab value="history">Histórico ({ticket.history.length})</Tab>
         </TabList>
 
-        <TabPanels>
-          <TabPanel value="details">
-            <Content>
+          <TabPanels>
+            <TabPanel value="details">
+              <Content>
               <div>
                 <Card>
                   <CardHeader>
@@ -488,38 +512,67 @@ export function TicketDetailsPage() {
               <div>
                 <Card>
                   <CardHeader>
-                    <h3>Informações do Cliente</h3>
+                    <h3>Informações do Provedor</h3>
                   </CardHeader>
                   <CardBody>
-                    <div>
-                      <InfoItemRow>
-                        <label>Nome:</label>
-                        <span>{ticket.customerInfo.name || '—'}</span>
-                      </InfoItemRow>
-                      <InfoItemRow>
-                        <label>Email:</label>
-                        <span>{ticket.customerInfo.email || '—'}</span>
-                      </InfoItemRow>
-                      <InfoItemRow>
-                        <label>Telefone:</label>
-                        <span>{ticket.customerInfo.phone || '—'}</span>
-                      </InfoItemRow>
-                      {ticket.customerInfo.company && (
+                    {providerLoading ? (
+                      <Spinner size="sm" label="Carregando provedor..." />
+                    ) : providerError ? (
+                      <Alert variant="error">{providerError}</Alert>
+                    ) : provider ? (
+                      <div>
                         <InfoItemRow>
-                          <label>Empresa:</label>
-                          <span>{ticket.customerInfo.company}</span>
+                          <label>Nome:</label>
+                          <span>{provider.name ?? '—'}</span>
                         </InfoItemRow>
-                      )}
-                      {ticket.customerInfo.department && (
                         <InfoItemRow>
-                          <label>Departamento:</label>
-                          <span>{ticket.customerInfo.department}</span>
+                          <label>CNPJ:</label>
+                          <span>{provider.cnpj ?? '—'}</span>
                         </InfoItemRow>
-                      )}
-                    </div>
+                        <InfoItemRow>
+                          <label>Workspace:</label>
+                          <span>{provider.workspace ?? '—'}</span>
+                        </InfoItemRow>
+                        <InfoItemRow>
+                          <label>Email:</label>
+                          <span>{provider.email ?? '—'}</span>
+                        </InfoItemRow>
+                        <InfoItemRow>
+                          <label>Telefone:</label>
+                          <span>{provider.phone ?? '—'}</span>
+                        </InfoItemRow>
+                        <InfoItemRow>
+                          <label>Website:</label>
+                          <span>{provider.website ?? '—'}</span>
+                        </InfoItemRow>
+                        <InfoItemRow>
+                          <label>Plano:</label>
+                          <span>{provider.plan ?? '—'}</span>
+                        </InfoItemRow>
+                        <InfoItemRow>
+                          <label>Status:</label>
+                          <span>{provider.status ?? '—'}</span>
+                        </InfoItemRow>
+                        <InfoItemRow>
+                          <label>Endereço:</label>
+                          <span>{provider.address ? `${provider.address.city ?? ''} ${provider.address.state ? '- ' + provider.address.state : ''} ${provider.address.zipCode ? '(' + provider.address.zipCode + ')' : ''}`.trim() || '—' : '—'}</span>
+                        </InfoItemRow>
+                        <InfoItemRow>
+                          <label>Criado em:</label>
+                          <span>{provider.createdAt ? new Date(provider.createdAt).toLocaleString('pt-BR') : '—'}</span>
+                        </InfoItemRow>
+                        <InfoItemRow>
+                          <label>Atualizado em:</label>
+                          <span>{provider.updatedAt ? new Date(provider.updatedAt).toLocaleString('pt-BR') : '—'}</span>
+                        </InfoItemRow>
+                      </div>
+                    ) : (
+                      <span>Sem dados do provedor</span>
+                    )}
                   </CardBody>
                 </Card>
-
+             
+<Block>
                 <Card>
                   <CardHeader>
                     <h3>Detalhes do Ticket</h3>
@@ -574,6 +627,8 @@ export function TicketDetailsPage() {
                     </div>
                   </CardBody>
                 </Card>
+                </Block>
+
               </div>
             </Content>
           </TabPanel>
