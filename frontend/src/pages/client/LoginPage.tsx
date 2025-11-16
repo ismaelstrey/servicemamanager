@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import styled from 'styled-components';
+import { motion } from 'framer-motion';
 import { useClientAuth } from '../../hooks/useClientAuth';
+import { Input, Button, Checkbox, Card, CardHeader, CardBody, Alert, Heading } from '../../components/ui';
 
 const ClientLoginPage: React.FC = () => {
   const { login, isLoading, error } = useClientAuth();
@@ -22,47 +25,100 @@ const ClientLoginPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: 420, margin: '64px auto', padding: 24 }}>
-      <h1>Portal do Cliente</h1>
-      <p style={{ color: '#666' }}>Acesse suas ordens de serviço e tickets.</p>
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, marginTop: 16 }}>
-        <label>
-          Email
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="cliente@exemplo.com"
-            style={{ width: '100%', padding: '8px 10px' }}
-          />
-        </label>
-        <label>
-          Senha
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="••••••••"
-            style={{ width: '100%', padding: '8px 10px' }}
-          />
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <input
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-          />
-          Lembrar-me
-        </label>
-        {error && <div style={{ color: 'crimson' }}>{error}</div>}
-        <button type="submit" disabled={isLoading} style={{ padding: '10px 12px' }}>
-          {isLoading ? 'Entrando...' : 'Entrar'}
-        </button>
-      </form>
-    </div>
+    <PageWrap>
+      <MotionContainer initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+        <Card variant="elevated">
+          <CardHeader>
+            <HeaderRow>
+              <Heading level={2}>Portal do Cliente</Heading>
+              <Subtitle>Acesse suas ordens de serviço e tickets.</Subtitle>
+            </HeaderRow>
+          </CardHeader>
+          <CardBody>
+            {error && (
+              <Alert variant="error" title="Falha no login">{error}</Alert>
+            )}
+            <Form onSubmit={handleSubmit}>
+              <Input
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="cliente@exemplo.com"
+                fullWidth
+                size="md"
+                variant="outlined"
+              />
+              <Input
+                label="Senha"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="••••••••"
+                fullWidth
+                size="md"
+                variant="outlined"
+              />
+              <CheckboxRow>
+                <Checkbox
+                  label="Lembrar-me"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe((e.target as HTMLInputElement).checked)}
+                  size="md"
+                />
+              </CheckboxRow>
+              <MotionButton whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button type="submit" disabled={isLoading} variant="primary" fullWidth>
+                  {isLoading ? 'Entrando...' : 'Entrar'}
+                </Button>
+              </MotionButton>
+            </Form>
+          </CardBody>
+        </Card>
+      </MotionContainer>
+    </PageWrap>
   );
 };
 
 export default ClientLoginPage;
+
+const PageWrap = styled.div`
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: ${({ theme }) => theme.spacing.xl};
+  background: ${({ theme }) => theme.colors.background.primary};
+`;
+
+const Subtitle = styled.p`
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const Form = styled.form`
+  display: grid;
+  gap: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacing.md};
+`;
+
+const CheckboxRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const MotionContainer = styled(motion.div)`
+  width: 100%;
+  max-width: 440px;
+`;
+
+const MotionButton = styled(motion.div)`
+  width: 100%;
+`;

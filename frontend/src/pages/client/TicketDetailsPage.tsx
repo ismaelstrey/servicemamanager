@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import styled from 'styled-components';
 import { Card, CardHeader, CardBody, Badge, Spinner, Alert } from '../../components/ui';
 import ClientTimelineWidget from '../../components/client/ClientTimelineWidget';
 import { ApiService } from '../../services/api';
@@ -47,23 +48,23 @@ const ClientTicketDetailsPage: React.FC = () => {
   }, [id]);
 
   return (
-    <div style={{ maxWidth: 900, margin: '32px auto', padding: 24 }}>
+    <PageWrap>
       <h1>Ticket #{id}</h1>
-      <p style={{ color: '#666' }}>Detalhes do ticket no Portal do Cliente</p>
+      <Subtitle>Detalhes do ticket no Portal do Cliente</Subtitle>
 
       {loading && (
-        <div style={{ marginTop: 12 }}>
+        <LoadingRow>
           <Spinner />
-        </div>
+        </LoadingRow>
       )}
       {error && (
-        <div style={{ marginTop: 12 }}>
+        <ErrorRow>
           <Alert variant="error">{error}</Alert>
-        </div>
+        </ErrorRow>
       )}
 
       {details?.ticket && (
-        <div style={{ marginTop: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <MetaRow>
           <Badge variant="info">Status: {details.ticket.status}</Badge>
           {details.ticket.priority && <Badge variant="secondary">Prioridade: {details.ticket.priority}</Badge>}
           {details.sla?.enabled && (
@@ -79,10 +80,10 @@ const ClientTicketDetailsPage: React.FC = () => {
               )}
             </>
           )}
-        </div>
+        </MetaRow>
       )}
 
-      <div style={{ marginTop: 16 }}>
+      <Section>
         <Card variant="outlined">
           <CardHeader>
             <strong>Timeline do Ticket</strong>
@@ -95,9 +96,38 @@ const ClientTicketDetailsPage: React.FC = () => {
             )}
           </CardBody>
         </Card>
-      </div>
-    </div>
+      </Section>
+    </PageWrap>
   );
 };
 
 export default ClientTicketDetailsPage;
+
+const PageWrap = styled.div`
+  max-width: 900px;
+  margin: ${({ theme }) => theme.spacing.lg} auto;
+  padding: ${({ theme }) => theme.spacing.lg};
+`;
+
+const Subtitle = styled.p`
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const LoadingRow = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.sm};
+`;
+
+const ErrorRow = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.sm};
+`;
+
+const MetaRow = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.md};
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+  flex-wrap: wrap;
+`;
+
+const Section = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.md};
+`;

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Spinner, Alert, Badge } from '../../components/ui';
+import styled from 'styled-components';
+import { Card, Spinner, Alert, Badge, Heading } from '../../components/ui';
 import ServiceOrderService from '../../services/serviceOrderService';
 
 interface ServiceOrderStatsBackend {
@@ -64,73 +65,152 @@ const ServiceOrdersReportsPage: React.FC = () => {
   };
 
   return (
-    <div className="service-orders-page" style={{ padding: '1rem' }}>
-      <h1>Relatórios de SLA e Métricas de OS</h1>
+    <Page>
+      <Heading level={1}>Relatórios de SLA e Métricas de OS</Heading>
 
       {error && (
-        <Alert variant="danger" title="Erro" onDismiss={() => setError(null)}>
+        <Alert variant="error" title="Erro" onDismiss={() => setError(null)}>
           {error}
         </Alert>
       )}
 
       <Card>
         {isLoading ? (
-          <div className="loading-container">
+          <LoadingContainer>
             <Spinner />
             <p>Carregando relatórios...</p>
-          </div>
+          </LoadingContainer>
         ) : stats ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <ContentGrid>
             <Card>
-              <h3>Resumo</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+              <Heading level={3}>Resumo</Heading>
+              <SummaryGrid>
                 <div><strong>Total de OS:</strong> {stats.total}</div>
                 <div><strong>Tempo médio de conclusão:</strong> {stats.averageCompletionTime} h</div>
                 <div><strong>Receita total:</strong> R$ {Number(stats.totalRevenue).toFixed(2)}</div>
                 <div><strong>Receita pendente:</strong> R$ {Number(stats.pendingRevenue).toFixed(2)}</div>
-              </div>
+              </SummaryGrid>
             </Card>
 
             <Card>
-              <h3>Por Status</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <Heading level={3}>Por Status</Heading>
+              <ListCol>
                 {Object.entries(stats.byStatus).map(([status, count]) => (
-                  <div key={status} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <StatusRow key={status}>
                     <Badge variant={getStatusVariant(status)}>{statusLabels[status] ?? status}</Badge>
-                    <div style={{ flex: 1, background: 'var(--color-border)', height: '8px', borderRadius: '4px' }}>
-                      <div style={{ width: `${stats.total ? (count / stats.total) * 100 : 0}%`, background: 'var(--color-primary)', height: '8px', borderRadius: '4px' }} />
-                    </div>
+                    <BarTrack>
+                      <BarFill $pct={stats.total ? (count / stats.total) * 100 : 0} />
+                    </BarTrack>
                     <span>{count}</span>
-                  </div>
+                  </StatusRow>
                 ))}
-              </div>
+              </ListCol>
             </Card>
 
-            <div style={{ gridColumn: '1 / span 2' }}>
+            <FullWidth>
               <Card>
-                <h3>Por Prioridade</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <Heading level={3}>Por Prioridade</Heading>
+                <ListCol>
                   {Object.entries(stats.byPriority).map(([priority, count]) => (
-                    <div key={priority} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <PriorityRow key={priority}>
                       <Badge variant="secondary">{priority}</Badge>
-                      <div style={{ flex: 1, background: 'var(--color-border)', height: '8px', borderRadius: '4px' }}>
-                        <div style={{ width: `${stats.total ? (count / stats.total) * 100 : 0}%`, background: 'var(--color-secondary)', height: '8px', borderRadius: '4px' }} />
-                      </div>
+                      <BarTrack>
+                        <BarFill $pct={stats.total ? (count / stats.total) * 100 : 0} $secondary />
+                      </BarTrack>
                       <span>{count}</span>
-                    </div>
+                    </PriorityRow>
                   ))}
-                </div>
+                </ListCol>
               </Card>
-            </div>
-          </div>
+            </FullWidth>
+          </ContentGrid>
         ) : (
-          <div className="empty-state">
+          <EmptyState>
             <p>Nenhuma informação disponível.</p>
-          </div>
+          </EmptyState>
         )}
       </Card>
-    </div>
+    </Page>
   );
 };
 
 export default ServiceOrdersReportsPage;
+
+const Page = styled.div`
+  padding: ${({ theme }) => theme.spacing.lg};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+  padding: ${({ theme }) => theme.spacing.md};
+`;
+
+const ContentGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing.md};
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const SummaryGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing.xs};
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ListCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const StatusRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const PriorityRow = styled(StatusRow)``;
+
+const BarTrack = styled.div`
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-border);
+`;
+
+const BarFill = styled.div<{ $pct: number; $secondary?: boolean }>`
+  width: ${({ $pct }) => `${$pct}%`};
+  height: 8px;
+  border-radius: 4px;
+  background: ${({ $secondary }) => $secondary ? 'var(--color-secondary)' : 'var(--color-primary)'};
+`;
+
+const FullWidth = styled.div`
+  grid-column: 1 / span 2;
+
+  @media (max-width: 768px) {
+    grid-column: auto;
+  }
+`;
+
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.md};
+`;

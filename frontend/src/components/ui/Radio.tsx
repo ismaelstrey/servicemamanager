@@ -6,6 +6,7 @@ export type RadioSize = 'sm' | 'md' | 'lg';
 export interface RadioProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
   size?: RadioSize;
+  children?: React.ReactNode;
 }
 
 const Wrapper = styled.label<{ disabled?: boolean }>`
@@ -69,26 +70,34 @@ export const Radio: React.FC<RadioProps> = ({
   disabled,
   onChange,
   className,
+  children,
   ...props
 }) => {
   const id = useId();
   const isChecked = checked ?? defaultChecked ?? false;
+  const finalLabel = label ?? (typeof children === 'string' ? children : undefined);
+
+  const inputProps: React.InputHTMLAttributes<HTMLInputElement> = {
+    id,
+    type: 'radio',
+    disabled,
+    onChange,
+    ...props,
+  };
+
+  if (checked !== undefined) {
+    inputProps.checked = checked;
+  } else if (defaultChecked !== undefined) {
+    inputProps.defaultChecked = defaultChecked;
+  }
 
   return (
     <Wrapper htmlFor={id} className={className} disabled={disabled}>
-      <HiddenInput
-        id={id}
-        type="radio"
-        checked={checked}
-        defaultChecked={defaultChecked}
-        disabled={disabled}
-        onChange={onChange}
-        {...props}
-      />
+      <HiddenInput {...inputProps} aria-checked={!!isChecked} role="radio" />
       <Circle size={size} checked={!!isChecked} aria-hidden>
         {isChecked && <Dot />}
       </Circle>
-      {label && <LabelText>{label}</LabelText>}
+      {finalLabel && <LabelText>{finalLabel}</LabelText>}
     </Wrapper>
   );
 };

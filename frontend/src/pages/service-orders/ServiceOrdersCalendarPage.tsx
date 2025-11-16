@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { Card, Button, Badge, Alert, LogoLoader } from '../../components/ui';
+import { Card, Button, Badge, Alert, LogoLoader, Heading } from '../../components/ui';
 import { ApiService } from '../../services/api';
 import { useProviderContext } from '../../contexts/providerContext';
 import type { ServiceOrder } from '../../services/serviceOrderService';
@@ -45,6 +45,40 @@ const DayCell = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const HeaderActions = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const EmptyCell = styled.div`
+  min-height: 100px;
+`;
+
+const DayHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const DayItems = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const DayItem = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const DayItemTitle = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 // Página de calendário de Ordens de Serviço com navegação mensal
@@ -152,16 +186,16 @@ const ServiceOrdersCalendarPage: React.FC = () => {
   return (
     <PageWrapper>
       <HeaderRow>
-        <h1 style={{ margin: 0 }}>Calendário de Ordens de Serviço</h1>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <Heading level={1}>Calendário de Ordens de Serviço</Heading>
+        <HeaderActions>
           <Button variant="outline" onClick={prevMonth}>◀ Mês anterior</Button>
           <MonthBox>{monthLabel}</MonthBox>
           <Button variant="outline" onClick={nextMonth}>Mês seguinte ▶</Button>
-        </div>
+        </HeaderActions>
       </HeaderRow>
 
       {error && (
-        <Alert variant="danger" title="Erro" onDismiss={() => setError(null)}>
+        <Alert variant="error" title="Erro" onDismiss={() => setError(null)}>
           {error}
         </Alert>
       )}
@@ -178,25 +212,25 @@ const ServiceOrdersCalendarPage: React.FC = () => {
             </WeekHeader>
             <CalendarGrid>
               {Array.from({ length: firstWeekdayIndex }).map((_, idx) => (
-                <div key={`empty-${idx}`} style={{ minHeight: '100px' }} />
+                <EmptyCell key={`empty-${idx}`} />
               ))}
               {Array.from({ length: daysInMonth }).map((_, idx) => {
                 const day = idx + 1;
                 const items = ordersByDay[day] || [];
                 return (
                   <DayCell key={`day-${day}`}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <DayHeader>
                       <strong>{String(day).padStart(2, '0')}</strong>
                       {items.length > 0 && <Badge variant="info" size="sm">{items.length}</Badge>}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    </DayHeader>
+                    <DayItems>
                       {items.map((so) => (
-                        <div key={so.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <DayItem key={so.id}>
                           <Badge variant={getStatusVariant(so.status)} size="sm">{so.status}</Badge>
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{so.title}</span>
-                        </div>
+                          <DayItemTitle>{so.title}</DayItemTitle>
+                        </DayItem>
                       ))}
-                    </div>
+                    </DayItems>
                   </DayCell>
                 );
               })}

@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { StatsCard, RecentTickets, RecentServiceOrders, QuickActions, createQuickActions } from '../components/dashboard';
 import { LogoLoader, Alert, ChartContainer, Toast } from '../components/ui';
@@ -10,7 +12,6 @@ import DashboardService from '../services/dashboardService';
 import ServiceOrderService from '../services/serviceOrderService';
 import { ApiService, type PaginatedResponse } from '../services/api';
 import ProviderService, { type ProviderListItem } from '../services/providerService';
-import '../styles/dashboard.css';
 import ServiceOrderStatusChart from '../components/dashboard/charts/ServiceOrderStatusChart';
 import Timeline from '../components/dashboard/Timeline';
 import { useProviderContext } from '../contexts/providerContext';
@@ -290,27 +291,28 @@ export function DashboardPage() {
 
   if (error) {
     return (
-      <div className="dashboard dashboard--error">
-        <Alert variant="danger" title="Erro no Dashboard">
+      <ErrorWrap>
+        <Alert variant="error" title="Erro no Dashboard">
           {error}
         </Alert>
-      </div>
+      </ErrorWrap>
     );
   }
 
   return (
-    <div className="dashboard">
-      <DashboardHeader
+    <MotionContainer initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+      <PageWrap>
+        <DashboardHeader
         title={`Bem-vindo, ${user?.name || 'Usuário'}!`}
         subtitle="Aqui está um resumo das suas atividades recentes"
         period={period as '7d' | '30d' | '3m' | '12m'}
         onPeriodChange={(value) => setPeriod(value as any)}
         onExportCsv={() => exportCsv()}
         onCreateProvider={() => navigate('/providers/create')}
-      />
+        />
 
-      {stats && (
-        <div className="dashboard__stats">
+        {stats && (
+          <StatsGrid>
           {selectedProviderId !== null && (
             <>
               <StatsCard
@@ -422,64 +424,123 @@ export function DashboardPage() {
               isPositive: true,
             }}
           />
-        </div>
-      )}
+          </StatsGrid>
+        )}
 
-      <div className="dashboard__content">
-        <div className="dashboard__main">
-          {stats && (
-            <ChartContainer title={`Status de OS (${period})`} style={{ marginBottom: 16 }}>
-              <ServiceOrderStatusChart stats={{
-                pending: (stats as any).pendingServiceOrders ?? 0,
-                inProgress: (stats as any).inProgress ?? ((stats as any).totalServiceOrders - (stats as any).pendingServiceOrders - (stats as any).completedThisMonth),
-                completed: (stats as any).completedThisMonth ?? 0,
-                cancelled: (stats as any).cancelled ?? 0,
-              }} />
-            </ChartContainer>
-          )}
-          {selectedProviderId !== null && (
-            <RecentTickets
-              tickets={recentTickets}
-              onViewAll={() => navigate('/tickets')}
-              onTicketClick={handleTicketClick}
+        <ContentGrid>
+          <MainCol>
+            {stats && (
+              <Section>
+                <ChartContainer title={`Status de OS (${period})`}>
+                  <ServiceOrderStatusChart stats={{
+                    pending: (stats as any).pendingServiceOrders ?? 0,
+                    inProgress: (stats as any).inProgress ?? ((stats as any).totalServiceOrders - (stats as any).pendingServiceOrders - (stats as any).completedThisMonth),
+                    completed: (stats as any).completedThisMonth ?? 0,
+                    cancelled: (stats as any).cancelled ?? 0,
+                  }} />
+                </ChartContainer>
+              </Section>
+            )}
+            {selectedProviderId !== null && (
+              <RecentTickets
+                tickets={recentTickets}
+                onViewAll={() => navigate('/tickets')}
+                onTicketClick={handleTicketClick}
+              />
+            )}
+
+            <RecentServiceOrders
+              serviceOrders={recentServiceOrders}
+              onViewAll={() => navigate('/service-orders')}
+              onServiceOrderClick={handleServiceOrderClick}
             />
-          )}
 
-          <RecentServiceOrders
-            serviceOrders={recentServiceOrders}
-            onViewAll={() => navigate('/service-orders')}
-            onServiceOrderClick={handleServiceOrderClick}
-          />
+            {selectedProviderId !== null && (
+              <Section>
+                <ChartContainer title="Atividades Recentes">
+                  <Timeline items={recentActivities.map((a) => ({
+                    type: a.type,
+                    id: a.id,
+                    title: a.title,
+                    description: a.description,
+                    createdAt: a.createdAt,
+                  }))} onItemClick={(it) => {
+                    if (it.type === 'ticket') navigate(`/tickets/${it.id}`);
+                  }} />
+                </ChartContainer>
+              </Section>
+            )}
+          </MainCol>
 
-          {selectedProviderId !== null && (
-            <ChartContainer title="Atividades Recentes" style={{ marginTop: 16 }}>
-              <Timeline items={recentActivities.map((a) => ({
-                type: a.type,
-                id: a.id,
-                title: a.title,
-                description: a.description,
-                createdAt: a.createdAt,
-              }))} onItemClick={(it) => {
-                if (it.type === 'ticket') navigate(`/tickets/${it.id}`);
-              }} />
-            </ChartContainer>
-          )}
-        </div>
+          <SidebarCol>
+            <QuickActions actions={quickActions} />
+          </SidebarCol>
+        </ContentGrid>
 
-        <div className="dashboard__sidebar">
-          <QuickActions actions={quickActions} />
-        </div>
-      </div>
-
-      <Toast
-        open={toastOpen}
-        onClose={() => setToastOpen(false)}
-        title="Notificação"
-        description={toastMsg}
-        variant="info"
-      />
-    </div>
+        <Toast
+          open={toastOpen}
+          onClose={() => setToastOpen(false)}
+          title="Notificação"
+          description={toastMsg}
+          variant="info"
+        />
+      </PageWrap>
+    </MotionContainer>
   );
 }
 
 export default DashboardPage;
+
+const MotionContainer = styled(motion.div)`
+  width: 100%;
+`;
+
+const PageWrap = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacing.lg};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const ErrorWrap = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacing.lg};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const ContentGrid = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: ${({ theme }) => theme.spacing.lg};
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const MainCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const SidebarCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const Section = styled.div`
+  margin: ${({ theme }) => theme.spacing.xs} 0;
+`;

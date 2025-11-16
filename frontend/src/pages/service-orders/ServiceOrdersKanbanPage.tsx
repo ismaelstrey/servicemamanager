@@ -5,7 +5,7 @@ import { decodeJwt } from '../../utils/jwt';
 import KanbanBoard from '../../components/kanban/KanbanBoard';
 import { ApiService } from '../../services/api';
 import ServiceOrderService from '../../services/serviceOrderService';
-import { Button, Alert, LogoLoader } from '../../components/ui';
+import { Button, Alert, LogoLoader, Heading } from '../../components/ui';
 import { useProviderContext } from '../../contexts/providerContext';
 
 type KanbanBoardData = Record<string, { id: number; title: string; priority: 'low' | 'medium' | 'high' | 'urgent' | 'critical'; updatedAt: string | Date }[]>;
@@ -34,12 +34,6 @@ const HeaderRow = styled.div`
   justify-content: space-between;
 `;
 
-const Title = styled.h2`
-  margin: 0;
-  color: ${({ theme }) => theme.colors.text.primary};
-  font-size: ${({ theme }) => theme.typography.ui.subtitle.fontSize};
-  font-weight: ${({ theme }) => theme.typography.ui.subtitle.fontWeight};
-`;
 
 const ActionsRow = styled.div`
   display: inline-flex;
@@ -133,7 +127,7 @@ const ServiceOrdersKanbanPage: React.FC = () => {
   return (
     <PageWrapper>
       <HeaderRow>
-        <Title>Ordens de Serviço — Kanban</Title>
+        <Heading level={1}>Ordens de Serviço — Kanban</Heading>
         <ActionsRow>
           <Button variant="secondary" onClick={() => navigate('/service-orders')}>Lista de OS</Button>
           <Button onClick={() => {
@@ -145,7 +139,7 @@ const ServiceOrdersKanbanPage: React.FC = () => {
         </ActionsRow>
       </HeaderRow>
 
-      {error && (<Alert variant="danger">{error}</Alert>)}
+      {error && (<Alert variant="error">{error}</Alert>)}
 
       <KanbanBoard
         board={board}

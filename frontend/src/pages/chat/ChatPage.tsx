@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import styled from 'styled-components';
 import { useChat } from '../../hooks/useChat';
 import { Card, CardHeader, CardBody, Button, Input, Spinner, Alert, EmptyState, Toast, Skeleton } from '../../components/ui';
 
@@ -69,17 +70,17 @@ export default function ChatPage() {
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', height: '100%', gap: 16, padding: 16 }}>
+    <LayoutGrid>
       <aside>
         <Card variant="outlined">
           <CardHeader>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-              <span style={{ fontWeight: 600 }}>Conversas</span>
+            <HeaderRow>
+              <HeaderTitle>Conversas</HeaderTitle>
               <Button size="sm" variant="outline" onClick={handleCreateConversation}>Nova</Button>
-            </div>
+            </HeaderRow>
           </CardHeader>
           <CardBody>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <ControlsRow>
               <Input
                 placeholder="Título (opcional)"
                 value={newConvTitle}
@@ -88,49 +89,48 @@ export default function ChatPage() {
                 size="md"
                 variant="outlined"
               />
-            </div>
+            </ControlsRow>
             {loading && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <LoadingBlock>
+                <LoadingRow>
                   <Spinner size="sm" />
                   <span>Carregando...</span>
-                </div>
+                </LoadingRow>
                 {[1,2,3,4,5].map((i) => (
                   <Skeleton key={i} height={36} radius={8} />
                 ))}
-              </div>
+              </LoadingBlock>
             )}
             {error && (
               <Alert variant="error" title="Erro" description="Ocorreu um problema ao carregar ou enviar.">
                 {error}
               </Alert>
             )}
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            <ConversationsList>
               {conversations.map((c) => (
-                <li key={c.id}>
+                <ConversationItem key={c.id}>
                   <Button
                     variant={selectedConversationId === c.id ? 'primary' : 'outline'}
                     size="md"
                     fullWidth
                     onClick={() => selectConversation(c.id)}
-                    style={{ justifyContent: 'flex-start', marginBottom: 8 }}
                   >
                     {c.title || `Conversa #${c.id}`}
                   </Button>
-                </li>
+                </ConversationItem>
               ))}
               {conversations.length === 0 && !loading && (
                 <EmptyState title="Nenhuma conversa" description="Crie uma nova conversa para começar." actionLabel="Nova conversa" onAction={() => createConversation(newConvTitle || undefined)} />
               )}
-            </ul>
+            </ConversationsList>
           </CardBody>
         </Card>
       </aside>
-      <main style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <MainWrap>
+        <InnerMain>
         <Card variant="outlined">
           <CardHeader>
-            <span style={{ fontWeight: 600 }}>Mensagens</span>
+            <HeaderTitle>Mensagens</HeaderTitle>
           </CardHeader>
           <CardBody>
             {!selectedConversationId && (
@@ -138,38 +138,38 @@ export default function ChatPage() {
             )}
             {selectedConversationId && (
               <>
-                <div style={{ flex: 1, overflowY: 'auto', border: '1px solid #eee', borderRadius: 8, padding: 12, maxHeight: '50vh' }}>
+                <MessagesViewport>
                   {loading && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <SkeletonBlock>
                       {[1,2,3].map((i) => (
-                        <div key={i}>
+                        <SkeletonRow key={i}>
                           <Skeleton width="40%" height={12} />
-                          <div style={{ marginTop: 8 }}>
+                          <SkeletonSpacer>
                             <Skeleton height={18} />
-                          </div>
-                        </div>
+                          </SkeletonSpacer>
+                        </SkeletonRow>
                       ))}
-                    </div>
+                    </SkeletonBlock>
                   )}
                   {!loading && messages.map((m) => (
-                    <div key={m.id} style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 12, color: '#666' }}>
+                    <MessageItem key={m.id}>
+                      <MetaText>
                         {m.direction.toUpperCase()} • {new Date(m.createdAt).toLocaleString()}
-                      </div>
-                      {m.content && <div style={{ marginTop: 4 }}>{m.content}</div>}
+                      </MetaText>
+                      {m.content && <MessageContent>{m.content}</MessageContent>}
                       {m.attachments?.map((a, idx) => (
-                        <div key={`${m.id}-att-${idx}`} style={{ marginTop: 6 }}>
+                        <Attachment key={`${m.id}-att-${idx}`}>
                           <a href={a.url} target="_blank" rel="noreferrer">{a.mimeType || 'arquivo'}</a>
                           {a.size ? ` • ${(a.size / 1024).toFixed(1)}KB` : ''}
-                        </div>
+                        </Attachment>
                       ))}
-                    </div>
+                    </MessageItem>
                   ))}
                   {!loading && messages.length === 0 && (
                     <EmptyState title="Sem mensagens" description="Envie uma mensagem ou anexe um arquivo." />
                   )}
-                </div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 12, alignItems: 'center' }}>
+                </MessagesViewport>
+                <ComposerRow>
                   <Input
                     placeholder="Escreva uma mensagem"
                     value={input}
@@ -181,13 +181,13 @@ export default function ChatPage() {
                   <Button onClick={handleSend} variant="primary">Enviar</Button>
                   <Input type="file" ref={fileRef} size="md" variant="outlined" />
                   <Button onClick={handleUpload} variant="secondary">Anexar</Button>
-                </div>
+                </ComposerRow>
               </>
             )}
           </CardBody>
         </Card>
-        </div>
-      </main>
+        </InnerMain>
+      </MainWrap>
       <Toast
         open={toastOpen}
         onClose={() => setToastOpen(false)}
@@ -195,6 +195,111 @@ export default function ChatPage() {
         description={toastDesc}
         variant={toastVariant}
       />
-    </div>
+    </LayoutGrid>
   );
 }
+
+const LayoutGrid = styled.div`
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  height: 100%;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const HeaderTitle = styled.span`
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+`;
+
+const ControlsRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
+
+const LoadingBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
+
+const LoadingRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const ConversationsList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const ConversationItem = styled.li`
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+`;
+
+const MainWrap = styled.main`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+`;
+
+const InnerMain = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+
+const MessagesViewport = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  padding: ${({ theme }) => theme.spacing.md};
+  max-height: 50vh;
+`;
+
+const SkeletonBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const SkeletonRow = styled.div``;
+
+const SkeletonSpacer = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.sm};
+`;
+
+const MessageItem = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
+
+const MetaText = styled.div`
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const MessageContent = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Attachment = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.xs};
+`;
+
+const ComposerRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-top: ${({ theme }) => theme.spacing.md};
+  align-items: center;
+`;

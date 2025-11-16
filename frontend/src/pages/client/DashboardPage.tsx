@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
 import { useClientAuth } from '../../hooks/useClientAuth';
 import ClientAuthService from '../../services/clientAuthService';
 import type { ClientUser } from '../../types/client';
@@ -31,13 +32,13 @@ const ClientDashboardPage: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ maxWidth: 900, margin: '32px auto', padding: 24 }}>
+    <PageWrap>
       <h1>Olá, {user?.name || 'Cliente'}</h1>
-      <p style={{ color: '#666' }}>Bem-vindo ao seu painel.</p>
+      <Subtitle>Bem-vindo ao seu painel.</Subtitle>
       {loading && <p>Carregando seu perfil...</p>}
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      {error && <ErrorText>{error}</ErrorText>}
       {profile && (
-        <div style={{ marginTop: 16 }}>
+        <Section>
           <h2>Seu Perfil</h2>
           <ul>
             <li>ID: {profile.id}</li>
@@ -45,35 +46,83 @@ const ClientDashboardPage: React.FC = () => {
             <li>Email: {profile.email}</li>
             <li>Provider ID: {profile.providerId}</li>
           </ul>
-        </div>
+        </Section>
       )}
-
-      <div style={{ marginTop: 24 }}>
+      <SectionLg>
         <Card variant="outlined">
           <CardHeader>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <HeaderRow>
               <strong>Timeline Unificada</strong>
-              <small style={{ color: '#666' }}>Selecione tipo e ID do recurso</small>
-            </div>
+              <HeaderHint>Selecione tipo e ID do recurso</HeaderHint>
+            </HeaderRow>
           </CardHeader>
           <CardBody>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <ControlsRow>
+              <TypeRow>
                 <Radio name="resourceType" defaultChecked onChange={() => setResourceType('TICKET')}>Ticket</Radio>
                 <Radio name="resourceType" onChange={() => setResourceType('SERVICE_ORDER')}>Ordem de Serviço</Radio>
-              </div>
+              </TypeRow>
               <Input placeholder="ID do recurso" onChange={(e: any) => setResourceId(e.target.value)} />
-            </div>
+            </ControlsRow>
             {resourceId ? (
               <ClientUnifiedTimeline resourceType={resourceType} resourceId={resourceId} pageSize={10} />
             ) : (
-              <p style={{ color: '#666' }}>Informe um ID de Ticket ou OS para visualizar.</p>
+              <Hint>Informe um ID de Ticket ou OS para visualizar.</Hint>
             )}
           </CardBody>
         </Card>
-      </div>
-    </div>
+      </SectionLg>
+    </PageWrap>
   );
 };
+
+const PageWrap = styled.div`
+  max-width: 900px;
+  margin: ${({ theme }) => theme.spacing.lg} auto;
+  padding: ${({ theme }) => theme.spacing.lg};
+`;
+
+const Subtitle = styled.p`
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const ErrorText = styled.p`
+  color: ${({ theme }) => theme.colors.error.main};
+`;
+
+const Section = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.md};
+`;
+
+const SectionLg = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.lg};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const HeaderHint = styled.small`
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const ControlsRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.md};
+  align-items: center;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
+
+const TypeRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  align-items: center;
+`;
+
+const Hint = styled.p`
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
 
 export default ClientDashboardPage;

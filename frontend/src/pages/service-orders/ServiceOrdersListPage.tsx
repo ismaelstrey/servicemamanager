@@ -5,7 +5,8 @@ import {
   Button, 
   Pagination, 
   Spinner, 
-  Alert 
+  Alert,
+  Heading
 } from '../../components/ui';
 import styled from 'styled-components';
 import { ServiceOrderService, type ServiceOrder, type ServiceOrderFilters } from '../../services/serviceOrderService'
@@ -91,22 +92,18 @@ const ServiceOrdersListPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="service-orders-page">
-        <Alert
-          variant="danger"
-          title="Erro"
-          onDismiss={() => setError(null)}
-        >
+      <Page>
+        <Alert variant="error" title="Erro" onDismiss={() => setError(null)}>
           {error}
         </Alert>
-      </div>
+      </Page>
     );
   }
 
   return (
     <Page>
       <Header>
-        <h1>Ordens de Serviço</h1>
+        <Heading level={1}>Ordens de Serviço</Heading>
         <Button
           variant="primary"
           onClick={() => navigate('/service-orders/create')}
@@ -205,30 +202,30 @@ const ServiceOrdersListPage: React.FC = () => {
 };
 
 const Page = styled.div`
-  padding: 1rem;
+  padding: ${({ theme }) => theme.spacing.lg};
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
 
 const HeaderActions = styled.div`
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
 `;
 
 const ViewToggle = styled.div`
   display: flex;
-  gap: 0.5rem;
+  gap: ${({ theme }) => theme.spacing.xs};
 `;
 
 const QuickNav = styled.div`
   display: flex;
-  gap: 0.5rem;
+  gap: ${({ theme }) => theme.spacing.xs};
   margin-left: auto;
 `;
 
@@ -237,7 +234,7 @@ const TableContainer = styled(Card)`
   & table thead th {
     position: sticky;
     top: 0;
-    background: #fff;
+    background: ${({ theme }) => theme.colors.background.secondary};
     z-index: 1;
   }
 `;
@@ -246,8 +243,8 @@ const LoadingContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
+  gap: ${({ theme }) => theme.spacing.xs};
+  padding: ${({ theme }) => theme.spacing.md};
 `;
 
 
@@ -255,8 +252,8 @@ const EmptyState = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.md};
 `;
 
 export default ServiceOrdersListPage;

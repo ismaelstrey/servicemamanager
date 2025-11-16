@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -13,10 +14,10 @@ import {
   Dropdown,
   DropdownItem
 } from '../../components/ui';
+import { Heading } from '../../components/ui';
 import { UserRole } from '../../types/auth';
 import type { ServiceOrder, ServiceOrderStatus, ServiceOrderPriority, ServiceOrderComment, ServiceOrderHistory } from '../../types/serviceOrder';
 import type { User } from '../../types/user';
-import '../../styles/service-orders.css';
 
 const statusLabels: Record<ServiceOrderStatus, string> = {
   pending: 'Pendente',
@@ -470,64 +471,41 @@ export function ServiceOrderDetailsPage() {
 
   if (error || !serviceOrder) {
     return (
-      <div className="service-order-details-page service-order-details-page--error">
-        <Alert variant="danger">
-          {error || 'Ordem de serviço não encontrada'}
-        </Alert>
-        <Button onClick={() => navigate('/service-orders')}>
-          Voltar para Ordens de Serviço
-        </Button>
-      </div>
+      <ErrorWrap>
+        <Alert variant="error">{error || 'Ordem de serviço não encontrada'}</Alert>
+        <Button onClick={() => navigate('/service-orders')}>Voltar para Ordens de Serviço</Button>
+      </ErrorWrap>
     );
   }
 
   return (
-    <div className="service-order-details-page">
-      <div className="service-order-details-header">
-        <div className="service-order-breadcrumb">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/service-orders')}
-          >
-            ← Ordens de Serviço
-          </Button>
-        </div>
+    <PageWrap>
+      <HeaderRow>
+        <BreadcrumbRow>
+          <Button variant="ghost" onClick={() => navigate('/service-orders')}>← Ordens de Serviço</Button>
+        </BreadcrumbRow>
 
-        <div className="service-order-title-section">
-          <div className="service-order-title-row">
-            <h1 className="service-order-title">{serviceOrder.title}</h1>
-            <div className="service-order-badges">
-              <Badge variant={getStatusVariant(serviceOrder.status)}>
-                {statusLabels[serviceOrder.status]}
-              </Badge>
-              <Badge variant={getPriorityVariant(serviceOrder.priority)}>
-                {priorityLabels[serviceOrder.priority]}
-              </Badge>
-            </div>
-          </div>
-          <p className="service-order-number">{serviceOrder.number}</p>
-        </div>
+        <TitleSection>
+          <TitleRow>
+            <Heading level={1}>{serviceOrder.title}</Heading>
+            <BadgesRow>
+              <Badge variant={getStatusVariant(serviceOrder.status)}>{statusLabels[serviceOrder.status]}</Badge>
+              <Badge variant={getPriorityVariant(serviceOrder.priority)}>{priorityLabels[serviceOrder.priority]}</Badge>
+            </BadgesRow>
+          </TitleRow>
+          <NumberText>{serviceOrder.number}</NumberText>
+        </TitleSection>
 
-        <div className="service-order-actions-header">
+        <ActionsHeader>
           <Dropdown>
-            <Button variant="secondary">
-              Ações
-            </Button>
-            <DropdownItem onClick={() => navigate(`/service-orders/${serviceOrder.id}/edit`)}>
-              Editar
-            </DropdownItem>
-            <DropdownItem>
-              Duplicar
-            </DropdownItem>
-            <DropdownItem>
-              Imprimir
-            </DropdownItem>
-            <DropdownItem variant="danger">
-              Cancelar
-            </DropdownItem>
+            <Button variant="secondary">Ações</Button>
+            <DropdownItem onClick={() => navigate(`/service-orders/${serviceOrder.id}/edit`)}>Editar</DropdownItem>
+            <DropdownItem>Duplicar</DropdownItem>
+            <DropdownItem>Imprimir</DropdownItem>
+            <DropdownItem variant="danger">Cancelar</DropdownItem>
           </Dropdown>
-        </div>
-      </div>
+        </ActionsHeader>
+      </HeaderRow>
 
       <Tabs activeTab={activeTab} onTabChange={(val) => setActiveTab(val as TabValue)}>
         <Tab value="details">Detalhes</Tab>
@@ -537,37 +515,37 @@ export function ServiceOrderDetailsPage() {
         <Tab value="history">Histórico ({serviceOrder.history.length})</Tab>
       </Tabs>
 
-      <div className="service-order-details-content">
-        <div className="service-order-main-content">
+      <ContentGrid>
+        <MainContent>
           {activeTab === 'details' && (
             <Card>
-              <h3>Descrição</h3>
-              <p className="service-order-description">{serviceOrder.description}</p>
+              <Heading level={3}>Descrição</Heading>
+              <Description>{serviceOrder.description}</Description>
               
               {serviceOrder.location && (
-                <>
-                  <h3>Localização</h3>
-                  <div className="service-order-location">
+                <Section>
+                  <Heading level={3}>Localização</Heading>
+                  <Location>
                     <p>{serviceOrder.location.address}</p>
                     <p>{serviceOrder.location.city}, {serviceOrder.location.state} - {serviceOrder.location.zipCode}</p>
-                  </div>
-                </>
+                  </Location>
+                </Section>
               )}
             </Card>
           )}
 
           {activeTab === 'tasks' && (
             <Card>
-              <h3>Tarefas</h3>
-              <div className="service-order-tasks">
+              <Heading level={3}>Tarefas</Heading>
+              <TaskList>
                 {serviceOrder.tasks.map((task) => (
-                  <div key={task.id} className="service-order-task">
-                    <div className="service-order-task-header">
-                      <h4>{task.title}</h4>
+                  <TaskItem key={task.id}>
+                    <TaskHeader>
+                      <Heading level={4}>{task.title}</Heading>
                       <Badge variant={task.status === 'completed' ? 'success' : task.status === 'in_progress' ? 'info' : 'secondary'}>
                         {task.status === 'completed' ? 'Concluída' : task.status === 'in_progress' ? 'Em Andamento' : 'Pendente'}
                       </Badge>
-                    </div>
+                    </TaskHeader>
                     <p>{task.description}</p>
                     {task.assignee && (
                       <p><strong>Responsável:</strong> {task.assignee.name}</p>
@@ -576,187 +554,158 @@ export function ServiceOrderDetailsPage() {
                     {task.actualHours && (
                       <p><strong>Horas realizadas:</strong> {task.actualHours}h</p>
                     )}
-                  </div>
+                  </TaskItem>
                 ))}
-              </div>
+              </TaskList>
             </Card>
           )}
 
           {activeTab === 'comments' && (
             <Card>
-              <h3>Comentários</h3>
-              <div className="service-order-comments">
+              <Heading level={3}>Comentários</Heading>
+              <CommentsList>
                 {serviceOrder.comments.map((comment) => (
-                  <div key={comment.id} className={`service-order-comment ${comment.isInternal ? 'service-order-comment--internal' : ''}`}>
-                    <div className="service-order-comment-header">
-                      <span className="service-order-comment-author">{comment.user?.name || comment.customer?.name || 'Usuário'}</span>
-                      <span className="service-order-comment-date">
-                        {new Date(comment.createdAt).toLocaleString('pt-BR')}
-                      </span>
+                  <CommentItem key={comment.id} $internal={comment.isInternal}>
+                    <CommentHeader>
+                      <CommentAuthor>{comment.user?.name || comment.customer?.name || 'Usuário'}</CommentAuthor>
+                      <CommentDate>{new Date(comment.createdAt).toLocaleString('pt-BR')}</CommentDate>
                       {comment.isInternal && <Badge variant="warning" size="sm">Interno</Badge>}
-                    </div>
-                    <div className="service-order-comment-content">
-                      {comment.content}
-                    </div>
-                  </div>
+                    </CommentHeader>
+                    <CommentContent>{comment.content}</CommentContent>
+                  </CommentItem>
                 ))}
-              </div>
+              </CommentsList>
 
-              <div className="service-order-add-comment">
-                <h4>Adicionar Comentário</h4>
+              <AddCommentSection>
+                <Heading level={4}>Adicionar Comentário</Heading>
                 <TextArea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Digite seu comentário..."
                   rows={3}
-                  className="service-order-comment-textarea"
                 />
-                <div className="service-order-comment-options">
+                <CommentOptions>
                   <label>
-                    <input
-                      type="checkbox"
-                      checked={isInternal}
-                      onChange={(e) => setIsInternal(e.target.checked)}
-                    />
+                    <input type="checkbox" checked={isInternal} onChange={(e) => setIsInternal(e.target.checked)} />
                     Comentário interno
                   </label>
-                  <Button
-                    onClick={handleAddComment}
-                    disabled={!newComment.trim() || addingComment}
-                  >
+                  <Button onClick={handleAddComment} disabled={!newComment.trim() || addingComment}>
                     {addingComment ? 'Adicionando...' : 'Adicionar Comentário'}
                   </Button>
-                </div>
-              </div>
+                </CommentOptions>
+              </AddCommentSection>
             </Card>
           )}
 
           {activeTab === 'attachments' && (
             <Card>
-              <h3>Anexos</h3>
-              <div className="service-order-attachments">
+              <Heading level={3}>Anexos</Heading>
+              <AttachmentsList>
                 {serviceOrder.attachments.length === 0 ? (
-                  <div className="service-order-empty">
+                  <EmptyState>
                     <p>Nenhum anexo encontrado.</p>
-                  </div>
+                  </EmptyState>
                 ) : (
                   serviceOrder.attachments.map((attachment) => (
-                    <div key={attachment.id} className="service-order-attachment">
-                      <div className="service-order-attachment-icon">
-                        📎
-                      </div>
-                      <div className="service-order-attachment-info">
-                        <div className="service-order-attachment-name">
-                          {attachment.originalName || attachment.filename}
-                        </div>
-                        <div className="service-order-attachment-meta">
-                          {(attachment.size / 1024).toFixed(1)} KB • Usuário #{attachment.uploadedBy} • {new Date(attachment.uploadedAt).toLocaleDateString('pt-BR')}
-                        </div>
-                      </div>
-                    </div>
+                    <AttachmentItem key={attachment.id}>
+                      <AttachmentIcon>📎</AttachmentIcon>
+                      <AttachmentInfo>
+                        <AttachmentName>{attachment.originalName || attachment.filename}</AttachmentName>
+                        <AttachmentMeta>{(attachment.size / 1024).toFixed(1)} KB • Usuário #{attachment.uploadedBy} • {new Date(attachment.uploadedAt).toLocaleDateString('pt-BR')}</AttachmentMeta>
+                      </AttachmentInfo>
+                    </AttachmentItem>
                   ))
                 )}
-              </div>
+              </AttachmentsList>
             </Card>
           )}
 
           {activeTab === 'history' && (
             <Card>
-              <h3>Histórico</h3>
-              <div className="service-order-history">
+              <Heading level={3}>Histórico</Heading>
+              <HistoryList>
                 {serviceOrder.history.map((entry) => (
-                  <div key={entry.id} className="service-order-history-entry">
-                    <div className="service-order-history-icon">
-                      📝
-                    </div>
-                    <div className="service-order-history-content">
-                      <div className="service-order-history-description">
-                        {entry.description}
-                      </div>
-                      <div className="service-order-history-meta">
-                        {(entry.user?.name) || (entry.userId ? `Usuário #${entry.userId}` : 'Usuário')} • {new Date(entry.createdAt).toLocaleString('pt-BR')}
-                      </div>
-                    </div>
-                  </div>
+                  <HistoryEntry key={entry.id}>
+                    <HistoryIcon>📝</HistoryIcon>
+                    <HistoryContent>
+                      <HistoryDescription>{entry.description}</HistoryDescription>
+                      <HistoryMeta>{(entry.user?.name) || (entry.userId ? `Usuário #${entry.userId}` : 'Usuário')} • {new Date(entry.createdAt).toLocaleString('pt-BR')}</HistoryMeta>
+                    </HistoryContent>
+                  </HistoryEntry>
                 ))}
-              </div>
+              </HistoryList>
             </Card>
           )}
-        </div>
+        </MainContent>
 
-        <div className="service-order-sidebar">
-          <Card className="service-order-customer-info">
-            <h3>Informações do Cliente</h3>
-            <div className="service-order-info-item">
+        <Sidebar>
+          <Card>
+            <Heading level={3}>Informações do Cliente</Heading>
+            <InfoItem>
               <label>Nome:</label>
               <span>{serviceOrder.customerInfo.name}</span>
-            </div>
-            <div className="service-order-info-item">
+            </InfoItem>
+            <InfoItem>
               <label>Email:</label>
               <span>{serviceOrder.customerInfo.email}</span>
-            </div>
-            <div className="service-order-info-item">
+            </InfoItem>
+            <InfoItem>
               <label>Telefone:</label>
               <span>{serviceOrder.customerInfo.phone}</span>
-            </div>
+            </InfoItem>
             {serviceOrder.customerInfo.company && (
-              <div className="service-order-info-item">
+              <InfoItem>
                 <label>Empresa:</label>
                 <span>{serviceOrder.customerInfo.company}</span>
-              </div>
+              </InfoItem>
             )}
           </Card>
 
-          <Card className="service-order-info">
-            <h3>Informações da OS</h3>
-            <div className="service-order-info-item">
+          <Card>
+            <Heading level={3}>Informações da OS</Heading>
+            <InfoItem>
               <label>Responsável:</label>
               <span>{serviceOrder.assignee?.name || 'Não atribuído'}</span>
-            </div>
-            <div className="service-order-info-item">
+            </InfoItem>
+            <InfoItem>
               <label>Criado por:</label>
               <span>{serviceOrder.createdBy !== undefined ? `Usuário #${serviceOrder.createdBy}` : 'Desconhecido'}</span>
-            </div>
-            <div className="service-order-info-item">
+            </InfoItem>
+            <InfoItem>
               <label>Data de criação:</label>
               <span>{serviceOrder.createdAt ? new Date(serviceOrder.createdAt).toLocaleDateString('pt-BR') : '-'}</span>
-            </div>
+            </InfoItem>
             {serviceOrder.dueDate && (
-              <div className="service-order-info-item">
+              <InfoItem>
                 <label>Prazo:</label>
                 <span>{new Date(serviceOrder.dueDate).toLocaleDateString('pt-BR')}</span>
-              </div>
+              </InfoItem>
             )}
-            <div className="service-order-info-item">
+            <InfoItem>
               <label>Horas estimadas:</label>
               <span>{serviceOrder.estimatedHours}h</span>
-            </div>
+            </InfoItem>
             {serviceOrder.actualHours && (
-              <div className="service-order-info-item">
+              <InfoItem>
                 <label>Horas realizadas:</label>
                 <span>{serviceOrder.actualHours}h</span>
-              </div>
+              </InfoItem>
             )}
-            <div className="service-order-info-item">
+            <InfoItem>
               <label>Custo total:</label>
               <span>{serviceOrder.cost ? `R$ ${serviceOrder.cost.totalCost.toFixed(2)}` : 'N/A'}</span>
-            </div>
-            <div className="service-order-info-item">
+            </InfoItem>
+            <InfoItem>
               <label>Aprovado:</label>
               <span>{serviceOrder.cost?.approved ? 'Sim' : 'Não'}</span>
-            </div>
+            </InfoItem>
           </Card>
 
-          <Card className="service-order-status-form">
-            <h3>Alterar Status</h3>
-            <div className="service-order-form-group">
+          <Card>
+            <Heading level={3}>Alterar Status</Heading>
+            <FormGroup>
               <label htmlFor="status">Novo Status:</label>
-              <Select
-                id="status"
-                value={newStatus}
-                onChange={(e) => setNewStatus(e.target.value as ServiceOrderStatus)}
-                className="service-order-select"
-              >
+              <Select id="status" value={newStatus} onChange={(e) => setNewStatus(e.target.value as ServiceOrderStatus)}>
                 <option value="pending">Pendente</option>
                 <option value="scheduled">Agendada</option>
                 <option value="in_progress">Em Andamento</option>
@@ -765,72 +714,308 @@ export function ServiceOrderDetailsPage() {
                 <option value="completed">Concluída</option>
                 <option value="cancelled">Cancelada</option>
               </Select>
-            </div>
-            <div className="service-order-form-group">
+            </FormGroup>
+            <FormGroup>
               <label htmlFor="statusComment">Comentário (opcional):</label>
-              <TextArea
-                id="statusComment"
-                value={statusComment}
-                onChange={(e) => setStatusComment(e.target.value)}
-                placeholder="Adicione um comentário sobre a mudança de status..."
-                rows={3}
-              />
-            </div>
-            <Button
-              onClick={handleStatusChange}
-              disabled={newStatus === serviceOrder.status || updatingStatus}
-              className="w-full"
-            >
+              <TextArea id="statusComment" value={statusComment} onChange={(e) => setStatusComment(e.target.value)} placeholder="Adicione um comentário sobre a mudança de status..." rows={3} />
+            </FormGroup>
+            <Button onClick={handleStatusChange} disabled={newStatus === serviceOrder.status || updatingStatus}>
               {updatingStatus ? 'Atualizando...' : 'Atualizar Status'}
             </Button>
           </Card>
 
-          <Card className="service-order-approval">
-            <h3>Revisão e Aprovação</h3>
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-              <Button variant="success" onClick={handleApprove} disabled={approving}>
-                {approving ? 'Aprovando...' : 'Aprovar OS'}
-              </Button>
-              <Button variant="danger" onClick={handleReject} disabled={rejecting}>
-                {rejecting ? 'Rejeitando...' : 'Rejeitar OS'}
-              </Button>
-            </div>
-            <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>Registre a decisão do cliente sobre esta OS.</p>
+          <Card>
+            <Heading level={3}>Revisão e Aprovação</Heading>
+            <ButtonsRow>
+              <Button variant="success" onClick={handleApprove} disabled={approving}>{approving ? 'Aprovando...' : 'Aprovar OS'}</Button>
+              <Button variant="danger" onClick={handleReject} disabled={rejecting}>{rejecting ? 'Rejeitando...' : 'Rejeitar OS'}</Button>
+            </ButtonsRow>
+            <MutedText>Registre a decisão do cliente sobre esta OS.</MutedText>
           </Card>
 
-          <Card className="service-order-feedback">
-            <h3>Avaliação do Cliente</h3>
-            <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.5rem' }}>
+          <Card>
+            <Heading level={3}>Avaliação do Cliente</Heading>
+            <StarsRow>
               {[1,2,3,4,5].map((star) => (
-                <Button
-                  key={star}
-                  variant={customerRating >= star ? 'warning' : 'outline'}
-                  onClick={() => setCustomerRating(star)}
-                  size="sm"
-                >
+                <Button key={star} variant={customerRating >= star ? 'warning' : 'outline'} onClick={() => setCustomerRating(star)} size="sm">
                   {customerRating >= star ? '★' : '☆'}
                 </Button>
               ))}
-            </div>
-            <TextArea
-              value={customerFeedback}
-              onChange={(e) => setCustomerFeedback(e.target.value)}
-              placeholder="Descreva sua experiência com o atendimento..."
-              rows={3}
-            />
-            <Button
-              onClick={handleSubmitFeedback}
-              disabled={submittingFeedback || customerRating === 0}
-              className="w-full"
-              style={{ marginTop: '0.5rem' }}
-            >
+            </StarsRow>
+            <TextArea value={customerFeedback} onChange={(e) => setCustomerFeedback(e.target.value)} placeholder="Descreva sua experiência com o atendimento..." rows={3} />
+            <Button onClick={handleSubmitFeedback} disabled={submittingFeedback || customerRating === 0}>
               {submittingFeedback ? 'Enviando...' : 'Enviar Avaliação'}
             </Button>
           </Card>
-        </div>
-      </div>
-    </div>
+        </Sidebar>
+      </ContentGrid>
+    </PageWrap>
   );
 }
 
 export default ServiceOrderDetailsPage;
+
+const PageWrap = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacing.lg};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing.lg};
+`;
+
+const BreadcrumbRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const TitleSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const BadgesRow = styled.div`
+  display: inline-flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const NumberText = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const ActionsHeader = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+  flex-shrink: 0;
+`;
+
+const ContentGrid = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: ${({ theme }) => theme.spacing.lg};
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const MainContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const Sidebar = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const Section = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Description = styled.p`
+  margin: 0;
+`;
+
+const Location = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const TaskList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const TaskItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const TaskHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const CommentsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const CommentItem = styled.div<{ $internal?: boolean }>`
+  padding: ${({ theme }) => theme.spacing.sm};
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  background: ${({ theme, $internal }) => $internal ? theme.colors.background.secondary : theme.colors.background.primary};
+`;
+
+const CommentHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+  justify-content: space-between;
+`;
+
+const CommentAuthor = styled.span`
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+`;
+
+const CommentDate = styled.span`
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: 0.875rem;
+`;
+
+const CommentContent = styled.div`
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+const AddCommentSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const CommentOptions = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const AttachmentsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const AttachmentItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.sm};
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  background: ${({ theme }) => theme.colors.background.primary};
+`;
+
+const AttachmentIcon = styled.div`
+  font-size: 1rem;
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const AttachmentInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const AttachmentName = styled.div`
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+`;
+
+const AttachmentMeta = styled.div`
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: 0.875rem;
+`;
+
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const HistoryList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const HistoryEntry = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.sm};
+  border-left: 3px solid ${({ theme }) => theme.colors.border.primary};
+  background: ${({ theme }) => theme.colors.background.primary};
+`;
+
+const HistoryIcon = styled.div`
+  font-size: 1rem;
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const HistoryContent = styled.div`
+  flex: 1;
+`;
+
+const HistoryDescription = styled.div`
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+const HistoryMeta = styled.div`
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: 0.875rem;
+`;
+
+const InfoItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const ButtonsRow = styled.div`
+  display: inline-flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+`;
+
+const MutedText = styled.p`
+  color: ${({ theme }) => theme.colors.text.secondary};
+  margin: 0;
+`;
+
+const StarsRow = styled.div`
+  display: inline-flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+`;
+
+const ErrorWrap = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacing.lg};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;

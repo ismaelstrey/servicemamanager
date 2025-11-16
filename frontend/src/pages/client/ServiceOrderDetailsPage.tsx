@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import styled from 'styled-components';
 import { Card, CardHeader, CardBody, Badge, Spinner, Alert } from '../../components/ui';
 import ClientTimelineWidget from '../../components/client/ClientTimelineWidget';
 import { ApiService } from '../../services/api';
@@ -51,23 +52,23 @@ const ClientServiceOrderDetailsPage: React.FC = () => {
   }, [id]);
 
   return (
-    <div style={{ maxWidth: 900, margin: '32px auto', padding: 24 }}>
+    <PageWrap>
       <h1>Ordem de Serviço #{id}</h1>
-      <p style={{ color: '#666' }}>Detalhes da OS no Portal do Cliente</p>
+      <Subtitle>Detalhes da OS no Portal do Cliente</Subtitle>
 
       {loading && (
-        <div style={{ marginTop: 12 }}>
+        <LoadingRow>
           <Spinner />
-        </div>
+        </LoadingRow>
       )}
       {error && (
-        <div style={{ marginTop: 12 }}>
+        <ErrorRow>
           <Alert variant='error'>{error}</Alert>
-        </div>
+        </ErrorRow>
       )}
 
       {details && (
-        <div style={{ marginTop: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <MetaRow>
           {details.status && <Badge variant="info">Status: {details.status}</Badge>}
           {details.priority && <Badge variant="secondary">Prioridade: {details.priority}</Badge>}
           {details.scheduledDate && <Badge variant="primary">Agendada: {new Date(details.scheduledDate).toLocaleString()}</Badge>}
@@ -84,10 +85,10 @@ const ClientServiceOrderDetailsPage: React.FC = () => {
               )}
             </>
           )}
-        </div>
+        </MetaRow>
       )}
 
-      <div style={{ marginTop: 16 }}>
+      <Section>
         <Card variant="outlined">
           <CardHeader>
             <strong>Timeline da OS</strong>
@@ -100,9 +101,38 @@ const ClientServiceOrderDetailsPage: React.FC = () => {
             )}
           </CardBody>
         </Card>
-      </div>
-    </div>
+      </Section>
+    </PageWrap>
   );
 };
 
 export default ClientServiceOrderDetailsPage;
+
+const PageWrap = styled.div`
+  max-width: 900px;
+  margin: ${({ theme }) => theme.spacing.lg} auto;
+  padding: ${({ theme }) => theme.spacing.lg};
+`;
+
+const Subtitle = styled.p`
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const LoadingRow = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.sm};
+`;
+
+const ErrorRow = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.sm};
+`;
+
+const MetaRow = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.md};
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+  flex-wrap: wrap;
+`;
+
+const Section = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.md};
+`;

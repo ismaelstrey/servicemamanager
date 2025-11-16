@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -9,9 +10,9 @@ import {
   Alert,
   Spinner
 } from '../../components/ui';
+import { Heading } from '../../components/ui';
 import type { ServiceOrder, ServiceOrderStatus, ServiceOrderPriority, ServiceOrderType, ServiceOrderCategory } from '../../types/serviceOrder';
 import { UserRole } from '../../types/auth';
-import '../../styles/service-orders.css';
 
 interface ServiceOrderFormData {
   title: string;
@@ -345,52 +346,38 @@ export function EditServiceOrderPage() {
 
   if (loading) {
     return (
-      <div className="edit-service-order-page edit-service-order-page--loading">
+      <LoadingWrap>
         <Spinner size="lg" centered label="Carregando ordem de serviço..." />
-      </div>
+      </LoadingWrap>
     );
   }
 
   return (
-    <div className="edit-service-order-page">
-      <div className="edit-service-order-header">
-        <div className="edit-service-order-breadcrumb">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/service-orders')}
-          >
-            ← Ordens de Serviço
-          </Button>
+    <PageWrap>
+      <HeaderRow>
+        <BreadcrumbRow>
+          <Button variant="ghost" onClick={() => navigate('/service-orders')}>← Ordens de Serviço</Button>
           <span>/</span>
-          <Button
-            variant="ghost"
-            onClick={() => navigate(`/service-orders/${id}`)}
-          >
-            {formData.title || 'Detalhes'}
-          </Button>
-        </div>
-        <h1 className="edit-service-order-title">Editar Ordem de Serviço</h1>
-      </div>
+          <Button variant="ghost" onClick={() => navigate(`/service-orders/${id}`)}>{formData.title || 'Detalhes'}</Button>
+        </BreadcrumbRow>
+        <Heading level={1}>Editar Ordem de Serviço</Heading>
+      </HeaderRow>
 
       {error && (
-        <Alert variant="danger" className="edit-service-order-alert">
-          {error}
-        </Alert>
+        <Alert variant="error">{error}</Alert>
       )}
 
       {success && (
-        <Alert variant="success" className="edit-service-order-alert">
-          Ordem de serviço atualizada com sucesso! Redirecionando...
-        </Alert>
+        <Alert variant="success">Ordem de serviço atualizada com sucesso! Redirecionando...</Alert>
       )}
 
-      <form onSubmit={handleSubmit} className="edit-service-order-form">
-        <div className="edit-service-order-grid">
-          <div className="edit-service-order-main">
-            <Card className="edit-service-order-card">
-              <h2>Informações Básicas</h2>
+      <FormEl onSubmit={handleSubmit}>
+        <Grid>
+          <Main>
+            <Card>
+              <Heading level={2}>Informações Básicas</Heading>
               
-              <div className="edit-service-order-form-group">
+              <FormGroup>
                 <label htmlFor="title">Título *</label>
                 <Input
                   id="title"
@@ -400,9 +387,9 @@ export function EditServiceOrderPage() {
                   placeholder="Digite o título da ordem de serviço"
                   required
                 />
-              </div>
+              </FormGroup>
 
-              <div className="edit-service-order-form-group">
+              <FormGroup>
                 <label htmlFor="description">Descrição *</label>
                 <TextArea
                   id="description"
@@ -412,10 +399,10 @@ export function EditServiceOrderPage() {
                   rows={4}
                   required
                 />
-              </div>
+              </FormGroup>
 
-              <div className="edit-service-order-form-row">
-                <div className="edit-service-order-form-group">
+              <FormRow>
+                <FormGroup>
                   <label htmlFor="status">Status</label>
                   <Select
                     id="status"
@@ -428,9 +415,9 @@ export function EditServiceOrderPage() {
                       </option>
                     ))}
                   </Select>
-                </div>
+                </FormGroup>
 
-                <div className="edit-service-order-form-group">
+                <FormGroup>
                   <label htmlFor="priority">Prioridade</label>
                   <Select
                     id="priority"
@@ -443,11 +430,11 @@ export function EditServiceOrderPage() {
                       </option>
                     ))}
                   </Select>
-                </div>
-              </div>
+                </FormGroup>
+              </FormRow>
 
-              <div className="edit-service-order-form-row">
-                <div className="edit-service-order-form-group">
+              <FormRow>
+                <FormGroup>
                   <label htmlFor="type">Tipo</label>
                   <Select
                     id="type"
@@ -460,9 +447,9 @@ export function EditServiceOrderPage() {
                       </option>
                     ))}
                   </Select>
-                </div>
+                </FormGroup>
 
-                <div className="edit-service-order-form-group">
+                <FormGroup>
                   <label htmlFor="category">Categoria</label>
                   <Select
                     id="category"
@@ -475,15 +462,15 @@ export function EditServiceOrderPage() {
                       </option>
                     ))}
                   </Select>
-                </div>
-              </div>
+                </FormGroup>
+              </FormRow>
             </Card>
 
-            <Card className="edit-service-order-card">
-              <h2>Informações do Cliente</h2>
+            <Card>
+              <Heading level={2}>Informações do Cliente</Heading>
               
-              <div className="edit-service-order-form-row">
-                <div className="edit-service-order-form-group">
+              <FormRow>
+                <FormGroup>
                   <label htmlFor="customerName">Nome *</label>
                   <Input
                     id="customerName"
@@ -493,9 +480,9 @@ export function EditServiceOrderPage() {
                     placeholder="Nome do cliente"
                     required
                   />
-                </div>
+                </FormGroup>
 
-                <div className="edit-service-order-form-group">
+                <FormGroup>
                   <label htmlFor="customerEmail">Email *</label>
                   <Input
                     id="customerEmail"
@@ -505,11 +492,11 @@ export function EditServiceOrderPage() {
                     placeholder="email@exemplo.com"
                     required
                   />
-                </div>
-              </div>
+                </FormGroup>
+              </FormRow>
 
-              <div className="edit-service-order-form-row">
-                <div className="edit-service-order-form-group">
+              <FormRow>
+                <FormGroup>
                   <label htmlFor="customerPhone">Telefone *</label>
                   <Input
                     id="customerPhone"
@@ -519,9 +506,9 @@ export function EditServiceOrderPage() {
                     placeholder="(11) 99999-9999"
                     required
                   />
-                </div>
+                </FormGroup>
 
-                <div className="edit-service-order-form-group">
+                <FormGroup>
                   <label htmlFor="customerCompany">Empresa</label>
                   <Input
                     id="customerCompany"
@@ -530,14 +517,14 @@ export function EditServiceOrderPage() {
                     onChange={(e) => handleInputChange('customerInfo.company', e.target.value)}
                     placeholder="Nome da empresa (opcional)"
                   />
-                </div>
-              </div>
+                </FormGroup>
+              </FormRow>
             </Card>
 
-            <Card className="edit-service-order-card">
-              <h2>Localização</h2>
+            <Card>
+              <Heading level={2}>Localização</Heading>
               
-              <div className="edit-service-order-form-group">
+              <FormGroup>
                 <label htmlFor="address">Endereço *</label>
                 <Input
                   id="address"
@@ -547,10 +534,10 @@ export function EditServiceOrderPage() {
                   placeholder="Rua, número, complemento"
                   required
                 />
-              </div>
+              </FormGroup>
 
-              <div className="edit-service-order-form-row">
-                <div className="edit-service-order-form-group">
+              <FormRow>
+                <FormGroup>
                   <label htmlFor="city">Cidade *</label>
                   <Input
                     id="city"
@@ -560,9 +547,9 @@ export function EditServiceOrderPage() {
                     placeholder="Cidade"
                     required
                   />
-                </div>
+                </FormGroup>
 
-                <div className="edit-service-order-form-group">
+                <FormGroup>
                   <label htmlFor="state">Estado *</label>
                   <Input
                     id="state"
@@ -573,9 +560,9 @@ export function EditServiceOrderPage() {
                     maxLength={2}
                     required
                   />
-                </div>
+                </FormGroup>
 
-                <div className="edit-service-order-form-group">
+                <FormGroup>
                   <label htmlFor="zipCode">CEP *</label>
                   <Input
                     id="zipCode"
@@ -585,16 +572,16 @@ export function EditServiceOrderPage() {
                     placeholder="00000-000"
                     required
                   />
-                </div>
-              </div>
+                </FormGroup>
+              </FormRow>
             </Card>
-          </div>
+          </Main>
 
-          <div className="edit-service-order-sidebar">
-            <Card className="edit-service-order-card">
-              <h2>Estimativas e Prazos</h2>
+          <Sidebar>
+            <Card>
+              <Heading level={2}>Estimativas e Prazos</Heading>
               
-              <div className="edit-service-order-form-group">
+              <FormGroup>
                 <label htmlFor="estimatedHours">Horas Estimadas *</label>
                 <Input
                   id="estimatedHours"
@@ -606,9 +593,9 @@ export function EditServiceOrderPage() {
                   placeholder="0"
                   required
                 />
-              </div>
+              </FormGroup>
 
-              <div className="edit-service-order-form-group">
+              <FormGroup>
                 <label htmlFor="estimatedCost">Custo Estimado (R$) *</label>
                 <Input
                   id="estimatedCost"
@@ -620,9 +607,9 @@ export function EditServiceOrderPage() {
                   placeholder="0.00"
                   required
                 />
-              </div>
+              </FormGroup>
 
-              <div className="edit-service-order-form-group">
+              <FormGroup>
                 <label htmlFor="dueDate">Data de Vencimento *</label>
                 <Input
                   id="dueDate"
@@ -631,9 +618,9 @@ export function EditServiceOrderPage() {
                   onChange={(e) => handleInputChange('dueDate', e.target.value)}
                   required
                 />
-              </div>
+              </FormGroup>
 
-              <div className="edit-service-order-form-group">
+              <FormGroup>
                 <label htmlFor="scheduledDate">Data Agendada</label>
                 <Input
                   id="scheduledDate"
@@ -641,13 +628,13 @@ export function EditServiceOrderPage() {
                   value={formData.scheduledDate || ''}
                   onChange={(e) => handleInputChange('scheduledDate', e.target.value)}
                 />
-              </div>
+              </FormGroup>
             </Card>
 
-            <Card className="edit-service-order-card">
-              <h2>Observações</h2>
+            <Card>
+              <Heading level={2}>Observações</Heading>
               
-              <div className="edit-service-order-form-group">
+              <FormGroup>
                 <label htmlFor="notes">Notas Adicionais</label>
                 <TextArea
                   id="notes"
@@ -656,30 +643,96 @@ export function EditServiceOrderPage() {
                   placeholder="Informações adicionais sobre a ordem de serviço..."
                   rows={4}
                 />
-              </div>
+              </FormGroup>
             </Card>
 
-            <div className="edit-service-order-actions">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => navigate(`/service-orders/${id}`)}
-                disabled={saving}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={saving}
-              >
-                {saving ? 'Salvando...' : 'Salvar Alterações'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </form>
-    </div>
+            <ActionsRow>
+              <Button type="button" variant="secondary" onClick={() => navigate(`/service-orders/${id}`)} disabled={saving}>Cancelar</Button>
+              <Button type="submit" disabled={saving}>{saving ? 'Salvando...' : 'Salvar Alterações'}</Button>
+            </ActionsRow>
+          </Sidebar>
+        </Grid>
+      </FormEl>
+    </PageWrap>
   );
 }
 
 export default EditServiceOrderPage;
+
+const PageWrap = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacing.lg};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const BreadcrumbRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const LoadingWrap = styled.div`
+  min-height: 60vh;
+  display: grid;
+  place-items: center;
+  padding: ${({ theme }) => theme.spacing.lg};
+`;
+
+const FormEl = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: ${({ theme }) => theme.spacing.md};
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const Main = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const Sidebar = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const FormRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing.sm};
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const ActionsRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;

@@ -1,28 +1,31 @@
 import React from 'react';
+import styled from 'styled-components';
+import { motion } from 'framer-motion';
 import { Container, Grid, GridItem, Flex, Spacer, HideAbove, HideBelow } from '../../components/layout';
-import { Card, CardBody, Button, Badge } from '../../components/ui';
+import { Card, CardBody, Button, Badge, Heading } from '../../components/ui';
 
 const SectionTitle: React.FC<{ title: string, subtitle?: string }> = ({ title, subtitle }) => (
-  <div style={{ marginBottom: '16px' }}>
-    <h2 style={{ margin: 0 }}>{title}</h2>
-    {subtitle && <p style={{ margin: 0, color: '#777' }}>{subtitle}</p>}
-  </div>
+  <SectionTitleWrap>
+    <Heading level={2}>{title}</Heading>
+    {subtitle && <Subtitle>{subtitle}</Subtitle>}
+  </SectionTitleWrap>
 );
 
 const Box: React.FC<{ label: string }> = ({ label }) => (
   <Card>
     <CardBody>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <BoxRow>
         <span>{label}</span>
         <Badge variant="primary">Demo</Badge>
-      </div>
+      </BoxRow>
     </CardBody>
   </Card>
 );
 
 const ResponsiveLayoutShowcase: React.FC = () => {
   return (
-    <Container maxWidth="xl">
+    <MotionContainer initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+      <Container maxWidth="xl">
       <SectionTitle title="Container" subtitle="Max-width por breakpoint e modo fluido" />
 
       <Flex gap="md" wrap="wrap" align="center">
@@ -61,27 +64,57 @@ const ResponsiveLayoutShowcase: React.FC = () => {
       <Spacer size="xl" />
 
       <SectionTitle title="Visibility" subtitle="Mostrar/ocultar por breakpoint" />
-      <div style={{ display: 'grid', gap: '16px' }}>
+      <VisibilityGrid>
         <HideAbove breakpoint="md">
           <Card><CardBody>Visível apenas em telas até md (mobile/tablet)</CardBody></Card>
         </HideAbove>
         <HideBelow breakpoint="md">
           <Card><CardBody>Visível apenas em telas a partir de md (desktop)</CardBody></Card>
         </HideBelow>
-      </div>
+      </VisibilityGrid>
 
       <Spacer size="xl" />
 
       <SectionTitle title="Spacer" subtitle="Espaçamento vertical e horizontal" />
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <ButtonsRow>
         <Button>Botão 1</Button>
         <Spacer axis="x" size="md" />
         <Button variant="secondary">Botão 2</Button>
         <Spacer axis="x" size="lg" />
         <Button variant="outline">Botão 3</Button>
-      </div>
-    </Container>
+      </ButtonsRow>
+      </Container>
+    </MotionContainer>
   );
 };
 
 export default ResponsiveLayoutShowcase;
+
+const SectionTitleWrap = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
+
+const MotionContainer = styled(motion.div)`
+  width: 100%;
+`;
+
+const Subtitle = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const BoxRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const VisibilityGrid = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const ButtonsRow = styled.div`
+  display: flex;
+  align-items: center;
+`;
