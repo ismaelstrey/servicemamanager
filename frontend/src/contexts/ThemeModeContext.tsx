@@ -34,13 +34,13 @@ export const ThemeModeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         media.addEventListener('change', listener);
       } catch {
         // Fallback para navegadores antigos
-        media.addListener(listener);
+        media.addEventListener('change', listener);
       }
       return () => {
         try {
           media.removeEventListener('change', listener);
         } catch {
-          media.removeListener(listener);
+          media.removeEventListener('change', listener);
         }
       };
     }

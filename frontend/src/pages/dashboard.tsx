@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import DashboardService from '../services/dashboardService';
 import ServiceOrderService from '../services/serviceOrderService';
 import { ApiService, type PaginatedResponse } from '../services/api';
-import { decodeJwt } from '../utils/jwt';
 import ProviderService, { type ProviderListItem } from '../services/providerService';
 import '../styles/dashboard.css';
 import ServiceOrderStatusChart from '../components/dashboard/charts/ServiceOrderStatusChart';
@@ -36,7 +35,7 @@ export function DashboardPage() {
   const [recentServiceOrders, setRecentServiceOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [providers, setProviders] = useState<ProviderListItem[]>([]);
+  const [, setProviders] = useState<ProviderListItem[]>([]);
   const { selectedProviderId } = useProviderContext();
   const [providersTotal, setProvidersTotal] = useState<number>(0);
   const [recentActivities, setRecentActivities] = useState<Array<{ type: string; id: number; title: string; description?: string; createdAt: string | Date }>>([]);
@@ -312,7 +311,7 @@ export function DashboardPage() {
 
       {stats && (
         <div className="dashboard__stats">
-          {selectedProviderId !== 'global' && (
+          {selectedProviderId !== null && (
             <>
               <StatsCard
                 title="Total de Tickets"
@@ -438,7 +437,7 @@ export function DashboardPage() {
               }} />
             </ChartContainer>
           )}
-          {selectedProviderId !== 'global' && (
+          {selectedProviderId !== null && (
             <RecentTickets
               tickets={recentTickets}
               onViewAll={() => navigate('/tickets')}
@@ -452,7 +451,7 @@ export function DashboardPage() {
             onServiceOrderClick={handleServiceOrderClick}
           />
 
-          {selectedProviderId !== 'global' && (
+          {selectedProviderId !== null && (
             <ChartContainer title="Atividades Recentes" style={{ marginTop: 16 }}>
               <Timeline items={recentActivities.map((a) => ({
                 type: a.type,

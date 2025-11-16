@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button, Spinner, Toast } from '../../components/ui';
 import KanbanBoard from '../../components/kanban/KanbanBoard';
 import { ApiService } from '../../services/api';
+import { useProviderContext } from '../../contexts/providerContext';
 import TicketsKanbanColumnsFilter from '../../components/tickets/TicketsKanbanColumnsFilter'
 
 type KanbanBoard = Record<string, { id: number; title: string; priority: 'low' | 'medium' | 'high' | 'urgent' | 'critical'; updatedAt: string | Date }[]>;
@@ -23,7 +24,6 @@ const baseColumnOrder = ['open', 'assigned', 'in_progress', 'pending', 'resolved
 
 const TicketsKanbanPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [board, setBoard] = useState<KanbanBoard>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,12 +31,7 @@ const TicketsKanbanPage: React.FC = () => {
   const [toastMsg, setToastMsg] = useState('');
   const [toastVariant, setToastVariant] = useState<'info' | 'success' | 'warning' | 'error'>('info');
 
-  const providerId = useMemo(() => {
-    const fromQuery = searchParams.get('provider');
-    if (fromQuery) return parseInt(fromQuery);
-    // Por padrão, usar visão global (sem provider) para alinhar com /api/tickets/kanban
-    return undefined;
-  }, [searchParams]);
+  const { selectedProviderId } = useProviderContext();
 
   const [selectedColumns, setSelectedColumns] = useState<string[]>(() => {
     try {
@@ -62,9 +57,9 @@ const TicketsKanbanPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const url = providerId
-          ? `/providers/${providerId}/tickets/kanban`
-          : `/tickets/kanban`;
+        const url = (selectedProviderId == null)
+          ? `/tickets/kanban`
+          : `/providers/${selectedProviderId}/tickets/kanban`;
         const res = await ApiService.get<KanbanBoard>(url);
 
 
@@ -107,7 +102,7 @@ const TicketsKanbanPage: React.FC = () => {
       }
     };
     loadBoard();
-  }, [providerId]);
+  }, [selectedProviderId]);
 
   if (loading) {
     return (
@@ -124,10 +119,10 @@ const TicketsKanbanPage: React.FC = () => {
       <div className="tickets-kanban__header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <div>
           <h1 style={{ margin: 0 }}>Kanban de Tickets</h1>
-          {providerId ? (
-            <p style={{ margin: 0, color: 'var(--color-text-secondary)' }}>Provider #{providerId}</p>
-          ) : (
+          {selectedProviderId == null ? (
             <p style={{ margin: 0, color: 'var(--color-text-secondary)' }}>Todos os provedores</p>
+          ) : (
+            <p style={{ margin: 0, color: 'var(--color-text-secondary)' }}>Provider #{selectedProviderId}</p>
           )}
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -212,7 +207,7 @@ const TicketsKanbanPage: React.FC = () => {
             setToastOpen(true);
             // Recarregar o board para desfazer otimista e refletir estado real
             try {
-              const baseUrl = providerId ? `/providers/${providerId}/tickets/kanban` : `/tickets/kanban`;
+              const baseUrl = (selectedProviderId == null) ? `/tickets/kanban` : `/providers/${selectedProviderId}/tickets/kanban`;
               const cacheBuster = `t=${Date.now()}`;
               const url = baseUrl.includes('?') ? `${baseUrl}&${cacheBuster}` : `${baseUrl}?${cacheBuster}`;
               const fresh = await ApiService.get<KanbanBoard>(url);

@@ -136,6 +136,13 @@ const TagChip = styled.span`
   gap: ${({ theme }) => theme.spacing.xs};
 `;
 
+const ProviderLogo = styled.img`
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+`;
+
 const InputRow = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.sm};
@@ -250,18 +257,13 @@ export function TicketDetailsPage() {
     try {
       setCommentLoading(true);
 
-      // Simulate API call for adding comment - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const comment: TicketComment = {
-        id: Date.now(),
+      const res = await ApiService.post<TicketComment>(`/comments`, {
         content: newComment,
+        resourceType: 'ticket',
+        resourceId: ticket.id,
         isInternal: false,
-        isEdited: false,
-        userId: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
+      const comment = res.data as TicketComment;
 
       setTicket(prev => prev ? {
         ...prev,
@@ -274,6 +276,12 @@ export function TicketDetailsPage() {
       setShowCommentModal(false);
     } catch (err) {
       console.error('Error adding comment:', err);
+      const api = (err as any)?.response?.data;
+      const msg = (api && typeof api === 'object' && api.message) ? api.message : 'Erro ao adicionar comentário';
+      setError(msg);
+      setToastMsg(msg);
+      setToastVariant('error');
+      setToastOpen(true);
     } finally {
       setCommentLoading(false);
     }
@@ -353,7 +361,12 @@ export function TicketDetailsPage() {
 
   const addAttachments = (files: FileList) => {
     if (!ticket) return;
-    const newAttachments = Array.from(files).map((file, idx) => ({
+    const MAX_SIZE = 25 * 1024 * 1024;
+    const allowed = ['image/', 'application/pdf'];
+    const arr = Array.from(files);
+    const valid = arr.filter(f => f.size <= MAX_SIZE && (allowed.some(a => (f.type || '').startsWith(a)) || !f.type));
+    const invalidCount = arr.length - valid.length;
+    const newAttachments = valid.map((file, idx) => ({
       id: Date.now() + idx,
       filename: file.name,
       originalName: file.name,
@@ -364,9 +377,18 @@ export function TicketDetailsPage() {
       uploadedAt: new Date(),
       isPublic: true,
     }));
-    setTicket(prev => prev ? { ...prev, attachments: [...prev.attachments, ...newAttachments] } : null);
-    setSuccessMessage(`${newAttachments.length} anexo(s) adicionados`);
-    setTimeout(() => setSuccessMessage(null), 3000);
+    if (newAttachments.length > 0) {
+      setTicket(prev => prev ? { ...prev, attachments: [...prev.attachments, ...newAttachments] } : null);
+      setSuccessMessage(`${newAttachments.length} anexo(s) adicionados`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    }
+    if (invalidCount > 0) {
+      const msg = 'Alguns arquivos foram rejeitados (tipo ou tamanho inválido)';
+      setError(msg);
+      setToastMsg(msg);
+      setToastVariant('error');
+      setToastOpen(true);
+    }
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -521,6 +543,11 @@ export function TicketDetailsPage() {
                       <Alert variant="error">{providerError}</Alert>
                     ) : provider ? (
                       <div>
+                        {provider.logo && (
+                          <div style={{ marginBottom: '0.5rem' }}>
+                            <ProviderLogo src={provider.logo} alt={provider.name} />
+                          </div>
+                        )}
                         <InfoItemRow>
                           <label>Nome:</label>
                           <span>{provider.name ?? '—'}</span>
@@ -565,6 +592,9 @@ export function TicketDetailsPage() {
                           <label>Atualizado em:</label>
                           <span>{provider.updatedAt ? new Date(provider.updatedAt).toLocaleString('pt-BR') : '—'}</span>
                         </InfoItemRow>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <Button variant="secondary" onClick={() => navigate(`/providers/${provider.id}`)}>Ver Provedor</Button>
+                        </div>
                       </div>
                     ) : (
                       <span>Sem dados do provedor</span>
@@ -572,7 +602,7 @@ export function TicketDetailsPage() {
                   </CardBody>
                 </Card>
              
-<Block>
+              <Block style={{ margin: '20px 0' }}>
                 <Card>
                   <CardHeader>
                     <h3>Detalhes do Ticket</h3>
@@ -627,7 +657,7 @@ export function TicketDetailsPage() {
                     </div>
                   </CardBody>
                 </Card>
-                </Block>
+              </Block>
 
               </div>
             </Content>

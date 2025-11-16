@@ -49,7 +49,15 @@ async function main() {
 
   const encKeyBase64 = process.env.CREDENTIALS_ENCRYPTION_KEY;
   if (!encKeyBase64) throw new Error('CREDENTIALS_ENCRYPTION_KEY ausente no ambiente');
-  const encKey = Buffer.from(encKeyBase64, 'base64');
+  let encKey;
+  try {
+    encKey = Buffer.from(encKeyBase64, 'base64');
+  } catch (e) {
+    throw new Error('CREDENTIALS_ENCRYPTION_KEY inválida: não é Base64');
+  }
+  if (encKey.length !== 32) {
+    throw new Error('CREDENTIALS_ENCRYPTION_KEY deve ser Base64 de 32 bytes (AES-256-GCM). Gere com: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"');
+  }
   const encryptCredential = (password) => {
     const iv = crypto.randomBytes(12);
     const cipher = crypto.createCipheriv('aes-256-gcm', encKey, iv);

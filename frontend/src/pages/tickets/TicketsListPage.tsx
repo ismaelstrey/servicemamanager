@@ -11,9 +11,8 @@ import {
 } from '../../components/ui';
 import type { Ticket, TicketStatus, TicketCategory } from '../../types/ticket';
 import type { Priority } from '../../types/common';
-import { UserRole } from '../../types/auth';
 import { TicketService } from '../../services/ticketService';
-import { useAuth } from '../../hooks/useAuth';
+import { useProviderContext } from '../../contexts/providerContext';
 const TicketFilters = React.lazy(() => import('../../components/tickets/ticketFilters'));
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -132,10 +131,7 @@ export function TicketsListPage() {
     }
     setSearchParams(params);
   }, [filters, currentPage, setSearchParams]);
-
-  const { user } = useAuth();
-  const providerId = user?.providerId;
-  const isGlobalView = providerId == null || user?.role === UserRole.ADMIN;
+  const { selectedProviderId } = useProviderContext();
 
   const loadTickets = React.useCallback(async () => {
     try {
@@ -161,11 +157,10 @@ export function TicketsListPage() {
         apiFilters.category = filters.category;
       }
 
-      // Buscar tickets do backend: global se não houver providerId ou perfil admin
-      const useGlobal = providerId == null || user?.role === UserRole.ADMIN;
-      const response = useGlobal
+      // Buscar tickets conforme o contexto: global (todos) ou do Provider selecionado
+      const response = (selectedProviderId == null)
         ? await TicketService.getTicketsAll(apiFilters, currentPage, ITEMS_PER_PAGE)
-        : await TicketService.getTickets(providerId!, apiFilters, currentPage, ITEMS_PER_PAGE);
+        : await TicketService.getTickets(selectedProviderId, apiFilters, currentPage, ITEMS_PER_PAGE);
 
       // Normalizar possíveis statuses antigos do backend
       setTickets((response.data || []).map((t: Ticket) => ({
@@ -179,7 +174,7 @@ export function TicketsListPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, filters, providerId]);
+  }, [currentPage, filters, selectedProviderId]);
 
   useEffect(() => {
     loadTickets();
@@ -325,7 +320,7 @@ export function TicketsListPage() {
     <Block>
     
         <Block >
-                  <TicketsListHeader isGlobalView={isGlobalView} totalItems={totalItems} />
+                  <TicketsListHeader isGlobalView={selectedProviderId == null} totalItems={totalItems} />
         </Block>
         <Block>  
                 <TicketsListActions
@@ -424,6 +419,11 @@ export function TicketsListPage() {
                       <DropdownItem onClick={() => navigate(`/tickets/${ticket.id}`)}>
                         Ver Detalhes
                       </DropdownItem>
+                      {ticket.providerId && (
+                        <DropdownItem onClick={() => navigate(`/providers/${ticket.providerId}`)}>
+                          Ver Provedor
+                        </DropdownItem>
+                      )}
                       <DropdownItem onClick={() => navigate(`/tickets/${ticket.id}/edit`)}>
                         Editar
                       </DropdownItem>
@@ -479,6 +479,9 @@ export function TicketsListPage() {
                   <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Criado: {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}</div>
                   <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
                     <Button size="sm" variant="secondary" onClick={() => navigate(`/tickets/${ticket.id}`)}>Abrir</Button>
+                    {ticket.providerId && (
+                      <Button size="sm" variant="secondary" onClick={() => navigate(`/providers/${ticket.providerId}`)}>Provedor</Button>
+                    )}
                     <Button size="sm" variant="secondary" onClick={() => navigate(`/tickets/${ticket.id}/edit`)}>Editar</Button>
                     <Button size="sm" variant="secondary" onClick={() => exportICS(ticket)}>ICS</Button>
                     <Button size="sm" variant={favoriteIds.includes(ticket.id) ? 'primary' : 'secondary'} onClick={() => toggleFavorite(ticket.id)}>

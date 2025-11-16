@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { Card, Button, Badge, Alert, LogoLoader } from '../../components/ui';
 import { ApiService } from '../../services/api';
 import { useProviderContext } from '../../contexts/providerContext';
-import { decodeJwt } from '../../utils/jwt';
 import type { ServiceOrder } from '../../services/serviceOrderService';
 
 const PageWrapper = styled.div`

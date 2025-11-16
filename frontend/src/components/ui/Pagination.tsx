@@ -1,4 +1,5 @@
 import React from 'react';
+import styled, { css } from 'styled-components';
 
 export type PaginationSize = 'sm' | 'md' | 'lg';
 
@@ -20,7 +21,64 @@ interface PaginationItemProps {
   disabled?: boolean;
   onClick?: () => void;
   className?: string;
+  size?: PaginationSize;
 }
+
+const Container = styled.nav<{ $size: PaginationSize; $disabled?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  opacity: ${({ $disabled }) => ($disabled ? 0.6 : 1)};
+`;
+
+const List = styled.ul`
+  display: inline-flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
+
+const Item = styled.li<{ $active?: boolean; $disabled?: boolean }>`
+  display: inline-flex;
+`;
+
+const sizes = {
+  sm: { padY: '4px', padX: '8px', font: '0.85rem' },
+  md: { padY: '6px', padX: '12px', font: '0.95rem' },
+  lg: { padY: '8px', padX: '14px', font: '1rem' },
+};
+
+const ButtonEl = styled.button<{ $active?: boolean; $disabled?: boolean; $size: PaginationSize }>`
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  color: ${({ theme }) => theme.colors.text.primary};
+  background: ${({ theme }) => theme.colors.background.secondary};
+  border-radius: ${({ theme }) => theme.borders.radius.sm};
+  padding: ${({ $size }) => `${sizes[$size].padY} ${sizes[$size].padX}`};
+  font-size: ${({ $size }) => sizes[$size].font};
+  min-width: 36px;
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  transition: all ${({ theme }) => theme.animations.duration.fast} ${({ theme }) => theme.animations.easing.easeInOut};
+
+  ${({ $active, theme }) => $active && css`
+    background: ${theme.colors.primary.main};
+    color: ${theme.colors.primary.contrast};
+    border-color: ${theme.colors.primary.main};
+  `}
+
+  &:hover {
+    ${({ $disabled, $active, theme }) => !$disabled && !$active && css`
+      background: ${theme.colors.background.primary};
+      box-shadow: ${theme.shadows.sm};
+    `}
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary.light};
+  }
+`;
 
 export const Pagination: React.FC<PaginationProps> = ({
   currentPage,
@@ -33,17 +91,6 @@ export const Pagination: React.FC<PaginationProps> = ({
   maxVisiblePages = 5,
   disabled = false,
 }) => {
-  const baseClasses = 'pagination';
-  const sizeClasses = `pagination--${size}`;
-  const disabledClasses = disabled ? 'pagination--disabled' : '';
-
-  const classes = [
-    baseClasses,
-    sizeClasses,
-    disabledClasses,
-    className,
-  ].filter(Boolean).join(' ');
-
   // Calculate visible page numbers
   const getVisiblePages = () => {
     const pages: (number | string)[] = [];
@@ -94,13 +141,14 @@ export const Pagination: React.FC<PaginationProps> = ({
   };
 
   return (
-    <nav className={classes} aria-label="Navegação de páginas">
-      <ul className="pagination__list">
+    <Container aria-label="Navegação de páginas" className={className} $size={size} $disabled={disabled}>
+      <List>
         {/* First page button */}
         {showFirstLast && (
           <PaginationItem
             disabled={disabled || currentPage === 1}
             onClick={() => handlePageChange(1)}
+            size={size}
           >
             ««
           </PaginationItem>
@@ -111,6 +159,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           <PaginationItem
             disabled={disabled || currentPage === 1}
             onClick={() => handlePageChange(currentPage - 1)}
+            size={size}
           >
             ‹
           </PaginationItem>
@@ -120,9 +169,9 @@ export const Pagination: React.FC<PaginationProps> = ({
         {visiblePages.map((page, index) => {
           if (page === '...') {
             return (
-              <PaginationItem key={`ellipsis-${index}`} disabled>
-                ...
-              </PaginationItem>
+            <PaginationItem key={`ellipsis-${index}`} disabled size={size}>
+              ...
+            </PaginationItem>
             );
           }
 
@@ -133,6 +182,7 @@ export const Pagination: React.FC<PaginationProps> = ({
               active={pageNumber === currentPage}
               disabled={disabled}
               onClick={() => handlePageChange(pageNumber)}
+              size={size}
             >
               {pageNumber}
             </PaginationItem>
@@ -144,6 +194,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           <PaginationItem
             disabled={disabled || currentPage === totalPages}
             onClick={() => handlePageChange(currentPage + 1)}
+            size={size}
           >
             ›
           </PaginationItem>
@@ -154,12 +205,13 @@ export const Pagination: React.FC<PaginationProps> = ({
           <PaginationItem
             disabled={disabled || currentPage === totalPages}
             onClick={() => handlePageChange(totalPages)}
+            size={size}
           >
             »»
           </PaginationItem>
         )}
-      </ul>
-    </nav>
+      </List>
+    </Container>
   );
 };
 
@@ -169,18 +221,8 @@ export const PaginationItem: React.FC<PaginationItemProps> = ({
   disabled = false,
   onClick,
   className = '',
+  size = 'md',
 }) => {
-  const baseClasses = 'pagination__item';
-  const activeClasses = active ? 'pagination__item--active' : '';
-  const disabledClasses = disabled ? 'pagination__item--disabled' : '';
-
-  const classes = [
-    baseClasses,
-    activeClasses,
-    disabledClasses,
-    className,
-  ].filter(Boolean).join(' ');
-
   const handleClick = () => {
     if (!disabled && onClick) {
       onClick();
@@ -188,17 +230,19 @@ export const PaginationItem: React.FC<PaginationItemProps> = ({
   };
 
   return (
-    <li className={classes}>
-      <button
-        className="pagination__button"
+    <Item className={className} $active={active} $disabled={disabled}>
+      <ButtonEl
         onClick={handleClick}
         disabled={disabled}
         aria-current={active ? 'page' : undefined}
         type="button"
+        $active={active}
+        $disabled={disabled}
+        $size={size}
       >
         {children}
-      </button>
-    </li>
+      </ButtonEl>
+    </Item>
   );
 };
 

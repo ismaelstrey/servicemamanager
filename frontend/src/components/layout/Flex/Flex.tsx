@@ -38,6 +38,11 @@ export const ActionsRow = styled.div`
 
 export const Block = styled.div`
   margin: 0 0 ${({ theme }) => theme.spacing?.md || '1rem'} 0;
+
+`;
+export const BlockMargin = styled.div`
+  { margin: '20px 0'}
+
 `;
 
 export const KpisGrid = styled.div`
