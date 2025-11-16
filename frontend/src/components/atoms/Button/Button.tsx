@@ -142,18 +142,18 @@ const StyledButton = styled.button<ButtonProps>`
         `
       case 'danger':
         return css`
-          background-color: ${theme.colors.danger.main};
-          color: ${theme.colors.danger.contrast};
+          background-color: ${theme.colors.error.main};
+          color: ${theme.colors.error.contrast};
           box-shadow: ${theme.shadows.component.button.default};
           
           &:hover:not(:disabled) {
-            background-color: ${theme.colors.danger.dark};
+            background-color: ${theme.colors.error.dark};
             box-shadow: ${theme.shadows.component.button.hover};
             transform: translateY(-1px);
           }
           
           &:active:not(:disabled) {
-            background-color: ${theme.colors.danger.darker};
+            background-color: ${theme.colors.error.darker};
             box-shadow: ${theme.shadows.component.button.active};
             transform: translateY(0);
           }

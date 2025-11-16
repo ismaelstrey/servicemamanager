@@ -1,4 +1,5 @@
 import React from 'react';
+import styled from 'styled-components';
 import { Card, CardHeader, CardBody, Badge } from '../ui';
 import { List, Sparkles, Play, Activity, Hourglass, CheckCircle, Archive, XCircle } from 'lucide-react';
 import KanbanItemCard from './KanbanItemCard';
@@ -49,6 +50,51 @@ const getStatusMeta = (key: string) => {
   return meta;
 };
 
+const ColumnRoot = styled.div<{ $isDragOver?: boolean }>`
+  transition: background 0.2s, box-shadow 0.2s;
+  background: ${({ $isDragOver }) => ($isDragOver ? 'rgba(59, 130, 246, 0.08)' : 'transparent')};
+  box-shadow: ${({ $isDragOver }) => ($isDragOver ? 'inset 0 0 0 2px rgba(59, 130, 246, 0.25)' : 'none')};
+  border-radius: 10px;
+`;
+
+const HeaderBar = styled.div<{ $isDragOver?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.2s ease;
+  background: ${({ $isDragOver }) => ($isDragOver ? 'rgba(59, 130, 246, 0.08)' : 'transparent')};
+  border-radius: 8px;
+  padding: 0.25rem 0.5rem;
+`;
+
+const StatusIconWrap = styled.span<{ $bg: string; $color: string; $border: string }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: ${({ $bg }) => $bg};
+  color: ${({ $color }) => $color};
+  border: 1px solid ${({ $border }) => $border};
+`;
+
+const ItemsList = styled.div<{ $isDragOver?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 40px;
+  border-radius: 8px;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  background: ${({ $isDragOver }) => ($isDragOver ? 'rgba(59, 130, 246, 0.06)' : 'transparent')};
+  border: ${({ $isDragOver }) => ($isDragOver ? '2px dashed rgba(59, 130, 246, 0.5)' : '2px dashed transparent')};
+`;
+
+const EmptyText = styled.div`
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: ${({ theme }) => theme.typography.fontSize.base};
+`;
+
 const KanbanColumn: React.FC<KanbanColumnProps> = ({
   columnKey,
   label,
@@ -66,15 +112,8 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
   const iconNode = statusIcon ?? meta.icon;
 
   return (
-    <div
-      className="kanban-column"
-      style={{
-        transition: 'background 0.2s, box-shadow 0.2s',
-        background: dragOverColumn === columnKey ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-        boxShadow:
-          dragOverColumn === columnKey ? 'inset 0 0 0 2px rgba(59, 130, 246, 0.25)' : 'none',
-        borderRadius: '10px',
-      }}
+    <ColumnRoot
+      $isDragOver={dragOverColumn === columnKey}
       onDragOver={(e: React.DragEvent) => {
         e.preventDefault();
         setDragOverColumn && setDragOverColumn(columnKey);
@@ -98,57 +137,18 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
     >
       <Card>
         <CardHeader>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              transition: 'background 0.2s ease',
-              background:
-                dragOverColumn === columnKey ? 'rgba(59, 130, 246, 0.08)' : undefined,
-              borderRadius: '8px',
-              padding: '0.25rem 0.5rem',
-            }}
-          >
+          <HeaderBar $isDragOver={dragOverColumn === columnKey}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span
-                aria-hidden
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 28,
-                  height: 28,
-                  borderRadius: '50%',
-                  background: meta.bg,
-                  color: meta.color,
-                  border: `1px solid ${meta.color.replace('rgb', 'rgba').replace(')', ', 0.4)')}`,
-                }}
-              >
+              <StatusIconWrap aria-hidden $bg={meta.bg} $color={meta.color} $border={meta.color.replace('rgb', 'rgba').replace(')', ', 0.4)')}>
                 {iconNode}
-              </span>
+              </StatusIconWrap>
               <strong style={{ fontWeight: 700 }}>{label}</strong>
             </div>
             <Badge variant="secondary">{items?.length || 0}</Badge>
-          </div>
+          </HeaderBar>
         </CardHeader>
         <CardBody>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.5rem',
-              minHeight: '40px',
-              borderRadius: '8px',
-              transition: 'background 0.2s, border-color 0.2s, box-shadow 0.2s',
-              background:
-                dragOverColumn === columnKey ? 'rgba(59, 130, 246, 0.06)' : 'transparent',
-              border:
-                dragOverColumn === columnKey
-                  ? '2px dashed rgba(59, 130, 246, 0.5)'
-                  : '2px dashed transparent',
-            }}
-          >
+          <ItemsList $isDragOver={dragOverColumn === columnKey}>
             {(items || []).map((item) => (
               <KanbanItemCard
                 key={item.id}
@@ -161,14 +161,12 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
               />
             ))}
             {(items?.length || 0) === 0 && (
-              <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
-                Sem itens
-              </div>
+              <EmptyText>Sem itens</EmptyText>
             )}
-          </div>
+          </ItemsList>
         </CardBody>
       </Card>
-    </div>
+    </ColumnRoot>
   );
 };
 

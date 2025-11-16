@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import styled, { css } from 'styled-components';
 
 export type TextAreaSize = 'sm' | 'md' | 'lg';
 export type TextAreaVariant = 'default' | 'filled' | 'outlined';
@@ -13,7 +14,95 @@ export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextArea
   resize?: 'none' | 'vertical' | 'horizontal' | 'both';
 }
 
-export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
+const Wrapper = styled.div<{ $fullWidth?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+  ${({ $fullWidth }) => $fullWidth && css`width: 100%;`}
+`;
+
+const Label = styled.label`
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+const Required = styled.span`
+  color: ${({ theme }) => theme.colors.error.main};
+  margin-left: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Container = styled.div`
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+`;
+
+const StyledTextArea = styled.textarea<{ $size: TextAreaSize; $variant: TextAreaVariant; $hasError?: boolean; $resize: 'none' | 'vertical' | 'horizontal' | 'both' }>`
+  width: 100%;
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  color: ${({ theme }) => theme.colors.text.primary};
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  transition: all ${({ theme }) => theme.animations.transition.fast};
+  resize: ${({ $resize }) => $resize};
+
+  ${({ $size, theme }) => {
+    switch ($size) {
+      case 'sm':
+        return css`padding: ${theme.spacing.xs} ${theme.spacing.sm}; font-size: ${theme.typography.fontSize.sm};`;
+      case 'lg':
+        return css`padding: ${theme.spacing.md} ${theme.spacing.lg}; font-size: ${theme.typography.fontSize.lg};`;
+      default:
+        return css`padding: ${theme.spacing.sm} ${theme.spacing.md}; font-size: ${theme.typography.fontSize.base};`;
+    }
+  }}
+
+  ${({ $variant, theme }) => {
+    switch ($variant) {
+      case 'filled':
+        return css`
+          background-color: ${theme.colors.neutral[100]};
+          border-color: transparent;
+        `;
+      case 'outlined':
+        return css`
+          background-color: transparent;
+          border-color: ${theme.colors.border.primary};
+        `;
+      default:
+        return css``;
+    }
+  }}
+
+  ${({ $hasError, theme }) => $hasError && css`
+    border-color: ${theme.colors.error.main};
+    box-shadow: ${theme.shadows.focus.danger};
+  `}
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary.main};
+    box-shadow: ${({ theme }) => theme.shadows.focus.primary};
+    outline: none;
+  }
+`;
+
+const Feedback = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const ErrorText = styled.span`
+  color: ${({ theme }) => theme.colors.error.main};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+`;
+
+const HelperText = styled.span`
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+`;
+
+export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({ 
   label,
   error,
   helperText,
@@ -27,57 +116,38 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
   ...props
 }, ref) => {
   const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
-  
-  const baseClasses = 'textarea';
-  const sizeClasses = `textarea--${size}`;
-  const variantClasses = `textarea--${variant}`;
-  const fullWidthClasses = fullWidth ? 'textarea--full' : '';
-  const errorClasses = error ? 'textarea--error' : '';
-  const disabledClasses = props.disabled ? 'textarea--disabled' : '';
-  const resizeClasses = `textarea--resize-${resize}`;
-
-  const textareaClasses = [
-    baseClasses,
-    sizeClasses,
-    variantClasses,
-    fullWidthClasses,
-    errorClasses,
-    disabledClasses,
-    resizeClasses,
-    className,
-  ].filter(Boolean).join(' ');
 
   return (
-    <div className="textarea-wrapper">
+    <Wrapper $fullWidth={fullWidth} className={className}>
       {label && (
-        <label htmlFor={textareaId} className="textarea-label">
+        <Label htmlFor={textareaId}>
           {label}
-          {props.required && <span className="textarea-required">*</span>}
-        </label>
+          {props.required && <Required>*</Required>}
+        </Label>
       )}
-      
-      <div className="textarea-container">
-        <textarea
+      <Container>
+        <StyledTextArea
           ref={ref}
           id={textareaId}
-          className={textareaClasses}
           rows={rows}
+          $size={size}
+          $variant={variant}
+          $hasError={Boolean(error)}
+          $resize={resize}
           {...props}
         />
-      </div>
+      </Container>
 
       {(error || helperText) && (
-        <div className="textarea-feedback">
-          {error && <span className="textarea-error-text">{error}</span>}
-          {!error && helperText && <span className="textarea-helper-text">{helperText}</span>}
-        </div>
+        <Feedback>
+          {error && <ErrorText>{error}</ErrorText>}
+          {!error && helperText && <HelperText>{helperText}</HelperText>}
+        </Feedback>
       )}
-    </div>
+    </Wrapper>
   );
 });
 
 TextArea.displayName = 'TextArea';
 
 export default TextArea;
-
-// (remove the conflicting re-export; TextAreaProps is already exported via the interface declaration)

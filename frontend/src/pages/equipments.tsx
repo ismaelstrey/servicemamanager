@@ -88,7 +88,7 @@ const Badge = styled.span<{ $status: 'active' | 'inactive' | 'maintenance' }>`
   background: ${({ theme, $status }) =>
     $status === 'active' ? theme.colors.success.main :
     $status === 'maintenance' ? theme.colors.warning.main :
-    theme.colors.danger.main};
+    theme.colors.error.main};
   color: #0b0f1a;
 `
 

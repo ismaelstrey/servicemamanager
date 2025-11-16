@@ -1,4 +1,5 @@
 import React from 'react';
+import styled, { css } from 'styled-components';
 
 export type TableVariant = 'default' | 'striped' | 'bordered';
 export type TableSize = 'sm' | 'md' | 'lg';
@@ -49,6 +50,114 @@ interface TableHeaderCellProps extends TableCellProps {
   scope?: 'col' | 'row';
 }
 
+const Responsive = styled.div`
+  width: 100%;
+  overflow-x: auto;
+`;
+
+const TableRoot = styled.table<{ $variant: TableVariant; $size: TableSize; $hoverable?: boolean }>`
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: ${({ theme }) => theme.borders.radius.lg};
+  color: ${({ theme }) => theme.colors.text.primary};
+
+  ${({ $variant, theme }) => $variant === 'bordered' && css`
+    border: 1px solid ${theme.colors.border.primary};
+  `}
+
+  ${({ $size, theme }) => {
+    switch ($size) {
+      case 'sm':
+        return css`
+          font-size: ${theme.typography.fontSize.sm};
+          --table-pad-y: ${theme.spacing.xs};
+          --table-pad-x: ${theme.spacing.sm};
+        `;
+      case 'lg':
+        return css`
+          font-size: ${theme.typography.fontSize.lg};
+          --table-pad-y: ${theme.spacing.md};
+          --table-pad-x: ${theme.spacing.lg};
+        `;
+      default:
+        return css`
+          font-size: ${theme.typography.fontSize.base};
+          --table-pad-y: ${theme.spacing.sm};
+          --table-pad-x: ${theme.spacing.md};
+        `;
+    }
+  }}
+
+  ${({ $variant, theme }) => $variant === 'striped' && css`
+    tbody tr:nth-child(even) {
+      background-color: ${theme.colors.neutral[100]};
+    }
+  `}
+
+  ${({ $hoverable, theme }) => $hoverable && css`
+    tbody tr:hover {
+      background-color: ${theme.colors.neutral[100]};
+    }
+  `}
+
+  ${({ $variant, theme }) => $variant === 'bordered' && css`
+    thead th, tbody td {
+      border-right: 1px solid ${theme.colors.border.secondary};
+    }
+    thead th:last-child, tbody td:last-child {
+      border-right: none;
+    }
+  `}
+`;
+
+const Thead = styled.thead`
+  background: ${({ theme }) => theme.colors.neutral[100]};
+`;
+
+const Tbody = styled.tbody``;
+
+const Tfoot = styled.tfoot`
+  background: ${({ theme }) => theme.colors.background.tertiary};
+`;
+
+const Tr = styled.tr<{ $clickable?: boolean; $selected?: boolean }>`
+  ${({ $clickable }) => $clickable && css`cursor: pointer;`}
+  ${({ $selected, theme }) => $selected && css`
+    background-color: ${theme.colors.primary[50]};
+  `}
+`;
+
+const Th = styled.th<{ $align: 'left' | 'center' | 'right'; $sortable?: boolean; $sortDirection?: 'asc' | 'desc' | null }>`
+  text-align: ${({ $align }) => $align};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border.primary};
+  white-space: nowrap;
+
+  padding: var(--table-pad-y) var(--table-pad-x);
+`;
+
+const Td = styled.td<{ $align: 'left' | 'center' | 'right' }>`
+  text-align: ${({ $align }) => $align};
+  color: ${({ theme }) => theme.colors.text.primary};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border.primary};
+
+  padding: var(--table-pad-y) var(--table-pad-x);
+`;
+
+const CellContent = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const SortIcon = styled.span`
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
 export const Table: React.FC<TableProps> = ({
   children,
   variant = 'default',
@@ -57,67 +166,38 @@ export const Table: React.FC<TableProps> = ({
   responsive = false,
   hoverable = false,
 }) => {
-  const baseClasses = 'table';
-  const variantClasses = `table--${variant}`;
-  const sizeClasses = `table--${size}`;
-  const hoverableClasses = hoverable ? 'table--hoverable' : '';
-
-  const classes = [
-    baseClasses,
-    variantClasses,
-    sizeClasses,
-    hoverableClasses,
-    className,
-  ].filter(Boolean).join(' ');
-
-  const tableElement = (
-    <table className={classes}>
+  const table = (
+    <TableRoot className={className} $variant={variant} $size={size} $hoverable={hoverable}>
       {children}
-    </table>
+    </TableRoot>
   );
 
   if (responsive) {
-    return (
-      <div className="table-responsive">
-        {tableElement}
-      </div>
-    );
+    return <Responsive>{table}</Responsive>;
   }
 
-  return tableElement;
+  return table;
 };
 
 export const TableHeader: React.FC<TableHeaderProps> = ({
   children,
   className = '',
 }) => {
-  return (
-    <thead className={`table__header ${className}`}>
-      {children}
-    </thead>
-  );
+  return <Thead className={className}>{children}</Thead>;
 };
 
 export const TableBody: React.FC<TableBodyProps> = ({
   children,
   className = '',
 }) => {
-  return (
-    <tbody className={`table__body ${className}`}>
-      {children}
-    </tbody>
-  );
+  return <Tbody className={className}>{children}</Tbody>;
 };
 
 export const TableFooter: React.FC<TableFooterProps> = ({
   children,
   className = '',
 }) => {
-  return (
-    <tfoot className={`table__footer ${className}`}>
-      {children}
-    </tfoot>
-  );
+  return <Tfoot className={className}>{children}</Tfoot>;
 };
 
 export const TableRow: React.FC<TableRowProps> = ({
@@ -126,21 +206,10 @@ export const TableRow: React.FC<TableRowProps> = ({
   onClick,
   selected = false,
 }) => {
-  const baseClasses = 'table__row';
-  const clickableClasses = onClick ? 'table__row--clickable' : '';
-  const selectedClasses = selected ? 'table__row--selected' : '';
-
-  const classes = [
-    baseClasses,
-    clickableClasses,
-    selectedClasses,
-    className,
-  ].filter(Boolean).join(' ');
-
   return (
-    <tr className={classes} onClick={onClick}>
+    <Tr className={className} onClick={onClick} $clickable={!!onClick} $selected={selected}>
       {children}
-    </tr>
+    </Tr>
   );
 };
 
@@ -153,44 +222,21 @@ export const TableHeaderCell: React.FC<TableHeaderCellProps> = ({
   onSort,
   sortDirection = null,
   scope = 'col',
+  colSpan,
 }) => {
-  const baseClasses = 'table__cell table__cell--header';
-  const alignClasses = `table__cell--${align}`;
-  const sortableClasses = sortable ? 'table__cell--sortable' : '';
-  const sortDirectionClasses = sortDirection ? `table__cell--sort-${sortDirection}` : '';
-
-  const classes = [
-    baseClasses,
-    alignClasses,
-    sortableClasses,
-    sortDirectionClasses,
-    className,
-  ].filter(Boolean).join(' ');
+  const handleClick = () => {
+    if (sortable && onSort) onSort();
+  };
 
   const style = width ? { width } : undefined;
 
-  const handleClick = () => {
-    if (sortable && onSort) {
-      onSort();
-    }
-  };
-
   return (
-    <th
-      className={classes}
-      style={style}
-      scope={scope}
-      onClick={handleClick}
-    >
-      <div className="table__cell-content">
+    <Th className={className} $align={align} $sortable={sortable} $sortDirection={sortDirection} style={style} scope={scope} onClick={handleClick} colSpan={colSpan}>
+      <CellContent>
         {children}
-        {sortable && (
-          <span className="table__sort-icon">
-            {sortDirection === 'asc' ? '↑' : sortDirection === 'desc' ? '↓' : '↕'}
-          </span>
-        )}
-      </div>
-    </th>
+        {sortable && <SortIcon>{sortDirection === 'asc' ? '↑' : sortDirection === 'desc' ? '↓' : '↕'}</SortIcon>}
+      </CellContent>
+    </Th>
   );
 };
 
@@ -201,25 +247,12 @@ export const TableCell: React.FC<TableCellProps> = ({
   width,
   colSpan,
 }) => {
-  const baseClasses = 'table__cell';
-  const alignClasses = `table__cell--${align}`;
-
-  const classes = [
-    baseClasses,
-    alignClasses,
-    className,
-  ].filter(Boolean).join(' ');
-
   const style = width ? { width } : undefined;
-
   return (
-    <td className={classes} style={style} colSpan={colSpan}
-    >
+    <Td className={className} $align={align} style={style} colSpan={colSpan}>
       {children}
-    </td>
+    </Td>
   );
 };
-
-
 
 export default Table;

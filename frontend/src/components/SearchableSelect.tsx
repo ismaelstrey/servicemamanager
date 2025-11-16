@@ -86,7 +86,7 @@ const ClearButton = styled.button`
   width: 100%;
   text-align: left;
   padding: ${({ theme }) => theme.spacing.sm};
-  color: ${({ theme }) => theme.colors.danger.main};
+  color: ${({ theme }) => theme.colors.error.main};
   background: transparent;
   border: 0;
   cursor: pointer;

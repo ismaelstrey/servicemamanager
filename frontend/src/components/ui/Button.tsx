@@ -61,7 +61,7 @@ const StyledButton = styled.button<{
         `;
       case 'danger':
         return css`
-          background: ${theme.colors.danger.main};
+          background: ${theme.colors.error.main};
           color: ${theme.colors.text.inverse};
         `;
       case 'warning':

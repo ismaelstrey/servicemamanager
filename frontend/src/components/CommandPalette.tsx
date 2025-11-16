@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import styled from 'styled-components'
 import { SearchBox, Button, Badge } from './ui'
 import useGlobalSearch from '../hooks/useGlobalSearch'
 
@@ -78,110 +79,180 @@ export const CommandPalette: React.FC = () => {
 
   return (
     <AnimatePresence>
-      <motion.div
+      <Backdrop
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 80, zIndex: 1000
-        }}
         onClick={() => setIsOpen(false)}
       >
-        <motion.div
+        <Dialog
           initial={{ scale: 0.98, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.98, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          style={{
-            width: 'min(720px, 92vw)', background: 'var(--surface, #111827)', borderRadius: 12,
-            boxShadow: '0 10px 30px rgba(0,0,0,0.35)', border: '1px solid var(--border, #374151)'
-          }}
-        >
-          <div style={{ padding: 12, borderBottom: '1px solid var(--border, #374151)' }}>
+       >
+          <Header>
             <SearchBox
               value={query}
               onChange={(e: any) => setQuery(e.target.value)}
-              onSearch={() => {/* handled by Enter */}}
+              onSearch={() => {}}
               onClear={() => setQuery('')}
               placeholder="Buscar globalmente (Ctrl+K)"
               ref={inputRef as any}
             />
             {error && (
-              <div style={{ color: '#ef4444', marginTop: 8 }}>Erro: {error}</div>
+              <ErrorMsg>Erro: {error}</ErrorMsg>
             )}
-          </div>
+          </Header>
 
-          <div style={{ maxHeight: 420, overflowY: 'auto' }}>
-            {/* Tickets */}
+          <ScrollArea>
             {grouped.tickets.length > 0 && (
-              <div style={{ padding: '10px 12px' }}>
-                <div style={{ fontSize: 12, color: '#9CA3AF', marginBottom: 6 }}>Tickets</div>
+              <Group>
+                <GroupTitle>Tickets</GroupTitle>
                 {grouped.tickets.map((item, idx) => (
-                  <div
+                  <ItemRow
                     key={`${item.type}-${item.id}`}
                     onClick={() => { navigate(item.url); setIsOpen(false) }}
-                    style={{
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
-                      background: activeIndex === idx ? 'rgba(59,130,246,0.12)' : 'transparent'
-                    }}
+                    $active={activeIndex === idx}
                   >
-                    <div style={{ display: 'grid' }}>
-                      <span style={{ fontWeight: 600 }}>{item.title}</span>
+                    <ItemContent>
+                      <ItemTitle>{item.title}</ItemTitle>
                       {item.subtitle && (
-                        <span style={{ fontSize: 12, color: '#9CA3AF' }}>{item.subtitle}</span>
+                        <ItemSubtitle>{item.subtitle}</ItemSubtitle>
                       )}
-                    </div>
+                    </ItemContent>
                     <Badge variant="info">Abrir</Badge>
-                  </div>
+                  </ItemRow>
                 ))}
-              </div>
+              </Group>
             )}
 
-            {/* Equipamentos */}
             {grouped.equipments.length > 0 && (
-              <div style={{ padding: '10px 12px' }}>
-                <div style={{ fontSize: 12, color: '#9CA3AF', marginBottom: 6 }}>Equipamentos</div>
+              <Group>
+                <GroupTitle>Equipamentos</GroupTitle>
                 {grouped.equipments.map((item) => (
-                  <div
+                  <ItemRow
                     key={`${item.type}-${item.id}`}
                     onClick={() => { navigate(item.url); setIsOpen(false) }}
-                    style={{
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      padding: '10px 12px', borderRadius: 8, cursor: 'pointer'
-                    }}
                   >
-                    <div style={{ display: 'grid' }}>
-                      <span style={{ fontWeight: 600 }}>{item.title}</span>
+                    <ItemContent>
+                      <ItemTitle>{item.title}</ItemTitle>
                       {item.subtitle && (
-                        <span style={{ fontSize: 12, color: '#9CA3AF' }}>{item.subtitle}</span>
+                        <ItemSubtitle>{item.subtitle}</ItemSubtitle>
                       )}
-                    </div>
+                    </ItemContent>
                     <Badge variant="info">Abrir</Badge>
-                  </div>
+                  </ItemRow>
                 ))}
-              </div>
+              </Group>
             )}
 
-            {/* Senhas (placeholder) */}
             {grouped.passwords.length === 0 && (
-              <div style={{ padding: '10px 12px', color: '#9CA3AF' }}>
+              <Placeholder>
                 Dica: Integre o serviço de senhas para aparecer aqui.
-              </div>
+              </Placeholder>
             )}
-          </div>
+          </ScrollArea>
 
-          <div style={{ padding: 10, borderTop: '1px solid var(--border, #374151)', display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 12, color: '#9CA3AF' }}>{loading ? 'Indexando...' : `${results.length} resultados`}</span>
-            <div style={{ display: 'flex', gap: 8 }}>
+          <Footer>
+            <FooterLeft>{loading ? 'Indexando...' : `${results.length} resultados`}</FooterLeft>
+            <FooterRight>
               <Button variant="ghost" onClick={() => setIsOpen(false)}>Fechar (Esc)</Button>
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
+            </FooterRight>
+          </Footer>
+        </Dialog>
+      </Backdrop>
     </AnimatePresence>
   )
 }
 
 export default CommandPalette
+
+const Backdrop = styled(motion.div)`
+  position: fixed;
+  inset: 0;
+  background: ${({ theme }) => theme.colors.background.overlay};
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 80px;
+  z-index: ${({ theme }) => theme.zIndex.context.overlay.backdrop};
+`;
+
+const Dialog = styled(motion.div)`
+  width: min(720px, 92vw);
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: ${({ theme }) => theme.borders.radius.lg};
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+`;
+
+const Header = styled.div`
+  padding: ${({ theme }) => theme.spacing.sm};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border.primary};
+`;
+
+const ErrorMsg = styled.div`
+  color: ${({ theme }) => theme.colors.error.main};
+  margin-top: ${({ theme }) => theme.spacing.xs};
+`;
+
+const ScrollArea = styled.div`
+  max-height: 420px;
+  overflow-y: auto;
+`;
+
+const Group = styled.div`
+  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
+`;
+
+const GroupTitle = styled.div`
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
+`;
+
+const ItemRow = styled.div<{ $active?: boolean }>`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  cursor: pointer;
+  background: ${({ $active, theme }) => ($active ? theme.colors.primary[50] : 'transparent')};
+`;
+
+const ItemContent = styled.div`
+  display: grid;
+`;
+
+const ItemTitle = styled.span`
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+`;
+
+const ItemSubtitle = styled.span`
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const Placeholder = styled.div`
+  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const Footer = styled.div`
+  padding: ${({ theme }) => theme.spacing.sm};
+  border-top: 1px solid ${({ theme }) => theme.colors.border.primary};
+  display: flex;
+  justify-content: space-between;
+`;
+
+const FooterLeft = styled.span`
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const FooterRight = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;

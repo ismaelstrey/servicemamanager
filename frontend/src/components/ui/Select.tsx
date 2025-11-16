@@ -73,7 +73,7 @@ const StyledSelect = styled.select<{ $size: SelectSize; $variant: SelectVariant;
   }}
 
   ${({ $hasError, theme }) => $hasError && css`
-    border-color: ${theme.colors.danger.main};
+    border-color: ${theme.colors.error.main};
     box-shadow: ${theme.shadows.focus.danger};
   `}
 
@@ -99,7 +99,7 @@ const Feedback = styled.div`
 `;
 
 const ErrorText = styled.span`
-  color: ${({ theme }) => theme.colors.danger.main};
+  color: ${({ theme }) => theme.colors.error.main};
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
 `;
 

@@ -66,7 +66,7 @@ export const StyledTextarea = styled.textarea`
 `;
 
 export const ErrorText = styled.span`
-  color: ${({ theme }) => theme.colors.danger.main};
+  color: ${({ theme }) => theme.colors.error.main};
   font-size: ${({ theme }) => theme.typography.fontSize.xs};
 `;
 

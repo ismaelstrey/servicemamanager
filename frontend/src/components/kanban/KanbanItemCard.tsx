@@ -1,4 +1,5 @@
 import React from 'react';
+import styled from 'styled-components';
 import { Badge, Button } from '../ui';
 import type { KanbanItem } from './KanbanBoard';
 
@@ -38,8 +39,7 @@ export const KanbanItemCard: React.FC<KanbanItemCardProps> = ({
   onDragEnd,
 }) => {
   return (
-    <div
-      key={item.id}
+    <ItemRoot
       draggable
       onDragStart={(e: React.DragEvent) => {
         e.dataTransfer.setData('text/plain', String(item.id));
@@ -49,63 +49,69 @@ export const KanbanItemCard: React.FC<KanbanItemCardProps> = ({
       onDragEnd={() => {
         onDragEnd && onDragEnd();
       }}
-      style={{
-        border: '1px solid var(--color-border)',
-        borderRadius: '12px',
-        padding: '0.75rem',
-        background: 'var(--color-surface)',
-        cursor: 'grab',
-        transition: 'transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease',
-        boxShadow: isDragging ? '0 8px 20px rgba(0,0,0,0.18)' : 'none',
-        opacity: isDragging ? 0.85 : 1,
-        transform: isDragging ? 'scale(0.98)' : 'none',
-        outline: isDragging ? '2px solid rgba(59, 130, 246, 0.5)' : undefined,
-      }}
+      $isDragging={Boolean(isDragging)}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '0.25rem',
-        }}
-      >
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-          <code
-            className="kanban-item__id"
-            aria-label={`ID do item: ${item.id}`}
-            style={{
-              display: 'inline-block',
-              fontSize: '0.85rem',
-              padding: '0 0.4rem',
-              borderRadius: '6px',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text-secondary)',
-              background: 'rgba(0,0,0,0.04)'
-            }}
-          >
-            {item.id}
-          </code>
-          <span style={{ fontWeight: 600 }}>{item.title}</span>
-        </div>
-        <Badge variant={getPriorityVariant(String(item.priority))}>
-          {String(item.priority)}
-        </Badge>
-      </div>
-      <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+      <TopRow>
+        <IdBadge aria-label={`ID do item: ${item.id}`}>{item.id}</IdBadge>
+        <Title>{item.title}</Title>
+        <Badge variant={getPriorityVariant(String(item.priority))}>{String(item.priority)}</Badge>
+      </TopRow>
+      <Meta>
         Atualizado em {new Date(item.updatedAt).toLocaleString('pt-BR')}
-      </div>
-      <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={() => onItemClick && onItemClick(item.id)}
-        >
+      </Meta>
+      <Actions>
+        <Button size="sm" variant="secondary" onClick={() => onItemClick && onItemClick(item.id)}>
           Abrir
         </Button>
-      </div>
-    </div>
+      </Actions>
+    </ItemRoot>
   );
 };
 
 export default KanbanItemCard;
+
+const ItemRoot = styled.div<{ $isDragging?: boolean }>`
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  border-radius: ${({ theme }) => theme.borders.radius.lg};
+  padding: ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.surface};
+  cursor: grab;
+  transition: ${({ theme }) => theme.animations.transition.interactive};
+  box-shadow: ${({ theme, $isDragging }) => ($isDragging ? `0 8px 20px ${theme.colors.alpha.black[20]}` : 'none')};
+  opacity: ${({ $isDragging }) => ($isDragging ? 0.85 : 1)};
+  transform: ${({ $isDragging }) => ($isDragging ? 'scale(0.98)' : 'none')};
+  outline: ${({ theme, $isDragging }) => ($isDragging ? `2px solid ${theme.colors.primary.main}` : 'none')};
+`;
+
+const TopRow = styled.div`
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
+`;
+
+const IdBadge = styled.code`
+  display: inline-block;
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  padding: 0 ${({ theme }) => theme.spacing.xs};
+  border-radius: ${({ theme }) => theme.borders.radius.sm};
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  background: ${({ theme }) => theme.colors.alpha.black[5]};
+`;
+
+const Title = styled.span`
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+`;
+
+const Meta = styled.div`
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+const Actions = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.sm};
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;

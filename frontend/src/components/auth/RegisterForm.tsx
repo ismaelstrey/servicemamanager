@@ -184,7 +184,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   };
 
   const getPasswordStrengthColor = (score: number): string => {
-    if (score <= 2) return theme.colors.danger.main;
+    if (score <= 2) return theme.colors.error.main;
     if (score <= 4) return theme.colors.warning.main;
     return theme.colors.success.main;
   };

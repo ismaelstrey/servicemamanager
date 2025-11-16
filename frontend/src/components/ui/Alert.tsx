@@ -19,6 +19,7 @@ export interface AlertProps {
 const defaultIcons = {
   success: '✓',
   danger: '✕',
+  error: '✕',
   warning: '⚠',
   info: 'ℹ',
 };
@@ -45,12 +46,12 @@ const Container = styled.div<{ $variant: AlertVariant; $size: AlertSize; $dismis
   }}
 
   ${({ $variant, theme }) => {
-    const v = $variant === 'error' ? 'danger' : $variant;
-    switch (v) {
+    switch ($variant) {
       case 'success':
         return css`border-color: ${theme.colors.success.main};`;
       case 'danger':
-        return css`border-color: ${theme.colors.danger.main};`;
+      case 'error':
+        return css`border-color: ${theme.colors.error.main};`;
       case 'warning':
         return css`border-color: ${theme.colors.warning.main};`;
       case 'info':

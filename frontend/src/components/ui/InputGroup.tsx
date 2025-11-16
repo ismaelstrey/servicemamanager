@@ -25,7 +25,7 @@ const Label = styled.label<{ required?: boolean }>`
   color: ${({ theme }) => theme.colors.text.primary};
   &::after {
     content: '${({ required }) => (required ? '*' : '')}';
-    color: ${({ theme }) => theme.colors.danger.main};
+    color: ${({ theme }) => theme.colors.error.main};
     margin-left: ${({ theme }) => theme.spacing.xs};
   }
 `;

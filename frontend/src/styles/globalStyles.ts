@@ -18,7 +18,8 @@ export const GlobalStyle = createGlobalStyle<{ theme: AppTheme }>`
     --color-primary-200: ${({ theme }) => theme.colors.primary[200]};
     --color-success: ${({ theme }) => theme.colors.success.main};
     --color-warning: ${({ theme }) => theme.colors.warning.main};
-    --color-danger: ${({ theme }) => theme.colors.danger.main};
+    --color-error: ${({ theme }) => theme.colors.error.main};
+    --color-danger: ${({ theme }) => theme.colors.error.main};
     --color-info: ${({ theme }) => theme.colors.info.main};
 
     /* Typography */

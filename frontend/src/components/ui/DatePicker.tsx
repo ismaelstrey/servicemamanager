@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import styled, { css } from 'styled-components';
 
 export type DatePickerSize = 'sm' | 'md' | 'lg';
 export type DatePickerVariant = 'default' | 'filled' | 'outlined';
@@ -13,7 +14,104 @@ export interface DatePickerProps extends Omit<React.InputHTMLAttributes<HTMLInpu
   showTime?: boolean;
 }
 
-export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(({
+const Wrapper = styled.div<{ $fullWidth?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+  ${({ $fullWidth }) => $fullWidth && css`width: 100%;`}
+`;
+
+const Label = styled.label`
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+const Required = styled.span`
+  color: ${({ theme }) => theme.colors.error.main};
+  margin-left: ${({ theme }) => theme.spacing.xs};
+`;
+
+const Container = styled.div`
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+`;
+
+const StyledInput = styled.input<{ $size: DatePickerSize; $variant: DatePickerVariant; $hasError?: boolean }>`
+  appearance: none;
+  width: 100%;
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  color: ${({ theme }) => theme.colors.text.primary};
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border.primary};
+  transition: all ${({ theme }) => theme.animations.transition.fast};
+
+  ${({ $size, theme }) => {
+    switch ($size) {
+      case 'sm':
+        return css`padding: ${theme.spacing.xs} ${theme.spacing.sm}; font-size: ${theme.typography.fontSize.sm};`;
+      case 'lg':
+        return css`padding: ${theme.spacing.md} ${theme.spacing.lg}; font-size: ${theme.typography.fontSize.lg};`;
+      default:
+        return css`padding: ${theme.spacing.sm} ${theme.spacing.md}; font-size: ${theme.typography.fontSize.base};`;
+    }
+  }}
+
+  ${({ $variant, theme }) => {
+    switch ($variant) {
+      case 'filled':
+        return css`
+          background-color: ${theme.colors.neutral[100]};
+          border-color: transparent;
+        `;
+      case 'outlined':
+        return css`
+          background-color: transparent;
+          border-color: ${theme.colors.border.primary};
+        `;
+      default:
+        return css``;
+    }
+  }}
+
+  ${({ $hasError, theme }) => $hasError && css`
+    border-color: ${theme.colors.error.main};
+    box-shadow: ${theme.shadows.focus.danger};
+  `}
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary.main};
+    box-shadow: ${({ theme }) => theme.shadows.focus.primary};
+    outline: none;
+  }
+`;
+
+const Icon = styled.div`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${({ theme }) => theme.colors.text.secondary};
+  pointer-events: none;
+`;
+
+const Feedback = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const ErrorText = styled.span`
+  color: ${({ theme }) => theme.colors.error.main};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+`;
+
+const HelperText = styled.span`
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+`;
+
+export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(({ 
   label,
   error,
   helperText,
@@ -26,42 +124,26 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(({
   ...props
 }, ref) => {
   const datePickerId = id || `datepicker-${Math.random().toString(36).substr(2, 9)}`;
-  
-  const baseClasses = 'datepicker';
-  const sizeClasses = `datepicker--${size}`;
-  const variantClasses = `datepicker--${variant}`;
-  const fullWidthClasses = fullWidth ? 'datepicker--full' : '';
-  const errorClasses = error ? 'datepicker--error' : '';
-  const disabledClasses = props.disabled ? 'datepicker--disabled' : '';
-
-  const datePickerClasses = [
-    baseClasses,
-    sizeClasses,
-    variantClasses,
-    fullWidthClasses,
-    errorClasses,
-    disabledClasses,
-    className,
-  ].filter(Boolean).join(' ');
 
   return (
-    <div className="datepicker-wrapper">
+    <Wrapper $fullWidth={fullWidth} className={className}>
       {label && (
-        <label htmlFor={datePickerId} className="datepicker-label">
+        <Label htmlFor={datePickerId}>
           {label}
-          {props.required && <span className="datepicker-required">*</span>}
-        </label>
+          {props.required && <Required>*</Required>}
+        </Label>
       )}
-      
-      <div className="datepicker-container">
-        <input
+      <Container>
+        <StyledInput
           ref={ref}
           id={datePickerId}
           type={showTime ? 'datetime-local' : 'date'}
-          className={datePickerClasses}
+          $size={size}
+          $variant={variant}
+          $hasError={Boolean(error)}
           {...props}
         />
-        <div className="datepicker-icon">
+        <Icon>
           <svg
             width="16"
             height="16"
@@ -76,38 +158,20 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(({
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <path
-              d="M10.6667 1.33333V4"
-              stroke="currentColor"
-              strokeWidth="1.33333"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M5.33333 1.33333V4"
-              stroke="currentColor"
-              strokeWidth="1.33333"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M2 6.66667H14"
-              stroke="currentColor"
-              strokeWidth="1.33333"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <path d="M10.6667 1.33333V4" stroke="currentColor" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M5.33333 1.33333V4" stroke="currentColor" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M2 6.66667H14" stroke="currentColor" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </div>
-      </div>
+        </Icon>
+      </Container>
 
       {(error || helperText) && (
-        <div className="datepicker-feedback">
-          {error && <span className="datepicker-error-text">{error}</span>}
-          {!error && helperText && <span className="datepicker-helper-text">{helperText}</span>}
-        </div>
+        <Feedback>
+          {error && <ErrorText>{error}</ErrorText>}
+          {!error && helperText && <HelperText>{helperText}</HelperText>}
+        </Feedback>
       )}
-    </div>
+    </Wrapper>
   );
 });
 

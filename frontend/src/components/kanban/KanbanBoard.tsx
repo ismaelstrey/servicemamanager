@@ -1,4 +1,5 @@
 import React from 'react';
+import styled from 'styled-components';
 import KanbanColumn from './KanbanColumn';
 
 export type KanbanItem = { id: number; title: string; priority: 'low' | 'medium' | 'high' | 'urgent' | 'critical'; updatedAt: string | Date };
@@ -19,6 +20,21 @@ export interface KanbanBoardProps {
 
 
 
+const BoardRoot = styled.div`
+  display: block;
+`;
+
+const ColumnsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const ColumnWrap = styled.div<{ $withLeftBorder?: boolean }>`
+  border-left: ${({ $withLeftBorder, theme }) => ($withLeftBorder ? `2px dashed ${theme.colors.border.primary}` : 'none')};
+  padding-left: ${({ $withLeftBorder, theme }) => ($withLeftBorder ? theme.spacing.sm : 0)};
+`;
+
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   board,
   columnOrder,
@@ -33,18 +49,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   const [draggingItemId, setDraggingItemId] = React.useState<number | null>(null);
   const [dragOverColumn, setDragOverColumn] = React.useState<string | null>(null);
   return (
-    <div className={className || 'kanban-board'}>     
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+    <BoardRoot className={className}>
+      <ColumnsGrid>
         {columnOrder
           .filter((col) => board[col] && board[col].length >= 0)
           .map((col, idx) => (
-            <div
-              key={col}
-              style={{
-                borderLeft: idx > 0 ? '2px dashed var(--color-border)' : undefined,
-                paddingLeft: idx > 0 ? '0.75rem' : undefined,
-              }}
-            >
+            <ColumnWrap key={col} $withLeftBorder={idx > 0}>
               <KanbanColumn
                 columnKey={col}
                 label={statusLabels[col] || col}
@@ -64,10 +74,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 }}
                 onError={onError}
               />
-            </div>
+            </ColumnWrap>
           ))}
-      </div>
-    </div>
+      </ColumnsGrid>
+    </BoardRoot>
   );
 };
 

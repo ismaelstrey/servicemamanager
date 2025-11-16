@@ -14,7 +14,7 @@ const StyledLabel = styled.label`
 `;
 
 const Required = styled.span`
-  color: ${({ theme }) => theme.colors.danger.main};
+  color: ${({ theme }) => theme.colors.error.main};
 `;
 
 export const Label: React.FC<LabelProps> = ({ children, required, ...props }) => {

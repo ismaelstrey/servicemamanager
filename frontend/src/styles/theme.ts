@@ -27,9 +27,11 @@ function resolveEffectiveMode(mode: ThemeMode): 'light' | 'dark' {
 // Tema base (suporta light/dark e system via resolução do modo efetivo)
 export const createTheme = (mode: ThemeMode = 'dark'): DesignTokens & { mode: string } => {
   const effective = resolveEffectiveMode(mode);
+  const baseColors = effective === 'dark' ? darkColors : lightColors;
+  const colorsWithAlias = { ...(baseColors as any), danger: (baseColors as any).error };
   return {
     mode: effective,
-    colors: effective === 'dark' ? darkColors : lightColors,
+    colors: colorsWithAlias as any,
     typography,
     spacing,
     shadows,

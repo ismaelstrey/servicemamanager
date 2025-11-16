@@ -32,7 +32,6 @@ export type ColorTokens = {
   neutral: Omit<ColorScale, 'contrast'>;
   success: ColorScale;
   warning: ColorScale;
-  danger: ColorScale;
   error: ColorScale;
   info: ColorScale;
   // Aliases/shortcuts para compatibilidade com código existente
@@ -151,24 +150,7 @@ export const colors = {
     contrast: '#ffffff',
   },
 
-  danger: {
-    50: '#fef2f2',
-    100: '#fee2e2',
-    200: '#fecaca',
-    300: '#fca5a5',
-    400: '#f87171',
-    500: '#ef4444', // main
-    600: '#dc2626',
-    700: '#b91c1c',
-    800: '#991b1b',
-    900: '#7f1d1d',
-    main: '#ef4444',
-    light: '#f87171',
-    dark: '#dc2626',
-    contrast: '#ffffff',
-  },
-
-  // Alias semântico para erro (mesma paleta que danger)
+  // Paleta de erro
   error: {
     50: '#fef2f2',
     100: '#fee2e2',
