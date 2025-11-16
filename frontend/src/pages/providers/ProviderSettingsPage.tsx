@@ -50,6 +50,7 @@ const ProviderSettingsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [provider, setProvider] = useState<ProviderResponse | null>(null);
+  const [info, setInfo] = useState<{ name?: string; email?: string; phone?: string; website?: string; cnpj?: string; description?: string; logo?: string }>({});
   const [settings, setSettings] = useState<ProviderSettings>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -62,10 +63,20 @@ const ProviderSettingsPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await ApiService.get<any>(`/providers/${id}`);
-        const data: ProviderResponse | null = res?.data?.data ?? res?.data ?? null;
-        setProvider(data);
-        setSettings(data?.settings ?? {});
+      const res = await ApiService.get<any>(`/providers/${id}`);
+      const data: ProviderResponse | null = res?.data?.data ?? res?.data ?? null;
+      setProvider(data);
+      setSettings(data?.settings ?? {});
+      const anyData = data as any;
+      setInfo({
+        name: data?.name ?? '',
+        email: data?.email ?? '',
+        phone: anyData?.phone ?? '',
+        website: anyData?.website ?? '',
+        cnpj: anyData?.cnpj ?? '',
+        description: anyData?.description ?? '',
+        logo: anyData?.logo ?? ''
+      });
       } catch (err: any) {
         setError(err?.message ?? 'Falha ao carregar configurações do provedor');
       } finally {
@@ -106,6 +117,24 @@ const ProviderSettingsPage: React.FC = () => {
       setSuccess('Configurações salvas com sucesso');
     } catch (err: any) {
       setError(err?.message ?? 'Erro ao salvar configurações');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveProvider = async () => {
+    if (!id) return;
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
+      const payload = { ...info };
+      const updated = await ProviderService.update(Number(id), payload);
+      const updatedProvider: ProviderResponse = (updated?.data ?? updated);
+      setProvider(updatedProvider);
+      setSuccess('Provedor atualizado com sucesso');
+    } catch (err: any) {
+      setError(err?.message ?? 'Erro ao atualizar provedor');
     } finally {
       setSaving(false);
     }
@@ -155,6 +184,26 @@ const ProviderSettingsPage: React.FC = () => {
                 />
               </Grid>
             </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <Heading level={3}>Dados do Provedor</Heading>
+            </CardHeader>
+            <CardBody>
+              <Grid>
+                <Input label="Nome" value={info.name ?? ''} onChange={(e) => setInfo(prev => ({ ...prev, name: e.target.value }))} fullWidth />
+                <Input type="email" label="E-mail" value={info.email ?? ''} onChange={(e) => setInfo(prev => ({ ...prev, email: e.target.value }))} fullWidth />
+                <Input label="Telefone" value={info.phone ?? ''} onChange={(e) => setInfo(prev => ({ ...prev, phone: e.target.value }))} fullWidth />
+                <Input label="Website" value={info.website ?? ''} onChange={(e) => setInfo(prev => ({ ...prev, website: e.target.value }))} fullWidth />
+                <Input label="CNPJ" value={info.cnpj ?? ''} onChange={(e) => setInfo(prev => ({ ...prev, cnpj: e.target.value }))} fullWidth />
+                <Input label="Descrição" value={info.description ?? ''} onChange={(e) => setInfo(prev => ({ ...prev, description: e.target.value }))} fullWidth />
+                <Input label="Logo (URL)" value={info.logo ?? ''} onChange={(e) => setInfo(prev => ({ ...prev, logo: e.target.value }))} fullWidth />
+              </Grid>
+            </CardBody>
+            <CardFooter>
+              <Button onClick={handleSaveProvider} disabled={saving} loading={saving}>Salvar Dados do Provedor</Button>
+            </CardFooter>
           </Card>
 
           <Card>

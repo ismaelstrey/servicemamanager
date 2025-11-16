@@ -66,6 +66,8 @@ export interface KanbanColumnItem {
   title: string;
   priority: TicketPriority;
   updatedAt: Date;
+  provider?: { id: number; name: string; workspace: string };
+  openedBy?: { id: number; name: string; email: string } | null;
 }
 
 export type KanbanBoard = Record<TicketStatus, KanbanColumnItem[]>;
@@ -77,7 +79,7 @@ export class TicketRepository {
     this.prisma = prisma;
   }
 
-  async create(providerId: number, data: CreateTicketData): Promise<TicketRecord> {
+  async create(providerId: number, data: CreateTicketData, openedById?: number): Promise<TicketRecord> {
     try {
       const ticket = await this.prisma.ticket.create({
         data: {
@@ -86,7 +88,8 @@ export class TicketRepository {
           description: data.description,
           status: data.status ?? 'open',
           priority: data.priority ?? 'medium',
-          source: data.source ?? 'manual'
+          source: data.source ?? 'manual',
+          openedById: openedById ?? null
         }
       });
       return this.mapFromPrisma(ticket);
@@ -484,9 +487,23 @@ export class TicketRepository {
     try {
       const items = await this.prisma.ticket.findMany({
         where: { providerId },
-        select: { id: true, title: true, priority: true, status: true, updatedAt: true },
+        select: {
+          id: true,
+          title: true,
+          priority: true,
+          status: true,
+          updatedAt: true,
+          provider: { select: { id: true, name: true, workspace: true } },
+          openedById: true
+        },
         orderBy: { updatedAt: 'desc' }
       });
+      const openedIds = Array.from(new Set(((items as any[]) || []).map(i => i.openedById).filter(Boolean)));
+      const openedUsers = openedIds.length > 0
+        ? await this.prisma.user.findMany({ where: { id: { in: openedIds } }, select: { id: true, name: true, email: true } })
+        : [];
+      const openedByMap = new Map<number, { id: number; name: string; email: string }>();
+      for (const u of openedUsers as any[]) openedByMap.set(u.id, { id: u.id, name: u.name, email: u.email });
       const board = {
         open: [],
         assigned: [],
@@ -502,7 +519,8 @@ export class TicketRepository {
         const statusRaw = t.status as TicketStatus;
         const col = (statusRaw === 'waiting_client' ? 'pending' : statusRaw) as TicketStatus;
         if (!board[col]) continue;
-        board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt });
+        const openedBy = openedByMap.get(((t as any).openedById as number)) ?? null;
+        board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt, provider: (t as any).provider, openedBy });
       }
       if (typeof limit === 'number' && limit > 0) {
         for (const col of Object.keys(board) as TicketStatus[]) {
@@ -519,9 +537,23 @@ export class TicketRepository {
   async getKanbanAll(limit?: number): Promise<KanbanBoard> {
     try {
       const items = await this.prisma.ticket.findMany({
-        select: { id: true, title: true, priority: true, status: true, updatedAt: true },
+        select: {
+          id: true,
+          title: true,
+          priority: true,
+          status: true,
+          updatedAt: true,
+          provider: { select: { id: true, name: true, workspace: true } },
+          openedById: true
+        },
         orderBy: { updatedAt: 'desc' }
       });
+      const openedIdsAll = Array.from(new Set(((items as any[]) || []).map(i => i.openedById).filter(Boolean)));
+      const openedUsersAll = openedIdsAll.length > 0
+        ? await this.prisma.user.findMany({ where: { id: { in: openedIdsAll } }, select: { id: true, name: true, email: true } })
+        : [];
+      const openedByMapAll = new Map<number, { id: number; name: string; email: string }>();
+      for (const u of openedUsersAll as any[]) openedByMapAll.set(u.id, { id: u.id, name: u.name, email: u.email });
       const board = {
         open: [],
         assigned: [],
@@ -536,7 +568,8 @@ export class TicketRepository {
         const statusRaw = t.status as TicketStatus;
         const col = (statusRaw === 'waiting_client' ? 'pending' : statusRaw) as TicketStatus;
         if (!board[col]) continue;
-        board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt });
+        const openedBy = openedByMapAll.get(((t as any).openedById as number)) ?? null;
+        board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt, provider: (t as any).provider, openedBy });
       }
       if (typeof limit === 'number' && limit > 0) {
         for (const col of Object.keys(board) as TicketStatus[]) {

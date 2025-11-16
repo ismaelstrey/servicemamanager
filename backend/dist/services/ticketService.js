@@ -39,7 +39,7 @@ class TicketService {
     }
     async create(providerId, data, user) {
         await this.assertAccess(user, providerId);
-        return this.repository.create(providerId, data);
+        return this.repository.create(providerId, data, user.id);
     }
     async getById(id, user) {
         const ticket = await this.repository.findById(id);

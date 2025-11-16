@@ -13,6 +13,37 @@ interface ProviderDetails {
   status?: string;
   plan?: string;
   cnpj?: string;
+  phone?: string;
+  website?: string;
+  description?: string;
+  logo?: string;
+  address?: {
+    id?: number;
+    street?: string;
+    number?: string;
+    complement?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+  contactInfo?: {
+    primaryPhone?: string;
+    email?: string;
+    website?: string;
+  };
+  settings?: {
+    timezone?: string;
+    language?: string;
+    dateFormat?: string;
+    timeFormat?: string;
+    currency?: string;
+    ticketSettings?: any;
+    notificationSettings?: any;
+    securitySettings?: any;
+    integrationSettings?: any;
+  };
   createdAt?: string | Date;
   updatedAt?: string | Date;
   usersCount?: number;
@@ -69,6 +100,9 @@ const ProviderDetailsPage: React.FC = () => {
           <Card>
             <Grid>
               <div>
+                {provider.logo && (
+                  <Logo src={provider.logo} alt={provider.name} />
+                )}
                 <SectionTitle>{provider.name}</SectionTitle>
                 <Tags>
                   {provider.plan && <Badge variant="info">{provider.plan}</Badge>}
@@ -81,8 +115,43 @@ const ProviderDetailsPage: React.FC = () => {
                   <div><strong>Workspace:</strong> {provider.workspace}</div>
                   <div><strong>E-mail:</strong> {provider.email || '-'}</div>
                   <div><strong>CNPJ:</strong> {provider.cnpj || '-'}</div>
+                  <div><strong>Telefone:</strong> {provider.phone || '-'}</div>
+                  <div><strong>Website:</strong> {provider.website || '-'}</div>
+                  <div><strong>Descrição:</strong> {provider.description || '-'}</div>
                   <div><strong>Criado em:</strong> {provider.createdAt ? new Date(provider.createdAt).toLocaleString() : '-'}</div>
                   <div><strong>Atualizado em:</strong> {provider.updatedAt ? new Date(provider.updatedAt).toLocaleString() : '-'}</div>
+                </InfoGrid>
+
+                <SubTitle>Endereço</SubTitle>
+                <InfoGrid>
+                  <div><strong>Rua:</strong> {provider.address?.street || '-'}</div>
+                  <div><strong>Número:</strong> {provider.address?.number || '-'}</div>
+                  <div><strong>Complemento:</strong> {provider.address?.complement || '-'}</div>
+                  <div><strong>Bairro:</strong> {provider.address?.neighborhood || '-'}</div>
+                  <div><strong>Cidade:</strong> {provider.address?.city || '-'}</div>
+                  <div><strong>Estado:</strong> {provider.address?.state || '-'}</div>
+                  <div><strong>CEP:</strong> {provider.address?.zipCode || '-'}</div>
+                  <div><strong>País:</strong> {provider.address?.country || '-'}</div>
+                </InfoGrid>
+
+                <SubTitle>Contato</SubTitle>
+                <InfoGrid>
+                  <div><strong>Telefone Principal:</strong> {provider.contactInfo?.primaryPhone || '-'}</div>
+                  <div><strong>E-mail:</strong> {provider.contactInfo?.email || '-'}</div>
+                  <div><strong>Website:</strong> {provider.contactInfo?.website || '-'}</div>
+                </InfoGrid>
+
+                <SubTitle>Configurações</SubTitle>
+                <InfoGrid>
+                  <div><strong>Timezone:</strong> {provider.settings?.timezone || '-'}</div>
+                  <div><strong>Idioma:</strong> {provider.settings?.language || '-'}</div>
+                  <div><strong>Formato de Data:</strong> {provider.settings?.dateFormat || '-'}</div>
+                  <div><strong>Formato de Hora:</strong> {provider.settings?.timeFormat || '-'}</div>
+                  <div><strong>Moeda:</strong> {provider.settings?.currency || '-'}</div>
+                  <div><strong>Ticket Settings:</strong> {provider.settings?.ticketSettings ? 'Configurado' : '—'}</div>
+                  <div><strong>Notification Settings:</strong> {provider.settings?.notificationSettings ? 'Configurado' : '—'}</div>
+                  <div><strong>Security Settings:</strong> {provider.settings?.securitySettings ? 'Configurado' : '—'}</div>
+                  <div><strong>Integration Settings:</strong> {provider.settings?.integrationSettings ? 'Configurado' : '—'}</div>
                 </InfoGrid>
               </div>
 
@@ -112,6 +181,7 @@ const ProviderDetailsPage: React.FC = () => {
                 <Actions>
                   <Button onClick={() => navigate(`/dashboard?provider=${provider.id}`)}>Ver Dashboard</Button>
                   <Button onClick={() => navigate(`/providers/${provider.id}/settings`)}>Configurações</Button>
+                  <Button variant="primary" onClick={() => navigate(`/providers/${provider.id}/settings`)}>Editar Provedor</Button>
                 </Actions>
               </div>
             </Grid>
@@ -167,6 +237,13 @@ const Tags = styled.div`
 const InfoGrid = styled.div`
   display: grid;
   gap: 8px;
+`;
+
+const Logo = styled.img`
+  max-height: 64px;
+  max-width: 200px;
+  object-fit: contain;
+  margin-bottom: 8px;
 `;
 
 const Stats = styled.div`

@@ -47,7 +47,7 @@ export class TicketService {
 
   async create(providerId: number, data: CreateTicketData, user: AuthUser): Promise<TicketRecord> {
     await this.assertAccess(user, providerId);
-    return this.repository.create(providerId, data);
+    return this.repository.create(providerId, data, user.id);
   }
 
   async getById(id: number, user: AuthUser): Promise<TicketRecord> {

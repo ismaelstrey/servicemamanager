@@ -33,6 +33,7 @@ model User {
   notifications Notification[]
   changeHistories ChangeHistory[]
   createdChecklistTemplates ChecklistTemplate[]
+  openedTickets Ticket[]
 }
 
 // Provedor/empresa atendida pelo sistema. Centraliza dados de contato e
@@ -282,6 +283,8 @@ model Ticket {
   source      String   @default("manual") // manual, zabbix, api
   provider    Provider @relation(fields: [providerId], references: [id])
   providerId  Int
+  openedBy    User?    @relation(fields: [openedById], references: [id])
+  openedById  Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

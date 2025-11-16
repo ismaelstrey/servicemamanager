@@ -35,6 +35,11 @@ export class ProviderService {
     const res = await ApiService.put<any>(`/providers/${id}/settings`, settings);
     return res.data;
   }
+
+  static async update(id: number, data: Partial<{ name: string; email?: string; phone?: string; website?: string; cnpj?: string; description?: string; logo?: string }>): Promise<any> {
+    const res = await ApiService.put<any>(`/providers/${id}`, data);
+    return res.data;
+  }
 }
 
 export default ProviderService;

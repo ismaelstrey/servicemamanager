@@ -8,7 +8,7 @@ class TicketRepository {
     constructor() {
         this.prisma = prisma_1.prisma;
     }
-    async create(providerId, data) {
+    async create(providerId, data, openedById) {
         try {
             const ticket = await this.prisma.ticket.create({
                 data: {
@@ -17,7 +17,8 @@ class TicketRepository {
                     description: data.description,
                     status: data.status ?? 'open',
                     priority: data.priority ?? 'medium',
-                    source: data.source ?? 'manual'
+                    source: data.source ?? 'manual',
+                    openedById: openedById ?? null
                 }
             });
             return this.mapFromPrisma(ticket);
@@ -388,9 +389,24 @@ class TicketRepository {
         try {
             const items = await this.prisma.ticket.findMany({
                 where: { providerId },
-                select: { id: true, title: true, priority: true, status: true, updatedAt: true },
+                select: {
+                    id: true,
+                    title: true,
+                    priority: true,
+                    status: true,
+                    updatedAt: true,
+                    provider: { select: { id: true, name: true, workspace: true } },
+                    openedById: true
+                },
                 orderBy: { updatedAt: 'desc' }
             });
+            const openedIds = Array.from(new Set((items || []).map(i => i.openedById).filter(Boolean)));
+            const openedUsers = openedIds.length > 0
+                ? await this.prisma.user.findMany({ where: { id: { in: openedIds } }, select: { id: true, name: true, email: true } })
+                : [];
+            const openedByMap = new Map();
+            for (const u of openedUsers)
+                openedByMap.set(u.id, { id: u.id, name: u.name, email: u.email });
             const board = {
                 open: [],
                 assigned: [],
@@ -407,7 +423,8 @@ class TicketRepository {
                 const col = (statusRaw === 'waiting_client' ? 'pending' : statusRaw);
                 if (!board[col])
                     continue;
-                board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt });
+                const openedBy = openedByMap.get(t.openedById) ?? null;
+                board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt, provider: t.provider, openedBy });
             }
             if (typeof limit === 'number' && limit > 0) {
                 for (const col of Object.keys(board)) {
@@ -424,9 +441,24 @@ class TicketRepository {
     async getKanbanAll(limit) {
         try {
             const items = await this.prisma.ticket.findMany({
-                select: { id: true, title: true, priority: true, status: true, updatedAt: true },
+                select: {
+                    id: true,
+                    title: true,
+                    priority: true,
+                    status: true,
+                    updatedAt: true,
+                    provider: { select: { id: true, name: true, workspace: true } },
+                    openedById: true
+                },
                 orderBy: { updatedAt: 'desc' }
             });
+            const openedIdsAll = Array.from(new Set((items || []).map(i => i.openedById).filter(Boolean)));
+            const openedUsersAll = openedIdsAll.length > 0
+                ? await this.prisma.user.findMany({ where: { id: { in: openedIdsAll } }, select: { id: true, name: true, email: true } })
+                : [];
+            const openedByMapAll = new Map();
+            for (const u of openedUsersAll)
+                openedByMapAll.set(u.id, { id: u.id, name: u.name, email: u.email });
             const board = {
                 open: [],
                 assigned: [],
@@ -442,7 +474,8 @@ class TicketRepository {
                 const col = (statusRaw === 'waiting_client' ? 'pending' : statusRaw);
                 if (!board[col])
                     continue;
-                board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt });
+                const openedBy = openedByMapAll.get(t.openedById) ?? null;
+                board[col].push({ id: t.id, title: t.title, priority: t.priority, updatedAt: t.updatedAt, provider: t.provider, openedBy });
             }
             if (typeof limit === 'number' && limit > 0) {
                 for (const col of Object.keys(board)) {
