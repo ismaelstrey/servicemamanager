@@ -19,10 +19,10 @@ const Container = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.sm};
 `
 
-const ToggleRow = styled.div`
-  display: flex;
-  justify-content: flex-end;
-`
+// const ToggleRow = styled.div`
+//   display: flex;
+//   justify-content: flex-end;
+// `
 
 const Panel = styled(motion.div)`
   border: 1px solid ${({ theme }) => theme.colors.border.primary};
@@ -45,7 +45,7 @@ const Fields = styled.div`
 const KanbanFilters: React.FC<KanbanFiltersProps> = ({ visible, onToggle, priority, onPriorityChange, search, onSearchChange }) => {
   return (
     <Container>
-      <ToggleRow>
+      {/* <ToggleRow>
         <Button
           variant="ghost"
           size="sm"
@@ -55,7 +55,7 @@ const KanbanFilters: React.FC<KanbanFiltersProps> = ({ visible, onToggle, priori
         >
           Filtros
         </Button>
-      </ToggleRow>
+      </ToggleRow> */}
       <AnimatePresence>
         {visible && (
           <Panel

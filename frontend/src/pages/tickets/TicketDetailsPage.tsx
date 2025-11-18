@@ -205,6 +205,7 @@ export function TicketDetailsPage() {
       setError(null);
       // Buscar dados reais da API
       const data = await TicketService.getTicketById(Number(ticketId));
+      const comments = await TicketService.getTicketComments(Number(ticketId));
       // Normalizar campos para evitar quebras no layout
       const normalized: Ticket = {
         ...data,
@@ -217,7 +218,7 @@ export function TicketDetailsPage() {
           company: (data as any).customerCompany ?? undefined,
           department: (data as any).customerDepartment ?? undefined,
         },
-        comments: (data as any).comments ?? [],
+        comments: Array.isArray(comments) ? comments : [],
         attachments: (data as any).attachments ?? [],
         history: (data as any).history ?? [],
         tags: (data as any).tags ?? [],
@@ -294,7 +295,7 @@ export function TicketDetailsPage() {
       setStatusLoading(true);
 
       // Make API call to update ticket status
-      const res = await ApiService.put(`/tickets/${ticket.id}/status`, { 
+      const res = await ApiService.put(`/providers/tickets/${ticket.id}/status`, { 
         status: newStatus,
         note: statusUpdateNote.trim() || undefined
       });

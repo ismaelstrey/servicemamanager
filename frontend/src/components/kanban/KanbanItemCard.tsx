@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Badge, Button, Tooltip } from '../ui';
+import { Tooltip } from '../ui';
 import { motion } from 'framer-motion'
-import { Building2, User as UserIcon, Clock, Circle } from 'lucide-react'
+import { Building2, Clock, Circle } from 'lucide-react'
 import type { KanbanItem } from './KanbanBoard';
 
 interface KanbanItemCardProps {
@@ -14,23 +14,7 @@ interface KanbanItemCardProps {
   onDragEnd?: () => void;
 }
 
-const getPriorityVariant = (
-  p: string
-): 'success' | 'info' | 'warning' | 'danger' | 'secondary' => {
-  switch (p) {
-    case 'low':
-      return 'success';
-    case 'medium':
-      return 'info';
-    case 'high':
-      return 'warning';
-    case 'urgent':
-    case 'critical':
-      return 'danger';
-    default:
-      return 'secondary';
-  }
-};
+// prioridade agora é representada por ícone de cor (ver priorityColor abaixo)
 
 export const KanbanItemCard: React.FC<KanbanItemCardProps> = ({
   item,
@@ -66,59 +50,68 @@ export const KanbanItemCard: React.FC<KanbanItemCardProps> = ({
     return (two || '--').toUpperCase()
   }
   return (
-    <ItemRoot
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2, scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
+    <DragWrapper
       draggable
       onDragStart={(e: React.DragEvent) => {
         e.dataTransfer.setData('text/plain', String(item.id));
         e.dataTransfer.setData('kanban-from', columnKey);
-        onDragStart && onDragStart(item.id, columnKey);
+        if (onDragStart) {
+          onDragStart(item.id, columnKey);
+        }
       }}
       onDragEnd={() => {
-        onDragEnd && onDragEnd();
+        if (onDragEnd) {
+          onDragEnd();
+        }
       }}
-      $isDragging={Boolean(isDragging)}
+      onDoubleClick={() => {
+        if (onItemClick) {
+          onItemClick(item.id);
+        }
+      }}
     >
-      <TopRow>
-        <IdBadge aria-label={`ID do item: ${item.id}`}>{item.id}</IdBadge>
-        <Title>{item.title}</Title>
-        <span aria-label={`Prioridade: ${String(item.priority)}`} title={`Prioridade: ${String(item.priority)}`} style={{ display: 'inline-flex', alignItems: 'center' }}>
-          <Circle size={14} color={priorityColor(String(item.priority))} />
-        </span>
-      </TopRow>
-      <DetailsRow>
-        <Detail>
-          <span><Building2 size={14} style={{ marginRight: 6 }} />{item.provider?.name ?? '—'}{item.provider?.workspace ? ` (${item.provider.workspace})` : ''}</span>
-        </Detail>
-        <Detail>
-          <span><UserIcon size={14} style={{ marginRight: 6 }} />{item.openedBy?.name ?? '—'}{item.openedBy?.email ? ` (${item.openedBy.email})` : ''}</span>
-        </Detail>
-      </DetailsRow>
-      <Actions>
-        <Button size="sm" variant="secondary" onClick={() => onItemClick && onItemClick(item.id)}>
-          Abrir
-        </Button>
-      </Actions>
-      <FooterRow>
-        <Meta>
-          <Clock size={14} style={{ marginRight: 6 }} />{new Date(item.updatedAt).toLocaleString('pt-BR')}
-        </Meta>
-        {item.openedBy?.name ? (
-          <Tooltip content={`${item.openedBy.name}${item.openedBy.email ? ` (${item.openedBy.email})` : ''}`} placement="top">
-            <AvatarCapsule aria-label="Autor do ticket">{getInitials(item.openedBy.name)}</AvatarCapsule>
-          </Tooltip>
-        ) : null}
-      </FooterRow>
-    </ItemRoot>
+      <ItemRoot
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -2, scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
+        $isDragging={Boolean(isDragging)}
+      >
+        <TopRow>
+          <IdBadge aria-label={`ID do item: ${item.id}`}>{item.id}</IdBadge>
+          <Title>{item.title}</Title>
+          <span aria-label={`Prioridade: ${String(item.priority)}`} title={`Prioridade: ${String(item.priority)}`} style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <Circle size={14} color={priorityColor(String(item.priority))} />
+          </span>
+        </TopRow>
+        <DetailsRow>
+          <Detail>
+            <span><Building2 size={14} style={{ marginRight: 6 }} />{item.provider?.name ?? '—'}</span>
+          </Detail>
+        </DetailsRow>
+        {/* <Detail>
+          <span><Building2 size={14} style={{ marginRight: 6 }} />{item.provider?.workspace ? ` (${item.provider.workspace})` : ''}</span>
+        </Detail> */}
+        <FooterRow>
+          <Meta>
+            <Clock size={14} style={{ marginRight: 6 }} />{new Date(item.updatedAt).toLocaleString('pt-BR')}
+          </Meta>
+          {item.openedBy?.name ? (
+            <Tooltip content={`${item.openedBy.name}${item.openedBy.email ? ` (${item.openedBy.email})` : ''}`} placement="top">
+              <AvatarCapsule aria-label="Autor do ticket">{getInitials(item.openedBy.name)}</AvatarCapsule>
+            </Tooltip>
+          ) : null}
+        </FooterRow>
+      </ItemRoot>
+    </DragWrapper>
   );
 };
 
 export default KanbanItemCard;
 
-const ItemRoot = styled(motion.div)<{ $isDragging?: boolean }>`
+const DragWrapper = styled.div``;
+
+const ItemRoot = styled(motion.div) <{ $isDragging?: boolean }>`
   border: 1px solid ${({ theme }) => theme.colors.border.primary};
   border-radius: ${({ theme }) => theme.borders.radius.lg};
   padding: ${({ theme }) => theme.spacing.md};
@@ -182,11 +175,6 @@ const Meta = styled.div`
   align-items: center;
 `;
 
-const Actions = styled.div`
-  margin-top: ${({ theme }) => theme.spacing.sm};
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
-`;
 
 const FooterRow = styled.div`
   margin-top: ${({ theme }) => theme.spacing.sm};

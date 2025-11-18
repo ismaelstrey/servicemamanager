@@ -57,7 +57,12 @@ export class TicketService {
   }
 
   static async getTicketById(id: number): Promise<Ticket> {
-    const response = await ApiService.get<Ticket>(`/tickets/${id}`);
+    const response = await ApiService.get<Ticket>(`/providers/tickets/${id}`);
+    return response.data;
+  }
+
+  static async getTicketComments(id: number): Promise<import('../types/ticket').TicketComment[]> {
+    const response = await ApiService.get<import('../types/ticket').TicketComment[]>(`/comments/ticket/${id}?includeInternal=true`);
     return response.data;
   }
 
@@ -67,12 +72,12 @@ export class TicketService {
   }
 
   static async updateTicket(id: number, data: any): Promise<Ticket> {
-    const response = await ApiService.put<Ticket>(`/tickets/${id}`, data);
+    const response = await ApiService.put<Ticket>(`/providers/tickets/${id}`, data);
     return response.data;
   }
 
   static async updateTicketStatus(id: number, status: string): Promise<Ticket> {
-    const response = await ApiService.put<Ticket>(`/tickets/${id}/status`, { status });
+    const response = await ApiService.put<Ticket>(`/providers/tickets/${id}/status`, { status });
     return response.data;
   }
 

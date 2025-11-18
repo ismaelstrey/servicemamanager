@@ -7,6 +7,7 @@ import { ApiService } from '../../services/api';
 import { useProviderContext } from '../../contexts/providerContext';
 import TicketsKanbanColumnsFilter from '../../components/tickets/TicketsKanbanColumnsFilter'
 import KanbanFilters from '../../components/tickets/KanbanFilters'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 type LocalBoard = KanbanBoardData;
 
@@ -28,7 +29,7 @@ const TicketsKanbanPage: React.FC = () => {
   const navigate = useNavigate();
   const ticketModal = useTicketCreateModal();
   const [board, setBoard] = useState<LocalBoard>({});
-  const [loading, setLoading] = useState(true);
+  
   const [error, setError] = useState<string | null>(null);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
@@ -55,72 +56,59 @@ const TicketsKanbanPage: React.FC = () => {
   }, [selectedColumns])
 
   useEffect(() => {
-    try { localStorage.setItem('tickets.kanban.visibleColumns', JSON.stringify(selectedColumns)) } catch {}
+    localStorage.setItem('tickets.kanban.visibleColumns', JSON.stringify(selectedColumns))
   }, [selectedColumns])
 
-  const loadBoard = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const url = (selectedProviderId == null)
-          ? `/tickets/kanban`
-          : `/providers/${selectedProviderId}/tickets/kanban`;
-        const res = await ApiService.get<LocalBoard>(url);
-
-
-        const raw = res.data || {};
-
-        // Normalização: converte chaves antigas para novos statuses (ex: waiting_client -> pending)
-        // e mescla arrays caso venham as duas chaves (pending e waiting_client)
-        const normalized: LocalBoard = {} as LocalBoard;
-        Object.keys(raw || {}).forEach((key) => {
-          const newKey = key === 'waiting_client' ? 'pending' : key;
-          const incoming = ((raw as any)[key] || []) as any[];
-          const existing = ((normalized as any)[newKey] || []) as any[];
-          (normalized as any)[newKey] = [...existing, ...incoming];
-        });
-
-        // Garantir todas as colunas da base existem (arrays vazios por padrão)
-        const completed: LocalBoard = {} as LocalBoard;
-        for (const col of baseColumnOrder) {
-          completed[col] = (normalized[col] || []).map((item: KanbanItem) => ({
-            id: item.id,
-            title: item.title ?? `Ticket #${item.id}`,
-            priority: item.priority ?? 'medium',
-            updatedAt: item.updatedAt ?? new Date().toISOString(),
-            provider: item.provider,
-            openedBy: item.openedBy ?? null,
-          }));
-        }
-
-        setBoard(completed);
-      } catch (e: any) {
-        console.error('Erro ao carregar Kanban:', e);
-        const status = e?.response?.status;
-        if (status === 401) {
-          setError('Não autenticado. Faça login para acessar o Kanban.');
-        } else if (status === 403) {
-          setError('Acesso negado. Você não possui permissão para ver este Kanban.');
-        } else {
-          setError('Erro ao carregar o Kanban de tickets.');
-        }
-      } finally {
-        setLoading(false);
+  const queryClient = useQueryClient()
+  const kanbanQuery = useQuery({
+    queryKey: ['tickets-kanban', { providerId: selectedProviderId }],
+    queryFn: async () => {
+      const url = (selectedProviderId == null)
+        ? `/tickets/kanban`
+        : `/providers/${selectedProviderId}/tickets/kanban`;
+      const res = await ApiService.get<LocalBoard>(url);
+      const raw = res.data || {};
+      const normalized: LocalBoard = {} as LocalBoard;
+      Object.keys(raw || {}).forEach((key) => {
+        const newKey = key === 'waiting_client' ? 'pending' : key;
+        const incoming = ((raw as any)[key] || []) as any[];
+        const existing = ((normalized as any)[newKey] || []) as any[];
+        (normalized as any)[newKey] = [...existing, ...incoming];
+      });
+      const completed: LocalBoard = {} as LocalBoard;
+      for (const col of baseColumnOrder) {
+        completed[col] = (normalized[col] || []).map((item: KanbanItem) => ({
+          id: item.id,
+          title: item.title ?? `Ticket #${item.id}`,
+          priority: item.priority ?? 'medium',
+          updatedAt: item.updatedAt ?? new Date().toISOString(),
+          provider: item.provider,
+          openedBy: item.openedBy ?? null,
+        }));
       }
-  };
-  useEffect(() => { loadBoard(); }, [selectedProviderId]);
+      return completed
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchOnMount: true,
+  })
+  useEffect(() => {
+    if (kanbanQuery.data) setBoard(kanbanQuery.data)
+    if (kanbanQuery.isError) setError('Erro ao carregar o Kanban de tickets.')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kanbanQuery.data, kanbanQuery.isError])
   useEffect(() => {
     const handler = (e: any) => {
       const providerId = e?.detail?.providerId ?? null
       if (selectedProviderId == null || providerId == null || providerId === selectedProviderId) {
-        loadBoard()
+        queryClient.invalidateQueries({ queryKey: ['tickets-kanban'] })
       }
     }
     window.addEventListener('ticket-created', handler as any)
     return () => window.removeEventListener('ticket-created', handler as any)
-  }, [selectedProviderId])
+  }, [selectedProviderId, queryClient])
 
-  if (loading) {
+  if (kanbanQuery.isLoading) {
     return (
       <div style={{ display: 'flex', height: '60vh', alignItems: 'center', justifyContent: 'center' }}>
         <Spinner size="lg" label="Carregando Kanban..." />

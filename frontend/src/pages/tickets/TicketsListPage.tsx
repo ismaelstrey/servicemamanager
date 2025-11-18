@@ -130,7 +130,7 @@ export function TicketsListPage() {
     }
     setSearchParams(params);
   }, [filters, currentPage, setSearchParams]);
-  
+
   const { selectedProviderId } = useProviderContext();
   const queryClient = useQueryClient()
   const ticketsQuery = useQuery({
@@ -150,7 +150,11 @@ export function TicketsListPage() {
       }))
       return { items, total: response.pagination?.total ?? 0 }
     },
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchOnMount: true,
+    refetchInterval: 60_000,
   })
   const tickets: Ticket[] = ticketsQuery.data?.items ?? []
   const loading = ticketsQuery.isLoading
@@ -164,7 +168,7 @@ export function TicketsListPage() {
     const handler = (e: any) => {
       const providerId = e?.detail?.providerId ?? null
       if (selectedProviderId == null || providerId == null || providerId === selectedProviderId) {
-        try { queryClient.invalidateQueries({ queryKey: ['tickets'] }) } catch {}
+        try { queryClient.invalidateQueries({ queryKey: ['tickets'] }) } catch { }
       }
     }
     window.addEventListener('ticket-created', handler as any)

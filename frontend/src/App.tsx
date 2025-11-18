@@ -64,8 +64,12 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutos
+      refetchOnWindowFocus: "always",
+      refetchOnReconnect: true,
+      refetchOnMount: true,
+      staleTime: 0,
+      refetchInterval: 60_000,
+
     },
   },
 })
@@ -100,391 +104,391 @@ const App: React.FC = () => {
         <ClientAuthProvider>
           <ProviderContextProvider>
             <TicketCreateModalProvider>
-            <Suspense fallback={<LogoLoader fullscreen message="Carregando..." />}>
-            <Routes>
-            {/* Rotas públicas */}
-            <Route
-              path="/login"
-              element={
-                <PublicRoute>
-                  <LoginPage />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                <PublicRoute>
-                  <RegisterPage />
-                </PublicRoute>
-              }
-            />
+              <Suspense fallback={<LogoLoader fullscreen message="Carregando..." />}>
+                <Routes>
+                  {/* Rotas públicas */}
+                  <Route
+                    path="/login"
+                    element={
+                      <PublicRoute>
+                        <LoginPage />
+                      </PublicRoute>
+                    }
+                  />
+                  <Route
+                    path="/register"
+                    element={
+                      <PublicRoute>
+                        <RegisterPage />
+                      </PublicRoute>
+                    }
+                  />
 
-            {/* Recuperação de senha */}
-            <Route
-              path="/forgot-password"
-              element={
-                <PublicRoute>
-                  <ForgotPasswordPage />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/reset-password"
-              element={
-                <PublicRoute>
-                  <ResetPasswordPage />
-                </PublicRoute>
-              }
-            />
+                  {/* Recuperação de senha */}
+                  <Route
+                    path="/forgot-password"
+                    element={
+                      <PublicRoute>
+                        <ForgotPasswordPage />
+                      </PublicRoute>
+                    }
+                  />
+                  <Route
+                    path="/reset-password"
+                    element={
+                      <PublicRoute>
+                        <ResetPasswordPage />
+                      </PublicRoute>
+                    }
+                  />
 
-            {/* Portal do Cliente - rotas públicas */}
-            <Route
-              path="/client/login"
-              element={
-                <ClientPublicRoute>
-                  <ClientLoginPage />
-                </ClientPublicRoute>
-              }
-            />
+                  {/* Portal do Cliente - rotas públicas */}
+                  <Route
+                    path="/client/login"
+                    element={
+                      <ClientPublicRoute>
+                        <ClientLoginPage />
+                      </ClientPublicRoute>
+                    }
+                  />
 
-            {/* Rotas protegidas */}
-            <Route
-              path="/dashboard"
-              element={
-               <ProtectedRoute>
-                  <Layout>
-                    <DashboardPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/chat"
-              element={
-               <ProtectedRoute>
-                  <Layout>
-                    <ChatPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/providers"
-              element={
-               <ProtectedRoute>
-                   <Layout>
-                     <ProvidersListPage />
-                   </Layout>
-                 </ProtectedRoute>
-               }
-             />
-            <Route
-              path="/providers/:id"
-              element={
-               <ProtectedRoute>
-                   <Layout>
-                     <ProviderDetailsPage />
-                   </Layout>
-                 </ProtectedRoute>
-               }
-             />
-            <Route
-              path="/providers/:id/settings"
-              element={
-               <ProtectedRoute>
-                   <Layout>
-                     <ProviderSettingsPage />
-                   </Layout>
-                 </ProtectedRoute>
-               }
-             />
-         <Route
-            path="/providers/create"
-            element={
-             <ProtectedRoute>
-                 <Layout>
-                   <CreateProviderPage />
-                 </Layout>
-               </ProtectedRoute>
-             }
-           />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ProfilePage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            {/* Portal do Cliente - rotas protegidas */}
-            <Route
-              path="/client/dashboard"
-              element={
-                <ClientProtectedRoute>
-                  <Layout>
-                    <ClientDashboardPage />
-                  </Layout>
-                </ClientProtectedRoute>
-              }
-            />
-            <Route
-              path="/client/tickets/:id"
-              element={
-                <ClientProtectedRoute>
-                  <Layout>
-                    <ClientTicketDetailsPage />
-                  </Layout>
-                </ClientProtectedRoute>
-              }
-            />
-            <Route
-              path="/client/service-orders/:id"
-              element={
-                <ClientProtectedRoute>
-                  <Layout>
-                    <ClientServiceOrderDetailsPage />
-                  </Layout>
-                </ClientProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <SettingsPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            {/* Reports */}
-            <Route
-              path="/reports"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ReportsPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            {/* Users */}
-            <Route
-              path="/users"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <UsersListPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/users/new"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <UserFormPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/users/:id"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <UserFormPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            {/* Customers */}
-            <Route
-              path="/customers"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <CustomersListPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            {/* Tickets */}
-            <Route
-              path="/tickets"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <TicketsListPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/tickets/new"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <CreateTicketPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/tickets/kanban"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <TicketsKanbanPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/tickets/:id"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <TicketDetailsPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/tickets/:id/edit"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <TicketsEditPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            {/* Equipamentos */}
-            <Route
-              path="/equipments"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <EquipmentsPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            {/* Service Orders */}
-            <Route
-              path="/service-orders"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ServiceOrdersListPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/service-orders/kanban"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ServiceOrdersKanbanPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/service-orders/create"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <CreateServiceOrderPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/service-orders/:id"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ServiceOrderDetailsPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/service-orders/calendar"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ServiceOrdersCalendarPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/service-orders/reports"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ServiceOrdersSlaReportsPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/test"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <TestPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/templates"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <TemplateShowcase />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
+                  {/* Rotas protegidas */}
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <DashboardPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/chat"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ChatPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/providers"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ProvidersListPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/providers/:id"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ProviderDetailsPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/providers/:id/settings"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ProviderSettingsPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/providers/create"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <CreateProviderPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ProfilePage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Portal do Cliente - rotas protegidas */}
+                  <Route
+                    path="/client/dashboard"
+                    element={
+                      <ClientProtectedRoute>
+                        <Layout>
+                          <ClientDashboardPage />
+                        </Layout>
+                      </ClientProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/client/tickets/:id"
+                    element={
+                      <ClientProtectedRoute>
+                        <Layout>
+                          <ClientTicketDetailsPage />
+                        </Layout>
+                      </ClientProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/client/service-orders/:id"
+                    element={
+                      <ClientProtectedRoute>
+                        <Layout>
+                          <ClientServiceOrderDetailsPage />
+                        </Layout>
+                      </ClientProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/settings"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <SettingsPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Reports */}
+                  <Route
+                    path="/reports"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ReportsPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Users */}
+                  <Route
+                    path="/users"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <UsersListPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/users/new"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <UserFormPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/users/:id"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <UserFormPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Customers */}
+                  <Route
+                    path="/customers"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <CustomersListPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Tickets */}
+                  <Route
+                    path="/tickets"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <TicketsListPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/tickets/new"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <CreateTicketPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/tickets/kanban"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <TicketsKanbanPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/tickets/:id"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <TicketDetailsPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/tickets/:id/edit"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <TicketsEditPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Equipamentos */}
+                  <Route
+                    path="/equipments"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <EquipmentsPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Service Orders */}
+                  <Route
+                    path="/service-orders"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ServiceOrdersListPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/service-orders/kanban"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ServiceOrdersKanbanPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/service-orders/create"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <CreateServiceOrderPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/service-orders/:id"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ServiceOrderDetailsPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/service-orders/calendar"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ServiceOrdersCalendarPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/service-orders/reports"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ServiceOrdersSlaReportsPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/test"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <TestPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/templates"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <TemplateShowcase />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
 
-            <Route
-              path="/layout"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ResponsiveLayoutShowcase />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
+                  <Route
+                    path="/layout"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ResponsiveLayoutShowcase />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
 
-            {/* Redirecionamento da raiz */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  {/* Redirecionamento da raiz */}
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-            {/* Página 404 */}
-            <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-            </Suspense>
-            <TicketCreateModalGlobalBridge />
-        {/* Command Palette global (Ctrl+K) apenas quando autenticado */}
-        {(() => {
-          // Wrapper inline para acessar contexto apenas dentro dos providers
-          const AuthCommandPalette: React.FC = () => {
-            const { isAuthenticated } = useAuth()
-            return isAuthenticated ? <CommandPalette /> : null
-          }
-          return <AuthCommandPalette />
-        })()}
+                  {/* Página 404 */}
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </Suspense>
+              <TicketCreateModalGlobalBridge />
+              {/* Command Palette global (Ctrl+K) apenas quando autenticado */}
+              {(() => {
+                // Wrapper inline para acessar contexto apenas dentro dos providers
+                const AuthCommandPalette: React.FC = () => {
+                  const { isAuthenticated } = useAuth()
+                  return isAuthenticated ? <CommandPalette /> : null
+                }
+                return <AuthCommandPalette />
+              })()}
             </TicketCreateModalProvider>
           </ProviderContextProvider>
         </ClientAuthProvider>
