@@ -96,7 +96,8 @@ export const TicketCreateModalProvider: React.FC<{ children: React.ReactNode }> 
       setToastVariant('success')
       setToastMsg(`Ticket #${ticket.id} criado com sucesso`)
       setToastOpen(true)
-      window.setTimeout(() => { try { setToastOpen(false) } catch { }; close() }, 1500)
+      try { close() } catch {}
+      window.setTimeout(() => { try { setToastOpen(false) } catch { } }, 1500)
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Erro ao criar ticket. Tente novamente.'
       setErrorMsg(msg)
@@ -148,13 +149,15 @@ export const TicketCreateModalProvider: React.FC<{ children: React.ReactNode }> 
           </ModalFooter>
         )}
       </Modal>
-      <Toast
-        open={toastOpen}
-        onClose={() => setToastOpen(false)}
-        title={toastVariant === 'success' ? 'Sucesso' : 'Informação'}
-        description={toastMsg}
-        variant={toastVariant}
-      />
+      {toastOpen && !!toastMsg && (
+        <Toast
+          open={toastOpen}
+          onClose={() => setToastOpen(false)}
+          title={toastVariant === 'success' ? 'Sucesso' : 'Informação'}
+          description={toastMsg}
+          variant={toastVariant}
+        />
+      )}
     </TicketCreateModalContext.Provider>
   )
 }
