@@ -64,7 +64,7 @@ const StyledSelect = styled.select<{ $size: SelectSize; $variant: SelectVariant;
         `;
       case 'outlined':
         return css`
-          background-color: transparent;
+          background-color: ${theme.mode === 'dark' ? theme.colors.background.secondary : 'transparent'};
           border-color: ${theme.colors.border.primary};
         `;
       default:
@@ -81,6 +81,11 @@ const StyledSelect = styled.select<{ $size: SelectSize; $variant: SelectVariant;
     border-color: ${({ theme }) => theme.colors.primary.main};
     box-shadow: ${({ theme }) => theme.shadows.focus.primary};
     outline: none;
+  }
+
+  & option {
+    background-color: ${({ theme }) => theme.mode === 'dark' ? theme.colors.background.secondary : theme.colors.surface};
+    color: ${({ theme }) => theme.colors.text.primary};
   }
 `;
 

@@ -56,6 +56,8 @@ import { LogoLoader } from './components/ui'
 import ClientProtectedRoute from './components/auth/ClientProtectedRoute'
 import CommandPalette from './components/CommandPalette'
 import ClientPublicRoute from './components/auth/ClientPublicRoute'
+import { TicketCreateModalProvider } from './contexts/ticketCreateModalContext'
+import { TicketCreateModalGlobalBridge } from './contexts/ticketCreateModalContext'
 
 // Cliente React Query
 const queryClient = new QueryClient({
@@ -97,6 +99,7 @@ const App: React.FC = () => {
       <AuthProvider>
         <ClientAuthProvider>
           <ProviderContextProvider>
+            <TicketCreateModalProvider>
             <Suspense fallback={<LogoLoader fullscreen message="Carregando..." />}>
             <Routes>
             {/* Rotas públicas */}
@@ -472,6 +475,7 @@ const App: React.FC = () => {
             <Route path="*" element={<NotFoundPage />} />
             </Routes>
             </Suspense>
+            <TicketCreateModalGlobalBridge />
         {/* Command Palette global (Ctrl+K) apenas quando autenticado */}
         {(() => {
           // Wrapper inline para acessar contexto apenas dentro dos providers
@@ -481,6 +485,7 @@ const App: React.FC = () => {
           }
           return <AuthCommandPalette />
         })()}
+            </TicketCreateModalProvider>
           </ProviderContextProvider>
         </ClientAuthProvider>
       </AuthProvider>

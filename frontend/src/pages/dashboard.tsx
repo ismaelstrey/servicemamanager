@@ -8,6 +8,7 @@ import DashboardHeader from '../components/dashboard/DashboardHeader';
 import type { Ticket } from '../types/ticket';
 import type { ServiceOrder } from '../types/serviceOrder';
 import { useNavigate } from 'react-router-dom';
+import { useTicketCreateModal } from '../contexts/ticketCreateModalContext';
 import DashboardService from '../services/dashboardService';
 import ServiceOrderService from '../services/serviceOrderService';
 import { ApiService, type PaginatedResponse } from '../services/api';
@@ -30,6 +31,7 @@ interface DashboardStats {
 export function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const ticketModal = useTicketCreateModal();
 
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentTickets, setRecentTickets] = useState<Ticket[]>([]);
@@ -210,7 +212,7 @@ export function DashboardPage() {
   }, [selectedProviderId]);
 
   const quickActions = createQuickActions({
-    onCreateTicket: () => navigate('/tickets/new'),
+    onCreateTicket: () => ticketModal.open(),
     onCreateServiceOrder: () => navigate('/service-orders/new'),
     onViewReports: () => navigate('/reports'),
     onManageUsers: () => navigate('/users'),

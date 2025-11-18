@@ -43,6 +43,7 @@ export interface TicketFormProps {
   onSubmit: (e: React.FormEvent) => void;
   onDismissError?: () => void;
   onCancel?: () => void;
+  showActions?: boolean;
 }
 
 export const TicketForm: React.FC<TicketFormProps> = ({
@@ -57,6 +58,7 @@ export const TicketForm: React.FC<TicketFormProps> = ({
   onSubmit,
   onDismissError,
   onCancel,
+  showActions = true,
 }) => {
   return (
     <FormContainer>
@@ -69,7 +71,7 @@ export const TicketForm: React.FC<TicketFormProps> = ({
       <Card>
         <Form onSubmit={onSubmit}>
           <Row>
-            <FieldGroup>
+            <FieldGroup style={{ gridColumn: '1 / -1' }}>
               <Input
                 label="Título do Ticket *"
                 value={values.title}
@@ -82,7 +84,7 @@ export const TicketForm: React.FC<TicketFormProps> = ({
           </Row>
 
           <Row>
-            <FieldGroup>
+            <FieldGroup style={{ gridColumn: '1 / -1' }}>
               <FieldLabel>Descrição *</FieldLabel>
               <StyledTextarea
                 value={values.description}
@@ -141,17 +143,19 @@ export const TicketForm: React.FC<TicketFormProps> = ({
             </FieldGroup>
           </Row>
 
-          <Actions>
-            {isLoading && <Spinner size="sm" />}
-            {onCancel && (
-              <Button variant="outline" type="button" onClick={onCancel} disabled={isLoading}>
-                Voltar
+          {showActions && (
+            <Actions>
+              {isLoading && <Spinner size="sm" />}
+              {onCancel && (
+                <Button variant="outline" type="button" onClick={onCancel} disabled={isLoading}>
+                  Voltar
+                </Button>
+              )}
+              <Button variant="primary" type="submit" disabled={isLoading}>
+                Criar Ticket
               </Button>
-            )}
-            <Button variant="primary" type="submit" disabled={isLoading}>
-              Criar Ticket
-            </Button>
-          </Actions>
+            </Actions>
+          )}
         </Form>
       </Card>
     </FormContainer>

@@ -1,10 +1,11 @@
 import React from 'react'
 import styled from 'styled-components'
 import { useNavigate } from 'react-router-dom'
-import { ThemeToggle, Select } from '../ui'
+import { ThemeToggle, Select, Button } from '../ui'
 import ProfileMenu from './ProfileMenu'
 import { useProviderContext } from '../../contexts/providerContext'
 import useProviders from '../../hooks/useProviders'
+import { useTicketCreateModal } from '../../contexts/ticketCreateModalContext'
 
 const LayoutContainer = styled.div`
   min-height: 100vh;
@@ -44,6 +45,10 @@ const RightActions = styled.div`
   gap: 0.75rem;
 `
 
+const ContextBox = styled.div`
+  width: 180px;
+`
+
 interface LayoutProps {
   children: React.ReactNode
   title?: string
@@ -53,6 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'TelecomAI' }) => {
   const navigate = useNavigate()
   const { selectedProviderId, setSelectedProviderId } = useProviderContext()
   const { data: providers = [] } = useProviders(50)
+  const ticketModal = useTicketCreateModal()
   return (
     <LayoutContainer>
       <Header>
@@ -71,20 +77,23 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'TelecomAI' }) => {
             {title}
           </Title>
           <RightActions>
-            <Select
-              label="Contexto"
-              size="sm"
-              value={selectedProviderId == null ? 'global' : String(selectedProviderId)}
-              onChange={(e) => {
-                const val = (e.target as HTMLSelectElement).value
-                setSelectedProviderId(val === 'global' ? null : Number(val))
-              }}
-            >
-              <option value="global">Visão Global</option>
-              {providers.map((p) => (
-                <option key={p.id} value={String(p.id)}>{p.name}</option>
-              ))}
-            </Select>
+            <ContextBox>
+              <Select
+                size="sm"
+                variant="outlined"
+                value={selectedProviderId == null ? 'global' : String(selectedProviderId)}
+                onChange={(e) => {
+                  const val = (e.target as HTMLSelectElement).value
+                  setSelectedProviderId(val === 'global' ? null : Number(val))
+                }}
+              >
+                <option value="global">Visão Global</option>
+                {providers.map((p) => (
+                  <option key={p.id} value={String(p.id)}>{p.name}</option>
+                ))}
+              </Select>
+            </ContextBox>
+            <Button variant="primary" onClick={() => ticketModal.open()}>Criar Ticket</Button>
             <ThemeToggle />
             <ProfileMenu />
           </RightActions>

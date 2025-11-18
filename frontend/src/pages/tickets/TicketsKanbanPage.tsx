@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTicketCreateModal } from '../../contexts/ticketCreateModalContext';
 import { Button, Spinner, Toast } from '../../components/ui';
 import KanbanBoard from '../../components/kanban/KanbanBoard';
 import { ApiService } from '../../services/api';
@@ -24,6 +25,7 @@ const baseColumnOrder = ['open', 'assigned', 'in_progress', 'pending', 'resolved
 
 const TicketsKanbanPage: React.FC = () => {
   const navigate = useNavigate();
+  const ticketModal = useTicketCreateModal();
   const [board, setBoard] = useState<KanbanBoard>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -139,7 +141,7 @@ const TicketsKanbanPage: React.FC = () => {
             onHideDone={() => setSelectedColumns(baseColumnOrder.filter((c) => !['resolved','closed','cancelled'].includes(c)))}
           />
           <Button variant="secondary" onClick={() => navigate('/tickets')}>Voltar para Lista</Button>
-          <Button variant="primary" onClick={() => navigate('/tickets/new')}>Novo Ticket</Button>
+          <Button variant="primary" onClick={() => ticketModal.open()}>Novo Ticket</Button>
         </div>
       </div>
 

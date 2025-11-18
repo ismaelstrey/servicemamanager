@@ -318,27 +318,30 @@ export function TicketsListPage() {
 
   return (
     <Block>
-    
-        <Block >
-                  <TicketsListHeader isGlobalView={selectedProviderId == null} totalItems={totalItems} />
-        </Block>
-        <Block>  
-                <TicketsListActions
-                  viewMode={viewMode}
-                  showFavoritesOnly={showFavoritesOnly}
-                  presenceCount={presenceCount}
-                  notificationCount={notificationCount}
-                  onListView={() => setViewMode('list')}
-                  onGridView={() => setViewMode('grid')}
-                  onKanban={() => navigate('/tickets/kanban')}
-                  onToggleFavorites={() => setShowFavoritesOnly(v => !v)}
-                  onExportCSV={exportCSV}
-                  onExportExcel={exportExcel}
-                  onExportPDF={exportPDF}
-                  onNewTicket={() => navigate('/tickets/new')}
-                />
-        </Block>
- 
+
+      <Block >
+        <TicketsListHeader isGlobalView={selectedProviderId == null} totalItems={totalItems} />
+      </Block>
+      <Block>
+        <TicketsListActions
+          viewMode={viewMode}
+          showFavoritesOnly={showFavoritesOnly}
+          presenceCount={presenceCount}
+          notificationCount={notificationCount}
+          onListView={() => setViewMode('list')}
+          onGridView={() => setViewMode('grid')}
+          onKanban={() => navigate('/tickets/kanban')}
+          onToggleFavorites={() => setShowFavoritesOnly(v => !v)}
+          onExportCSV={exportCSV}
+          onExportExcel={exportExcel}
+          onExportPDF={exportPDF}
+          onNewTicket={() => {
+            try { (window as any).openTicketCreateModal(); } catch { }
+            window.dispatchEvent(new CustomEvent('open-ticket-modal'))
+          }}
+        />
+      </Block>
+
 
       {error && (
         <Alert variant="danger" title="Erro">
@@ -451,7 +454,10 @@ export function TicketsListPage() {
               {!hasActiveFilters && (
                 <Button
                   variant="primary"
-                  onClick={() => navigate('/tickets/new')}
+                  onClick={() => {
+                    try { (window as any).openTicketCreateModal(); } catch { }
+                    window.dispatchEvent(new CustomEvent('open-ticket-modal'))
+                  }}
                 >
                   Criar Primeiro Ticket
                 </Button>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import styled from 'styled-components'
 import { SearchBox, Button, Badge } from './ui'
+import { useTicketCreateModal } from '../contexts/ticketCreateModalContext'
 import useGlobalSearch from '../hooks/useGlobalSearch'
 
 // Componente Command Palette com atalho Ctrl+K
@@ -13,6 +14,7 @@ export const CommandPalette: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const [activeIndex, setActiveIndex] = useState<number>(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const ticketModal = useTicketCreateModal()
 
   // Atalho de teclado: Ctrl+K (Windows/Linux) e Meta+K (macOS)
   useEffect(() => {
@@ -157,6 +159,7 @@ export const CommandPalette: React.FC = () => {
           <Footer>
             <FooterLeft>{loading ? 'Indexando...' : `${results.length} resultados`}</FooterLeft>
             <FooterRight>
+              <Button variant="primary" onClick={() => { ticketModal.open(); setIsOpen(false) }}>Criar Ticket</Button>
               <Button variant="ghost" onClick={() => setIsOpen(false)}>Fechar (Esc)</Button>
             </FooterRight>
           </Footer>
