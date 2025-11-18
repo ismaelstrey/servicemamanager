@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Badge, Button } from '../ui';
+import { Badge, Button, Tooltip } from '../ui';
+import { motion } from 'framer-motion'
+import { Building2, User as UserIcon, Clock } from 'lucide-react'
 import type { KanbanItem } from './KanbanBoard';
 
 interface KanbanItemCardProps {
@@ -38,8 +40,21 @@ export const KanbanItemCard: React.FC<KanbanItemCardProps> = ({
   onDragStart,
   onDragEnd,
 }) => {
+  const getInitials = (name?: string): string => {
+    if (!name) return '--'
+    const clean = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+    const parts = clean.split(/\s+/).filter(Boolean)
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    const w = parts[0]
+    const two = (w[0] || '') + (w[1] || '')
+    return (two || '--').toUpperCase()
+  }
   return (
     <ItemRoot
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2, scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
       draggable
       onDragStart={(e: React.DragEvent) => {
         e.dataTransfer.setData('text/plain', String(item.id));
@@ -58,29 +73,34 @@ export const KanbanItemCard: React.FC<KanbanItemCardProps> = ({
       </TopRow>
       <DetailsRow>
         <Detail>
-          <strong>Provedor:</strong>
-          <span>{item.provider?.name ?? '—'}{item.provider?.workspace ? ` (${item.provider.workspace})` : ''}</span>
+          <span><Building2 size={14} style={{ marginRight: 6 }} />{item.provider?.name ?? '—'}{item.provider?.workspace ? ` (${item.provider.workspace})` : ''}</span>
         </Detail>
         <Detail>
-          <strong>Aberto por:</strong>
-          <span>{item.openedBy?.name ?? '—'}{item.openedBy?.email ? ` (${item.openedBy.email})` : ''}</span>
+          <span><UserIcon size={14} style={{ marginRight: 6 }} />{item.openedBy?.name ?? '—'}{item.openedBy?.email ? ` (${item.openedBy.email})` : ''}</span>
         </Detail>
       </DetailsRow>
-      <Meta>
-        Atualizado em {new Date(item.updatedAt).toLocaleString('pt-BR')}
-      </Meta>
       <Actions>
         <Button size="sm" variant="secondary" onClick={() => onItemClick && onItemClick(item.id)}>
           Abrir
         </Button>
       </Actions>
+      <FooterRow>
+        <Meta>
+          <Clock size={14} style={{ marginRight: 6 }} />{new Date(item.updatedAt).toLocaleString('pt-BR')}
+        </Meta>
+        {item.openedBy?.name ? (
+          <Tooltip content={`${item.openedBy.name}${item.openedBy.email ? ` (${item.openedBy.email})` : ''}`} placement="top">
+            <AvatarCapsule aria-label="Autor do ticket">{getInitials(item.openedBy.name)}</AvatarCapsule>
+          </Tooltip>
+        ) : null}
+      </FooterRow>
     </ItemRoot>
   );
 };
 
 export default KanbanItemCard;
 
-const ItemRoot = styled.div<{ $isDragging?: boolean }>`
+const ItemRoot = styled(motion.div)<{ $isDragging?: boolean }>`
   border: 1px solid ${({ theme }) => theme.colors.border.primary};
   border-radius: ${({ theme }) => theme.borders.radius.lg};
   padding: ${({ theme }) => theme.spacing.md};
@@ -91,6 +111,7 @@ const ItemRoot = styled.div<{ $isDragging?: boolean }>`
   opacity: ${({ $isDragging }) => ($isDragging ? 0.85 : 1)};
   transform: ${({ $isDragging }) => ($isDragging ? 'scale(0.98)' : 'none')};
   outline: ${({ theme, $isDragging }) => ($isDragging ? `2px solid ${theme.colors.primary.main}` : 'none')};
+  &:hover { box-shadow: ${({ theme }) => theme.shadows.md}; border-color: ${({ theme }) => theme.colors.alpha.black[20]}; background: ${({ theme }) => theme.colors.background.secondary}; }
 `;
 
 const TopRow = styled.div`
@@ -139,10 +160,33 @@ const Title = styled.span`
 const Meta = styled.div`
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
   color: ${({ theme }) => theme.colors.text.secondary};
+  display: inline-flex;
+  align-items: center;
 `;
 
 const Actions = styled.div`
   margin-top: ${({ theme }) => theme.spacing.sm};
   display: flex;
   gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const FooterRow = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.sm};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const AvatarCapsule = styled.div`
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  background: ${({ theme }) => theme.colors.background.secondary};
+  color: ${({ theme }) => theme.colors.text.primary};
+  border: 1px solid ${({ theme }) => theme.colors.alpha.black[10]};
 `;

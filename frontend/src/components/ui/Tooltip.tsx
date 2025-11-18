@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styled, { css } from 'styled-components';
 
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
@@ -15,7 +16,7 @@ const Wrapper = styled.div`
 `;
 
 const Bubble = styled.div<{ $placement: TooltipPlacement }>`
-  position: absolute;
+  position: fixed;
   white-space: nowrap;
   background: ${({ theme }) => theme.colors.background.overlay};
   color: ${({ theme }) =>
@@ -27,32 +28,62 @@ const Bubble = styled.div<{ $placement: TooltipPlacement }>`
   box-shadow: ${({ theme }) => theme.shadows.md};
   z-index: ${({ theme }) => theme.zIndex.tooltip};
 
-  ${({ $placement }) => $placement === 'top' && css`bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 8px;`}
-  ${({ $placement }) => $placement === 'bottom' && css`top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px;`}
-  ${({ $placement }) => $placement === 'left' && css`right: 100%; top: 50%; transform: translateY(-50%); margin-right: 8px;`}
-  ${({ $placement }) => $placement === 'right' && css`left: 100%; top: 50%; transform: translateY(-50%); margin-left: 8px;`}
+  ${({ $placement }) => $placement === 'top' && css`transform: translate(-50%, -100%);`}
+  ${({ $placement }) => $placement === 'bottom' && css`transform: translate(-50%, 0%);`}
+  ${({ $placement }) => $placement === 'left' && css`transform: translate(-100%, -50%);`}
+  ${({ $placement }) => $placement === 'right' && css`transform: translate(0%, -50%);`}
 `;
 
 export const Tooltip: React.FC<TooltipProps> = ({ content, placement = 'top', children }) => {
   const [open, setOpen] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const close = () => setOpen(false);
-    if (open) {
-      document.addEventListener('scroll', close, true);
-      window.addEventListener('blur', close);
+  const updatePosition = () => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const offset = 8;
+    switch (placement) {
+      case 'top':
+        setCoords({ top: rect.top - offset, left: rect.left + rect.width / 2 });
+        break;
+      case 'bottom':
+        setCoords({ top: rect.bottom + offset, left: rect.left + rect.width / 2 });
+        break;
+      case 'left':
+        setCoords({ top: rect.top + rect.height / 2, left: rect.left - offset });
+        break;
+      case 'right':
+      default:
+        setCoords({ top: rect.top + rect.height / 2, left: rect.right + offset });
+        break;
     }
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    updatePosition();
+    const onScroll = () => updatePosition();
+    const onResize = () => updatePosition();
+    document.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('blur', () => setOpen(false));
     return () => {
-      document.removeEventListener('scroll', close, true);
-      window.removeEventListener('blur', close);
+      document.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', onResize);
     };
-  }, [open]);
+  }, [open, placement]);
 
   return (
     <Wrapper ref={ref} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       {children}
-      {open && <Bubble $placement={placement} role="tooltip">{content}</Bubble>}
+      {open && createPortal(
+        <Bubble $placement={placement} role="tooltip" style={{ top: coords.top, left: coords.left }}>
+          {content}
+        </Bubble>,
+        document.body
+      )}
     </Wrapper>
   );
 };
