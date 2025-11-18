@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Badge, Button, Tooltip } from '../ui';
 import { motion } from 'framer-motion'
-import { Building2, User as UserIcon, Clock } from 'lucide-react'
+import { Building2, User as UserIcon, Clock, Circle } from 'lucide-react'
 import type { KanbanItem } from './KanbanBoard';
 
 interface KanbanItemCardProps {
@@ -40,6 +40,22 @@ export const KanbanItemCard: React.FC<KanbanItemCardProps> = ({
   onDragStart,
   onDragEnd,
 }) => {
+  const priorityColor = (p: string): string => {
+    switch (p) {
+      case 'low':
+        return 'rgb(34, 197, 94)';
+      case 'medium':
+        return 'rgb(59, 130, 246)';
+      case 'high':
+        return 'rgb(245, 158, 11)';
+      case 'urgent':
+        return 'rgb(239, 68, 68)';
+      case 'critical':
+        return 'rgb(190, 24, 34)';
+      default:
+        return 'rgb(107, 114, 128)';
+    }
+  }
   const getInitials = (name?: string): string => {
     if (!name) return '--'
     const clean = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
@@ -69,7 +85,9 @@ export const KanbanItemCard: React.FC<KanbanItemCardProps> = ({
       <TopRow>
         <IdBadge aria-label={`ID do item: ${item.id}`}>{item.id}</IdBadge>
         <Title>{item.title}</Title>
-        <Badge variant={getPriorityVariant(String(item.priority))}>{String(item.priority)}</Badge>
+        <span aria-label={`Prioridade: ${String(item.priority)}`} title={`Prioridade: ${String(item.priority)}`} style={{ display: 'inline-flex', alignItems: 'center' }}>
+          <Circle size={14} color={priorityColor(String(item.priority))} />
+        </span>
       </TopRow>
       <DetailsRow>
         <Detail>
