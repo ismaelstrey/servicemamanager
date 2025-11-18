@@ -22,6 +22,7 @@ import { usePresence } from '../../hooks/usePresence';
 import TicketsListActions from '../../components/tickets/TicketsListActions'
 import TicketsListHeader from '../../components/tickets/TicketsListHeader'
 import { Block } from '../../components/layout/Flex/Flex';
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 interface TicketsFilters {
   search: string;
@@ -91,8 +92,6 @@ export function TicketsListPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -131,54 +130,46 @@ export function TicketsListPage() {
     }
     setSearchParams(params);
   }, [filters, currentPage, setSearchParams]);
+  
   const { selectedProviderId } = useProviderContext();
-
-  const loadTickets = React.useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Converter filtros para o formato esperado pela API
-      const apiFilters: any = {};
-
-      if (filters.search) {
-        apiFilters.search = filters.search;
-      }
-
-      if (filters.status !== 'all') {
-        apiFilters.status = filters.status;
-      }
-
-      if (filters.priority !== 'all') {
-        apiFilters.priority = filters.priority;
-      }
-
-      if (filters.category !== 'all') {
-        apiFilters.category = filters.category;
-      }
-
-      // Buscar tickets conforme o contexto: global (todos) ou do Provider selecionado
+  const queryClient = useQueryClient()
+  const ticketsQuery = useQuery({
+    queryKey: ['tickets', { providerId: selectedProviderId, page: currentPage, filters }],
+    queryFn: async () => {
+      const apiFilters: any = {}
+      if (filters.search) apiFilters.search = filters.search
+      if (filters.status !== 'all') apiFilters.status = filters.status
+      if (filters.priority !== 'all') apiFilters.priority = filters.priority
+      if (filters.category !== 'all') apiFilters.category = filters.category
       const response = (selectedProviderId == null)
         ? await TicketService.getTicketsAll(apiFilters, currentPage, ITEMS_PER_PAGE)
-        : await TicketService.getTickets(selectedProviderId, apiFilters, currentPage, ITEMS_PER_PAGE);
-
-      // Normalizar possíveis statuses antigos do backend
-      setTickets((response.data || []).map((t: Ticket) => ({
+        : await TicketService.getTickets(selectedProviderId, apiFilters, currentPage, ITEMS_PER_PAGE)
+      const items: Ticket[] = (response.data || []).map((t: Ticket) => ({
         ...t,
         status: ((t as any).status === 'waiting_client' ? 'pending' : t.status) as TicketStatus,
-      })));
-      setTotalItems(response.pagination?.total ?? 0);
-    } catch (err) {
-      setError('Erro ao carregar tickets');
-      console.error('Tickets loading error:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, filters, selectedProviderId]);
+      }))
+      return { items, total: response.pagination?.total ?? 0 }
+    },
+    keepPreviousData: true,
+  })
+  const tickets: Ticket[] = ticketsQuery.data?.items ?? []
+  const loading = ticketsQuery.isLoading
+  const queryError = ticketsQuery.isError
+  useEffect(() => {
+    setTotalItems(ticketsQuery.data?.total ?? 0)
+    setError(queryError ? 'Erro ao carregar tickets' : null)
+  }, [ticketsQuery.data?.total, queryError])
 
   useEffect(() => {
-    loadTickets();
-  }, [loadTickets]);
+    const handler = (e: any) => {
+      const providerId = e?.detail?.providerId ?? null
+      if (selectedProviderId == null || providerId == null || providerId === selectedProviderId) {
+        try { queryClient.invalidateQueries({ queryKey: ['tickets'] }) } catch {}
+      }
+    }
+    window.addEventListener('ticket-created', handler as any)
+    return () => window.removeEventListener('ticket-created', handler as any)
+  }, [selectedProviderId, queryClient])
 
   // Persistência do modo de visualização
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../hooks/useAuth'
 import { useProviderContext } from '../contexts/providerContext'
 import { ApiService } from '../services/api'
@@ -19,6 +19,7 @@ function resolveProviderId(userProviderId?: number | null): number | null {
 
 export function useTickets() {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const { selectedProviderId } = useProviderContext()
   const providerId = useMemo(() => {
     if (selectedProviderId != null) return selectedProviderId
@@ -30,6 +31,13 @@ export function useTickets() {
       if (!providerId || providerId <= 0) throw new Error('ProviderId inválido')
       const ticket = await TicketService.createTicket(providerId, data as unknown as any)
       return ticket
+    },
+    onSuccess: () => {
+      try {
+        queryClient.invalidateQueries({ queryKey: ['tickets'] })
+        queryClient.invalidateQueries({ queryKey: ['tickets-kanban'] })
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      } catch {}
     }
   })
 

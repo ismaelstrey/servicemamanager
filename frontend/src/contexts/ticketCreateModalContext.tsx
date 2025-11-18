@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useMemo, useState } from 'react'
 import { Modal, ModalBody, ModalFooter } from '../components/ui/Modal'
-import { Button, Spinner, Alert, Select } from '../components/ui'
+import { Button, Spinner, Select, Toast } from '../components/ui'
 import { TicketForm } from '../components/composite'
 import type { CreateTicketFormValues, PriorityOption, EquipmentOption } from '../components/composite'
 import { useTickets } from '../hooks/useTickets'
@@ -24,6 +24,10 @@ export const TicketCreateModalProvider: React.FC<{ children: React.ReactNode }> 
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [success, setSuccess] = useState<{ id: number } | null>(null)
   const { createTicket, listEquipments } = useTickets()
+  const { selectedProviderId } = useProviderContext()
+  const [toastOpen, setToastOpen] = useState(false)
+  const [toastMsg, setToastMsg] = useState('')
+  const [toastVariant, setToastVariant] = useState<'success' | 'error' | 'warning' | 'info'>('success')
 
   const priorities: PriorityOption[] = useMemo(() => ([
     { value: 'low', label: 'Baixa' },
@@ -33,7 +37,7 @@ export const TicketCreateModalProvider: React.FC<{ children: React.ReactNode }> 
   ]), [])
 
   const categories = useMemo(() => ([
-    'Hardware','Software','Network','Security','Maintenance','Support','Other'
+    'Hardware', 'Software', 'Network', 'Security', 'Maintenance', 'Support', 'Other'
   ]), [])
 
   const open = (initial?: Partial<CreateTicketFormValues>) => {
@@ -86,6 +90,13 @@ export const TicketCreateModalProvider: React.FC<{ children: React.ReactNode }> 
       }
       const ticket = await createTicket.mutateAsync(data)
       setSuccess({ id: ticket.id })
+      try {
+        window.dispatchEvent(new CustomEvent('ticket-created', { detail: { id: ticket.id, providerId: selectedProviderId ?? null } }))
+      } catch { }
+      setToastVariant('success')
+      setToastMsg(`Ticket #${ticket.id} criado com sucesso`)
+      setToastOpen(true)
+      window.setTimeout(() => { try { setToastOpen(false) } catch { }; close() }, 1500)
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Erro ao criar ticket. Tente novamente.'
       setErrorMsg(msg)
@@ -104,18 +115,14 @@ export const TicketCreateModalProvider: React.FC<{ children: React.ReactNode }> 
   return (
     <TicketCreateModalContext.Provider value={value}>
       {children}
-      <Modal isOpen={isOpen} onClose={close} title={success ? 'Ticket Criado' : 'Novo Ticket'} size="md">
+      <Modal isOpen={isOpen} onClose={close} title={'Novo Ticket'} size="md">
         <ModalBody>
           {!success && (
             <div style={{ marginBottom: 12, display: 'flex', gap: 8, alignItems: 'flex-end' }}>
               <ProviderSelectInline />
             </div>
           )}
-          {success ? (
-            <Alert variant="success" title="Ticket criado com sucesso">
-              Ticket #{success.id} criado. Você pode continuar nesta página.
-            </Alert>
-          ) : (
+          {success ? null : (
             <TicketForm
               values={form}
               errors={errors}
@@ -140,14 +147,14 @@ export const TicketCreateModalProvider: React.FC<{ children: React.ReactNode }> 
             </div>
           </ModalFooter>
         )}
-        {success && (
-          <ModalFooter>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, width: '100%' }}>
-              <Button variant="primary" onClick={close}>Fechar</Button>
-            </div>
-          </ModalFooter>
-        )}
       </Modal>
+      <Toast
+        open={toastOpen}
+        onClose={() => setToastOpen(false)}
+        title={toastVariant === 'success' ? 'Sucesso' : 'Informação'}
+        description={toastMsg}
+        variant={toastVariant}
+      />
     </TicketCreateModalContext.Provider>
   )
 }
@@ -186,7 +193,7 @@ export const TicketCreateModalGlobalBridge: React.FC = () => {
   if (!ctx) return null
   const { open, close } = ctx
   React.useEffect(() => {
-    (window as any).openTicketCreateModal = (initial?: Partial<CreateTicketFormValues>) => open(initial)
+    (window as any).openTicketCreateModal = (initial?: Partial<CreateTicketFormValues>) => { open(initial) }
     (window as any).closeTicketCreateModal = () => close()
     const handler = (e: any) => open(e?.detail || undefined)
     window.addEventListener('open-ticket-modal', handler as any)

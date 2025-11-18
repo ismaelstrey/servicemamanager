@@ -210,6 +210,17 @@ export function DashboardPage() {
     loadDashboardData(mode);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProviderId]);
+  useEffect(() => {
+    const handler = (e: any) => {
+      const providerId = e?.detail?.providerId ?? null
+      const mode = selectedProviderId === null ? 'global' : selectedProviderId
+      if (mode === 'global' || providerId == null || providerId === selectedProviderId) {
+        loadDashboardData(mode)
+      }
+    }
+    window.addEventListener('ticket-created', handler as any)
+    return () => window.removeEventListener('ticket-created', handler as any)
+  }, [selectedProviderId])
 
   const quickActions = createQuickActions({
     onCreateTicket: () => ticketModal.open(),

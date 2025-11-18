@@ -54,8 +54,7 @@ const TicketsKanbanPage: React.FC = () => {
     try { localStorage.setItem('tickets.kanban.visibleColumns', JSON.stringify(selectedColumns)) } catch {}
   }, [selectedColumns])
 
-  useEffect(() => {
-    const loadBoard = async () => {
+  const loadBoard = async () => {
       try {
         setLoading(true);
         setError(null);
@@ -102,9 +101,18 @@ const TicketsKanbanPage: React.FC = () => {
       } finally {
         setLoading(false);
       }
-    };
-    loadBoard();
-  }, [selectedProviderId]);
+  };
+  useEffect(() => { loadBoard(); }, [selectedProviderId]);
+  useEffect(() => {
+    const handler = (e: any) => {
+      const providerId = e?.detail?.providerId ?? null
+      if (selectedProviderId == null || providerId == null || providerId === selectedProviderId) {
+        loadBoard()
+      }
+    }
+    window.addEventListener('ticket-created', handler as any)
+    return () => window.removeEventListener('ticket-created', handler as any)
+  }, [selectedProviderId])
 
   if (loading) {
     return (
