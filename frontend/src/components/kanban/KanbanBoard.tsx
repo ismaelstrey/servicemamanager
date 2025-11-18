@@ -2,7 +2,14 @@ import React from 'react';
 import styled from 'styled-components';
 import KanbanColumn from './KanbanColumn';
 
-export type KanbanItem = { id: number; title: string; priority: 'low' | 'medium' | 'high' | 'urgent' | 'critical'; updatedAt: string | Date };
+export type KanbanItem = {
+  id: number;
+  title: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent' | 'critical';
+  updatedAt: string | Date;
+  provider?: { id: number; name: string; workspace?: string };
+  openedBy?: { id: number; name: string; email?: string } | null;
+};
 export type KanbanBoardData = Record<string, KanbanItem[]>;
 
 export interface KanbanBoardProps {

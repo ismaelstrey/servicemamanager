@@ -2,12 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTicketCreateModal } from '../../contexts/ticketCreateModalContext';
 import { Button, Spinner, Toast } from '../../components/ui';
-import KanbanBoard from '../../components/kanban/KanbanBoard';
+import KanbanBoard, { type KanbanBoardData, type KanbanItem } from '../../components/kanban/KanbanBoard';
 import { ApiService } from '../../services/api';
 import { useProviderContext } from '../../contexts/providerContext';
 import TicketsKanbanColumnsFilter from '../../components/tickets/TicketsKanbanColumnsFilter'
+import KanbanFilters from '../../components/tickets/KanbanFilters'
 
-type KanbanBoard = Record<string, { id: number; title: string; priority: 'low' | 'medium' | 'high' | 'urgent' | 'critical'; updatedAt: string | Date }[]>;
+type LocalBoard = KanbanBoardData;
 
 const statusLabels: Record<string, string> = {
   open: 'Aberto',
@@ -26,7 +27,7 @@ const baseColumnOrder = ['open', 'assigned', 'in_progress', 'pending', 'resolved
 const TicketsKanbanPage: React.FC = () => {
   const navigate = useNavigate();
   const ticketModal = useTicketCreateModal();
-  const [board, setBoard] = useState<KanbanBoard>({});
+  const [board, setBoard] = useState<LocalBoard>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toastOpen, setToastOpen] = useState(false);
@@ -34,6 +35,9 @@ const TicketsKanbanPage: React.FC = () => {
   const [toastVariant, setToastVariant] = useState<'info' | 'success' | 'warning' | 'error'>('info');
 
   const { selectedProviderId } = useProviderContext();
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [priorityFilter, setPriorityFilter] = useState<'all'|'low'|'medium'|'high'|'urgent'|'critical'>('all')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const [selectedColumns, setSelectedColumns] = useState<string[]>(() => {
     try {
@@ -61,14 +65,14 @@ const TicketsKanbanPage: React.FC = () => {
         const url = (selectedProviderId == null)
           ? `/tickets/kanban`
           : `/providers/${selectedProviderId}/tickets/kanban`;
-        const res = await ApiService.get<KanbanBoard>(url);
+        const res = await ApiService.get<LocalBoard>(url);
 
 
         const raw = res.data || {};
 
         // Normalização: converte chaves antigas para novos statuses (ex: waiting_client -> pending)
         // e mescla arrays caso venham as duas chaves (pending e waiting_client)
-        const normalized: KanbanBoard = {} as KanbanBoard;
+        const normalized: LocalBoard = {} as LocalBoard;
         Object.keys(raw || {}).forEach((key) => {
           const newKey = key === 'waiting_client' ? 'pending' : key;
           const incoming = ((raw as any)[key] || []) as any[];
@@ -77,13 +81,15 @@ const TicketsKanbanPage: React.FC = () => {
         });
 
         // Garantir todas as colunas da base existem (arrays vazios por padrão)
-        const completed: KanbanBoard = {} as KanbanBoard;
+        const completed: LocalBoard = {} as LocalBoard;
         for (const col of baseColumnOrder) {
-          completed[col] = (normalized[col] || []).map((item) => ({
+          completed[col] = (normalized[col] || []).map((item: KanbanItem) => ({
             id: item.id,
             title: item.title ?? `Ticket #${item.id}`,
-            priority: (item.priority as any) ?? 'medium',
+            priority: item.priority ?? 'medium',
             updatedAt: item.updatedAt ?? new Date().toISOString(),
+            provider: item.provider,
+            openedBy: item.openedBy ?? null,
           }));
         }
 
@@ -148,15 +154,34 @@ const TicketsKanbanPage: React.FC = () => {
             onSelectAll={() => setSelectedColumns([...baseColumnOrder])}
             onHideDone={() => setSelectedColumns(baseColumnOrder.filter((c) => !['resolved','closed','cancelled'].includes(c)))}
           />
+          <Button variant="ghost" size="sm" onClick={() => setFiltersOpen(v => !v)}>Filtros</Button>
           <Button variant="secondary" onClick={() => navigate('/tickets')}>Voltar para Lista</Button>
           <Button variant="primary" onClick={() => ticketModal.open()}>Novo Ticket</Button>
         </div>
       </div>
 
+      <KanbanFilters
+        visible={filtersOpen}
+        onToggle={() => setFiltersOpen(v => !v)}
+        priority={priorityFilter}
+        onPriorityChange={setPriorityFilter}
+        search={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
+
       {/* Erro sutil será mostrado dentro do próprio KanbanBoard */}
 
       <KanbanBoard
-        board={board}
+        board={(() => {
+          const filtered: KanbanBoard = {} as KanbanBoard
+          Object.keys(board || {}).forEach((col) => {
+            const items = (board as any)[col] || []
+            const byPriority = priorityFilter === 'all' ? items : items.filter((i: any) => String(i.priority).toLowerCase() === priorityFilter)
+            const bySearch = searchTerm ? byPriority.filter((i: any) => String(i.title || '').toLowerCase().includes(searchTerm.toLowerCase())) : byPriority
+            ;(filtered as any)[col] = bySearch
+          })
+          return filtered
+        })()}
         columnOrder={visibleColumnOrder}
         statusLabels={statusLabels}
         errorMessage={error || undefined}
@@ -220,23 +245,25 @@ const TicketsKanbanPage: React.FC = () => {
               const baseUrl = (selectedProviderId == null) ? `/tickets/kanban` : `/providers/${selectedProviderId}/tickets/kanban`;
               const cacheBuster = `t=${Date.now()}`;
               const url = baseUrl.includes('?') ? `${baseUrl}&${cacheBuster}` : `${baseUrl}?${cacheBuster}`;
-              const fresh = await ApiService.get<KanbanBoard>(url);
+              const fresh = await ApiService.get<LocalBoard>(url);
               // Normalização conforme carregamento inicial (mesma lógica)
               const raw = fresh.data || {};
-              const normalized: KanbanBoard = {} as KanbanBoard;
+              const normalized: LocalBoard = {} as LocalBoard;
               Object.keys(raw || {}).forEach((key) => {
                 const newKey = key === 'waiting_client' ? 'pending' : key;
                 const incoming = ((raw as any)[key] || []) as any[];
                 const existing = ((normalized as any)[newKey] || []) as any[];
                 (normalized as any)[newKey] = [...existing, ...incoming];
               });
-              const completed: KanbanBoard = {} as KanbanBoard;
+              const completed: LocalBoard = {} as LocalBoard;
               for (const col of baseColumnOrder) {
-                completed[col] = (normalized[col] || []).map((item: any) => ({
+                completed[col] = (normalized[col] || []).map((item: KanbanItem) => ({
                   id: item.id,
                   title: item.title ?? `Ticket #${item.id}`,
-                  priority: (item.priority as any) ?? 'medium',
+                  priority: item.priority ?? 'medium',
                   updatedAt: item.updatedAt ?? new Date().toISOString(),
+                  provider: item.provider,
+                  openedBy: item.openedBy ?? null,
                 }));
               }
               setBoard(completed);

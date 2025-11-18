@@ -56,6 +56,16 @@ export const KanbanItemCard: React.FC<KanbanItemCardProps> = ({
         <Title>{item.title}</Title>
         <Badge variant={getPriorityVariant(String(item.priority))}>{String(item.priority)}</Badge>
       </TopRow>
+      <DetailsRow>
+        <Detail>
+          <strong>Provedor:</strong>
+          <span>{item.provider?.name ?? '—'}{item.provider?.workspace ? ` (${item.provider.workspace})` : ''}</span>
+        </Detail>
+        <Detail>
+          <strong>Aberto por:</strong>
+          <span>{item.openedBy?.name ?? '—'}{item.openedBy?.email ? ` (${item.openedBy.email})` : ''}</span>
+        </Detail>
+      </DetailsRow>
       <Meta>
         Atualizado em {new Date(item.updatedAt).toLocaleString('pt-BR')}
       </Meta>
@@ -89,6 +99,27 @@ const TopRow = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
   margin-bottom: ${({ theme }) => theme.spacing.xs};
+`;
+
+const DetailsRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing.sm};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const Detail = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+  align-items: baseline;
+  min-width: 0;
+  & > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 `;
 
 const IdBadge = styled.code`
