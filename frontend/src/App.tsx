@@ -71,6 +71,10 @@ const queryClient = new QueryClient({
       refetchInterval: 60_000,
 
     },
+    mutations: {
+      gcTime: 60_000,
+
+    }
   },
 })
 
