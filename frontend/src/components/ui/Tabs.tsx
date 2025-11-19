@@ -87,7 +87,7 @@ const TabButton = styled.button<{ $active?: boolean; $disabled?: boolean; $varia
   ${({ $variant, $active, theme }) => {
     if ($variant === 'pills') {
       return css`
-        background-color: ${$active ? theme.colors.primary.main : theme.colors.neutral[100]};
+        background-color: ${$active ? theme.colors.primary.main : (theme.mode === 'dark' ? theme.colors.alpha.white[10] : theme.colors.neutral[100])};
         color: ${$active ? theme.colors.primary.contrast : theme.colors.text.secondary};
         border-radius: ${theme.borders.radius.lg};
       `;
@@ -95,13 +95,14 @@ const TabButton = styled.button<{ $active?: boolean; $disabled?: boolean; $varia
     if ($variant === 'underline') {
       return css`
         border-bottom: 2px solid ${$active ? theme.colors.primary.main : 'transparent'};
-        color: ${$active ? theme.colors.primary.main : theme.colors.text.secondary};
+        color: ${$active ? theme.colors.text.primary : theme.colors.text.secondary};
         border-radius: 0;
       `;
     }
     return css`
-      background-color: ${$active ? theme.colors.primary[50] : 'transparent'};
+      background-color: ${$active ? (theme.mode === 'dark' ? theme.colors.alpha.white[10] : theme.colors.primary[50]) : 'transparent'};
       color: ${$active ? theme.colors.text.primary : theme.colors.text.secondary};
+      ${$active ? css`border: 1px solid ${theme.colors.border.primary};` : ''}
     `;
   }}
 

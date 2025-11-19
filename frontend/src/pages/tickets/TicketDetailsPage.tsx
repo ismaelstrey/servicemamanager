@@ -9,7 +9,8 @@ import {
   Modal, ModalHeader, ModalBody, ModalFooter,
   Toast,
   Select,
-  TextArea
+  TextArea,
+  Switch
 } from '../../components/ui';
 import { ApiService } from '../../services/api';
 import TicketService from '../../services/ticketService';
@@ -183,6 +184,7 @@ export function TicketDetailsPage() {
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
+  const [newCommentIsInternal, setNewCommentIsInternal] = useState(false);
   
   // Status update state
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -262,7 +264,7 @@ export function TicketDetailsPage() {
         content: newComment,
         resourceType: 'ticket',
         resourceId: ticket.id,
-        isInternal: false,
+        isInternal: newCommentIsInternal,
       });
       const comment = res.data as TicketComment;
 
@@ -273,7 +275,13 @@ export function TicketDetailsPage() {
         
       } : null);
 
+      try {
+        const fresh = await TicketService.getTicketComments(ticket.id)
+        setTicket(prev => prev ? { ...prev, comments: fresh } : prev)
+      } catch {}
+
       setNewComment('');
+      setNewCommentIsInternal(false);
       setShowCommentModal(false);
     } catch (err) {
       console.error('Error adding comment:', err);
@@ -798,14 +806,19 @@ export function TicketDetailsPage() {
         </ModalHeader>
         <ModalBody>
           <ModalForm>
-            <TextArea
-              label="Comentário"
-              placeholder="Digite seu comentário..."
-              value={newComment}
-              onChange={(e: any) => setNewComment(e.target.value)}
-              rows={4 as any}
-              fullWidth
-            />
+          <TextArea
+            label="Comentário"
+            placeholder="Digite seu comentário..."
+            value={newComment}
+            onChange={(e: any) => setNewComment(e.target.value)}
+            rows={4 as any}
+            fullWidth
+          />
+          <Switch
+            label="Comentário interno"
+            checked={newCommentIsInternal}
+            onChange={(e) => setNewCommentIsInternal(e.target.checked)}
+          />
           </ModalForm>
         </ModalBody>
         <ModalFooter>

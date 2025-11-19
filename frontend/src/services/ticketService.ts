@@ -62,7 +62,7 @@ export class TicketService {
   }
 
   static async getTicketComments(id: number): Promise<import('../types/ticket').TicketComment[]> {
-    const response = await ApiService.get<import('../types/ticket').TicketComment[]>(`/comments/ticket/${id}?includeInternal=true`);
+    const response = await ApiService.get<import('../types/ticket').TicketComment[]>(`/comments/ticket/${id}?includeInternal=true&_t=${Date.now()}`);
     return response.data;
   }
 
