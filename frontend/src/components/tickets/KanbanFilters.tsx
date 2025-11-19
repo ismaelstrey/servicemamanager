@@ -1,12 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Button, Select, SearchBox } from '../ui'
-import { Filter } from 'lucide-react'
+import { Select, SearchBox } from '../ui'
 
 interface KanbanFiltersProps {
   visible: boolean
-  onToggle: () => void
   priority: 'all' | 'low' | 'medium' | 'high' | 'urgent' | 'critical'
   onPriorityChange: (value: 'all' | 'low' | 'medium' | 'high' | 'urgent' | 'critical') => void
   search: string
@@ -42,7 +40,7 @@ const Fields = styled.div`
   }
 `
 
-const KanbanFilters: React.FC<KanbanFiltersProps> = ({ visible, onToggle, priority, onPriorityChange, search, onSearchChange }) => {
+const KanbanFilters: React.FC<KanbanFiltersProps> = ({ visible, priority, onPriorityChange, search, onSearchChange }) => {
   return (
     <Container>
       {/* <ToggleRow>
@@ -81,7 +79,7 @@ const KanbanFilters: React.FC<KanbanFiltersProps> = ({ visible, onToggle, priori
               <SearchBox
 
                 value={search}
-                onChange={(e: any) => onSearchChange(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)}
                 onSearch={() => { }}
                 onClear={() => onSearchChange('')}
                 placeholder="Buscar por título"

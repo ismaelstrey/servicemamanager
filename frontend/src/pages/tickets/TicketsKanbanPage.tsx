@@ -150,7 +150,6 @@ const TicketsKanbanPage: React.FC = () => {
 
       <KanbanFilters
         visible={filtersOpen}
-        onToggle={() => setFiltersOpen(v => !v)}
         priority={priorityFilter}
         onPriorityChange={setPriorityFilter}
         search={searchTerm}
@@ -161,12 +160,12 @@ const TicketsKanbanPage: React.FC = () => {
 
       <KanbanBoard
         board={(() => {
-          const filtered: KanbanBoard = {} as KanbanBoard
+          const filtered: LocalBoard = {} as LocalBoard
           Object.keys(board || {}).forEach((col) => {
-            const items = (board as any)[col] || []
-            const byPriority = priorityFilter === 'all' ? items : items.filter((i: any) => String(i.priority).toLowerCase() === priorityFilter)
-            const bySearch = searchTerm ? byPriority.filter((i: any) => String(i.title || '').toLowerCase().includes(searchTerm.toLowerCase())) : byPriority
-            ;(filtered as any)[col] = bySearch
+            const items = (board as LocalBoard)[col] || []
+            const byPriority = priorityFilter === 'all' ? items : items.filter((i: KanbanItem) => String(i.priority).toLowerCase() === priorityFilter)
+            const bySearch = searchTerm ? byPriority.filter((i: KanbanItem) => String(i.title || '').toLowerCase().includes(searchTerm.toLowerCase())) : byPriority
+            ;(filtered as LocalBoard)[col] = bySearch
           })
           return filtered
         })()}
@@ -185,12 +184,12 @@ const TicketsKanbanPage: React.FC = () => {
 
             // Otimista: mover no board imediatamente
             setBoard((prev) => {
-              const next = { ...prev } as any;
-              const fromArr = [...(next[from] || [])];
-              const toArr = [...(next[to] || [])];
-              const idx = fromArr.findIndex((i: any) => i.id === itemId);
+              const next: LocalBoard = { ...prev };
+              const fromArr: KanbanItem[] = [...(next[from] || [])];
+              const toArr: KanbanItem[] = [...(next[to] || [])];
+              const idx = fromArr.findIndex((i: KanbanItem) => i.id === itemId);
               if (idx >= 0) {
-                const item = { ...fromArr[idx], updatedAt: new Date().toISOString() };
+                const item: KanbanItem = { ...fromArr[idx], updatedAt: new Date().toISOString() };
                 fromArr.splice(idx, 1);
                 toArr.unshift(item);
                 next[from] = fromArr;

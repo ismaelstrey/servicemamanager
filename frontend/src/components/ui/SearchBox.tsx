@@ -21,14 +21,14 @@ const IconLeft = styled(SearchIcon)`
   position: absolute;
   left: 10px;
   color: ${({ theme }) => theme.colors.text.secondary};
-` as any;
+`;
 
 const IconRight = styled(ClearIcon)`
   position: absolute;
   right: 10px;
   color: ${({ theme }) => theme.colors.text.secondary};
   cursor: pointer;
-` as any;
+`;
 
 const Input = styled.input`
   width: 100%;
@@ -70,7 +70,7 @@ export const SearchBox = React.forwardRef<HTMLInputElement, SearchBoxProps>(
           {...rest}
         />
         {value && (
-          <IconRight size={18} onClick={() => onClear ? onClear() : onChange({ target: { value: '' } } as any)} />
+          <IconRight size={18} onClick={() => onClear ? onClear() : onChange?.({ target: { value: '' } } as unknown as React.ChangeEvent<HTMLInputElement>)} />
         )}
       </Wrapper>
     );

@@ -133,21 +133,22 @@ export function TicketsListPage() {
 
   const { selectedProviderId } = useProviderContext();
   const queryClient = useQueryClient()
-  const ticketsQuery = useQuery({
+  const ticketsQuery = useQuery<{ items: Ticket[]; total: number }>({
     queryKey: ['tickets', { providerId: selectedProviderId, page: currentPage, filters }],
     queryFn: async () => {
-      const apiFilters: any = {}
-      if (filters.search) apiFilters.search = filters.search
-      if (filters.status !== 'all') apiFilters.status = filters.status
-      if (filters.priority !== 'all') apiFilters.priority = filters.priority
-      if (filters.category !== 'all') apiFilters.category = filters.category
+      const apiFilters: Record<string, string> = {}
+      if (filters.search) apiFilters.search = String(filters.search)
+      if (filters.status !== 'all') apiFilters.status = String(filters.status)
+      if (filters.priority !== 'all') apiFilters.priority = String(filters.priority)
+      if (filters.category !== 'all') apiFilters.category = String(filters.category)
       const response = (selectedProviderId == null)
         ? await TicketService.getTicketsAll(apiFilters, currentPage, ITEMS_PER_PAGE)
         : await TicketService.getTickets(selectedProviderId, apiFilters, currentPage, ITEMS_PER_PAGE)
-      const items: Ticket[] = (response.data || []).map((t: Ticket) => ({
-        ...t,
-        status: ((t as any).status === 'waiting_client' ? 'pending' : t.status) as TicketStatus,
-      }))
+      const items: Ticket[] = (response.data || []).map((t: Ticket) => {
+        const rawStatus = (t as unknown as { status: string }).status
+        const normalizedStatus = rawStatus === 'waiting_client' ? 'pending' : t.status
+        return { ...t, status: normalizedStatus as TicketStatus }
+      })
       return { items, total: response.pagination?.total ?? 0 }
     },
     placeholderData: (previousData) => previousData,
@@ -196,7 +197,7 @@ export function TicketsListPage() {
 
   // Exportações avançadas
   const exportCSV = () => {
-    const rows = displayedTickets.map(t => ({
+    const rows: Array<Record<string, string | number>> = displayedTickets.map(t => ({
       Numero: t.number ?? t.id,
       Titulo: t.title,
       Cliente: t.customerInfo?.name ?? '',
@@ -207,8 +208,8 @@ export function TicketsListPage() {
       Responsavel: t.assignee?.name ?? '',
       CriadoEm: new Date(t.createdAt).toISOString()
     }));
-    const headers = Object.keys(rows[0] || {});
-    const csv = [headers.join(';'), ...rows.map(r => headers.map(h => String((r as any)[h]).replace(/;/g, ',')).join(';'))].join('\n');
+    const headers = Object.keys(rows[0] || {}) as string[];
+    const csv = [headers.join(';'), ...rows.map(r => headers.map(h => String(r[h]).replace(/;/g, ',')).join('\n'))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     saveAs(blob, 'tickets.csv');
   };
